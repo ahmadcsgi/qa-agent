@@ -24,7 +24,8 @@ Ask the user:
 ### Step 2: Understand API
 - Read the story/AC to understand the business logic
 - Check `.cursor/qa-memory/project-context/current.md` for base URL and auth patterns
-- Check `~/.qa-agent/corrections.json` for previous API test corrections
+- Check decision memory: `node ~/.qa-agent/lib/store.js cor list "api-test" "good"` — apply proven patterns
+- Juga cek: `node ~/.qa-agent/lib/store.js cor list "api-test" "bad"` — hindari kesalahan masa lalu
 - If OpenAPI spec is available → read to get request/response schema
 
 ### Step 3: Research (if needed)

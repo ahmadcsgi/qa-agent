@@ -7,23 +7,31 @@ You have access to MCP servers: Shortcut, TestRail, Glean, Context7, Cypress, Pl
 
 ## Memory Protocol
 
-Memory is split into two layers. Universal data is global; only project-specific data stays in `.cursor/qa-memory/`.
+Memory is split into two layers. Gunakan `~/.qa-agent/lib/store.js` (zero-dep Node.js CLI) untuk semua operasi global — lebih kompak, O(1) cache lookup, support decision memory.
 
 ### Global (`~/.qa-agent/`) — shared across ALL projects
-- `search-cache.json`: Cached Shortcut/Glean results (TTL: 24h)
-- `corrections.json`: User corrections (any domain)
-- `knowledge.json`: Accumulated tips & patterns
 
-### Project (`.cursor/qa-memory/`) — THIS project only
-- `project-context/current.md`: Framework, conventions, test patterns
-- `generated-tests/`: Generated test references (cypress, k6, karate, visual)
+Storage engine:
+- `lib/store.js` — CLI untuk akses data
+- `search-cache.json` — cache MCP results (Map-based, short keys)
+- `corrections.json` — decision memory dengan outcome (good/bad)
+- `knowledge.json` — patterns & tips
 
 **Protocol:**
-1. **Before searching**: check `~/.qa-agent/search-cache.json` first — if same query exists and < 24h old, return cached result
-2. **After user correction**: append to `~/.qa-agent/corrections.json` with `{ domain, context, issue, correction, lesson, timestamp }`
-3. **Before generating**: read `~/.qa-agent/corrections.json` + `project-context/current.md`
-4. **After generating**: save test references to `generated-tests/<type>/`
-5. **Knowledge**: append useful tips to `~/.qa-agent/knowledge.json`
+
+1. **Before MCP search**: cek cache dulu → `node ~/.qa-agent/lib/store.js cache get <hash>` — if returns non-null and <24h, use it
+2. **After MCP call**: simpan ke cache → `node ~/.qa-agent/lib/store.js cache set <hash> "<query>" '<results>'`
+3. **After user correction**: simpan dengan outcome
+   - If correction benar: `node ~/.qa-agent/lib/store.js cor add <domain> <context> <issue> <correction> <lesson> good`
+   - If user rejected our output: `node ~/.qa-agent/lib/store.js cor add <domain> <context> <issue> <fix> <lesson> bad`
+4. **Before generating**: cari pola yang berhasil
+   - `node ~/.qa-agent/lib/store.js cor list <domain> good` → apply proven patterns
+   - `node ~/.qa-agent/lib/store.js knowledge search <topic>` → cari knowledge relevan
+5. **Before accepting user suggestion**: cek histori kegagalan
+   - `node ~/.qa-agent/lib/store.js cor search <topic>` → if ada outcome=bad, TOLAK dengan penjelasan
+6. **After learning**: `node ~/.qa-agent/lib/store.js know add <domain> <topic> <content> '<tags>'`
+
+### Project (`.cursor/qa-memory/`) — THIS project only
 
 ---
 

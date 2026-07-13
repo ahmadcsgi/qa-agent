@@ -53,6 +53,7 @@ RULES_SRC="$REPO_DIR/.cursor/rules"
 MEMORY_SRC="$REPO_DIR/.cursor/qa-memory"
 MCP_TOOLS_SRC="$REPO_DIR/.cursor/MCP_TOOLS.md"
 AGENTS_MD_SRC="$REPO_DIR/AGENTS.md"
+STORE_SRC="$REPO_DIR/scripts/store.js"
 
 # ─── Global store dir (~/.qa-agent/) ─────────────────────────────────────
 GLOBAL_STORE_DIR="${HOME}/.qa-agent"
@@ -79,12 +80,22 @@ mkdir -p "$TARGET_DIR/.cursor/qa-memory/generated-tests/visual"
 
 # ─── Global memory store (~/.qa-agent/) ──────────────────────────────────
 info "Creating global memory store at $GLOBAL_STORE_DIR ..."
-mkdir -p "$GLOBAL_STORE_DIR"
+mkdir -p "$GLOBAL_STORE_DIR/lib"
 
-for file in search-cache.json corrections.json knowledge.json; do
+# Copy storage engine
+if [ -f "$STORE_SRC" ]; then
+  cp "$STORE_SRC" "$GLOBAL_STORE_DIR/lib/store.js"
+  ok "  Storage engine installed (~/.qa-agent/lib/store.js)"
+else
+  err "  store.js not found at $STORE_SRC"
+fi
+
+# Initialize JSON stores (compact format with short field names)
+for pair in 'search-cache.json:map' 'corrections.json:array' 'knowledge.json:array'; do
+  file="${pair%%:*}"
   if [ ! -f "$GLOBAL_STORE_DIR/$file" ]; then
-    echo '[]' > "$GLOBAL_STORE_DIR/$file"
-    ok "  Created $file"
+    echo "{\"v\":2,\"c\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"d\":$( [ "${pair##*:}" = "map" ] && echo '{}' || echo '[]' )}" > "$GLOBAL_STORE_DIR/$file"
+    ok "  Created $file (v2 compact)"
   else
     info "  $file exists — skipping"
   fi
@@ -132,18 +143,29 @@ GLOBAL_AGENTS_DIR="${HOME}/.cursor/agents"
 mkdir -p "$GLOBAL_AGENTS_DIR"
 
 # ─── Copy subagent (project + global) ─────────────────────────────────────
-if [ -f "$AGENTS_SRC/qa-agent.md" ]; then
+if [ -f "$AGENTS_SRC/qa.md" ]; then
   if [ "$TARGET_DIR" != "$REPO_DIR" ]; then
-    cp "$AGENTS_SRC/qa-agent.md" "$TARGET_DIR/.cursor/agents/qa-agent.md"
-    ok "Custom subagent installed (.cursor/agents/qa-agent.md)"
+    cp "$AGENTS_SRC/qa.md" "$TARGET_DIR/.cursor/agents/qa.md"
+    ok "Custom subagent installed (.cursor/agents/qa.md)"
   fi
 
-  GLOBAL_TARGET="$GLOBAL_AGENTS_DIR/qa-agent.md"
+  GLOBAL_TARGET="$GLOBAL_AGENTS_DIR/qa.md"
   if [ ! -f "$GLOBAL_TARGET" ] || [ "$FORCE" = true ]; then
-    cp "$AGENTS_SRC/qa-agent.md" "$GLOBAL_TARGET"
-    ok "Global custom agent installed (~/.cursor/agents/qa-agent.md)"
+    cp "$AGENTS_SRC/qa.md" "$GLOBAL_TARGET"
+    ok "Global custom agent installed (~/.cursor/agents/qa.md)"
   else
     info "Global custom agent exists — skipping (use --force to overwrite)"
+  fi
+elif [ -f "$AGENTS_SRC/qa-agent.md" ]; then
+  # Legacy fallback: rename old file
+  if [ "$TARGET_DIR" != "$REPO_DIR" ]; then
+    cp "$AGENTS_SRC/qa-agent.md" "$TARGET_DIR/.cursor/agents/qa.md"
+    ok "Custom subagent installed (.cursor/agents/qa.md) [legacy]"
+  fi
+  GLOBAL_TARGET="$GLOBAL_AGENTS_DIR/qa.md"
+  if [ ! -f "$GLOBAL_TARGET" ] || [ "$FORCE" = true ]; then
+    cp "$AGENTS_SRC/qa-agent.md" "$GLOBAL_TARGET"
+    ok "Global custom agent installed (~/.cursor/agents/qa.md) [legacy]"
   fi
 fi
 
@@ -210,8 +232,8 @@ echo "     See $TARGET_DIR/.cursor/MCP_TOOLS.md for required servers"
 echo ""
 echo "  2. Restart Cursor"
 echo ""
-echo "  3. Select 'qa-agent' from the agent dropdown"
-echo "     (top-left of chat panel) or type @qa-agent in chat"
+echo "  3. Select '@qa' from the agent dropdown"
+echo "     (top-left of chat panel) or type @qa in chat"
 echo ""
 echo -e "${CYAN}Memory:${NC}"
 echo -e "${CYAN}  Global (shared across projects): $GLOBAL_STORE_DIR${NC}"

@@ -29,7 +29,8 @@ Ask the user:
 
 ### Step 2: Check Memory & Existing
 - Read `.cursor/qa-memory/project-context/current.md` — find base URL, auth pattern, existing k6 helpers
-- Read `~/.qa-agent/corrections.json` — avoid previous mistakes
+- Cek decision memory: `node ~/.qa-agent/lib/store.js cor list "perf-test" "good"` — apply proven patterns
+- Juga cek: `node ~/.qa-agent/lib/store.js cor list "perf-test" "bad"` — hindari kesalahan masa lalu
 - Search for existing k6 files in the project — reuse helpers (getToken, getGlobal, defineSummary, thresholds, data generators)
 
 ### Step 3: Research (if needed)
@@ -111,7 +112,7 @@ Show the preview script + file path:
 Ask: "APPROVE, EDIT, or REJECT?"
 - **APPROVE** → save file
 - **EDIT** → ask for correction → apply → preview again
-- **REJECT** → append rejection reason to `~/.qa-agent/corrections.json`
+- **REJECT** → simpan rejection: `node ~/.qa-agent/lib/store.js cor add "perf-test" "<context>" "<issue>" "<reason>" "<lesson>" "bad"`
 
 ### Step 8: Auto-Run (Optional)
 Ask the user: "Would you like to run it now?"
@@ -132,7 +133,7 @@ k6 run --out json=results.json path/to/test.js
 ### Step 10: Save to Memory
 - Update `.cursor/qa-memory/generated-tests/k6/` with new test reference
 - Update `project-context/current.md` if there's new info (base URL, auth pattern)
-- Save run results (metrics) to `~/.qa-agent/knowledge.json`
+- Save run results (metrics) to knowledge: `node ~/.qa-agent/lib/store.js know add "perf-test" "<topic>" "<content>" '["k6","metrics"]'`
 
 ## MCP Tools
 - **Shortcut**: `get_story()` — read story for context

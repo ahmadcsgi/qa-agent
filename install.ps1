@@ -34,6 +34,7 @@ $MemorySrc    = Join-Path $RepoDir ".cursor" "qa-memory"
 $McpToolsSrc  = Join-Path $RepoDir ".cursor" "MCP_TOOLS.md"
 $AgentsMdSrc  = Join-Path $RepoDir "AGENTS.md"
 $ReadmeSrc    = Join-Path $RepoDir "README.md"
+$StoreSrc     = Join-Path $RepoDir "scripts" "store.js"
 
 # ─── Global store dir (~\.qa-agent\) ──────────────────────────────────────
 $GlobalStoreDir = Join-Path $env:USERPROFILE ".qa-agent"
@@ -67,19 +68,29 @@ Write-Info "Creating project directory structure..."
 
 # ─── Global memory store ───────────────────────────────────────────────────
 Write-Info "Creating global memory store at $GlobalStoreDir ..."
-New-Item -ItemType Directory -Force -Path $GlobalStoreDir | Out-Null
+New-Item -ItemType Directory -Force -Path (Join-Path $GlobalStoreDir "lib") | Out-Null
 
-# Initialize JSON files if they don't exist
+# Copy storage engine
+if (Test-Path $StoreSrc) {
+    $LibTarget = Join-Path $GlobalStoreDir "lib" "store.js"
+    Copy-Item -Path $StoreSrc -Destination $LibTarget -Force
+    Write-Ok "  Storage engine installed (~\.qa-agent\lib\store.js)"
+}
+else {
+    Write-Err "  store.js not found at $StoreSrc"
+}
+
+# Initialize JSON stores (compact format with short field names)
 $GlobalFiles = @{
-    "search-cache.json" = '[]'
-    "corrections.json"  = '[]'
-    "knowledge.json"    = '[]'
+    "search-cache.json"  = '{"v":2,"c":"' + (Get-Date -Format o) + '","d":{}}'
+    "corrections.json"   = '{"v":2,"c":"' + (Get-Date -Format o) + '","d":[]}'
+    "knowledge.json"     = '{"v":2,"c":"' + (Get-Date -Format o) + '","d":[]}'
 }
 foreach ($file in $GlobalFiles.Keys) {
     $path = Join-Path $GlobalStoreDir $file
     if (-not (Test-Path $path)) {
         Set-Content -Path $path -Value $GlobalFiles[$file] -Encoding UTF8
-        Write-Ok "  Created $file"
+        Write-Ok "  Created $file (v2 compact)"
     }
     else {
         Write-Info "  $file exists - skipping"
@@ -133,17 +144,20 @@ $GlobalAgentsDir = Join-Path $env:USERPROFILE ".cursor" "agents"
 New-Item -ItemType Directory -Force -Path $GlobalAgentsDir | Out-Null
 
 # ─── Copy subagent (project + global) ─────────────────────────────────────
-$AgentFile = Join-Path $AgentsSrc "qa-agent.md"
+$AgentFile = Join-Path $AgentsSrc "qa.md"
+if (-not (Test-Path $AgentFile)) {
+    $AgentFile = Join-Path $AgentsSrc "qa-agent.md"  # legacy fallback
+}
 if (Test-Path $AgentFile) {
-    $ProjectAgent = Join-Path $TargetDir ".cursor" "agents" "qa-agent.md"
+    $ProjectAgent = Join-Path $TargetDir ".cursor" "agents" "qa.md"
     if ($AgentFile -ne $ProjectAgent) {
         Copy-Item -Path $AgentFile -Destination $ProjectAgent -Force:$Force
-        Write-Ok "Custom subagent installed (.cursor\agents\qa-agent.md)"
+        Write-Ok "Custom subagent installed (.cursor\agents\qa.md)"
     }
-    $GlobalAgent = Join-Path $GlobalAgentsDir "qa-agent.md"
+    $GlobalAgent = Join-Path $GlobalAgentsDir "qa.md"
     if ((-not (Test-Path $GlobalAgent)) -or $Force) {
         Copy-Item -Path $AgentFile -Destination $GlobalAgent -Force:$Force
-        Write-Ok "Global custom agent installed (~\.cursor\agents\qa-agent.md)"
+        Write-Ok "Global custom agent installed (~\.cursor\agents\qa.md)"
     }
     else {
         Write-Info "Global custom agent exists - skipping (use -Force to overwrite)"
@@ -210,8 +224,8 @@ Write-Host "     See .cursor\MCP_TOOLS.md for required servers"
 Write-Host ""
 Write-Host "  2. Restart Cursor"
 Write-Host ""
-Write-Host "  3. Select 'qa-agent' from the agent dropdown"
-Write-Host "     (top-left of chat panel) or type @qa-agent"
+Write-Host "  3. Select '@qa' from the agent dropdown"
+Write-Host "     (top-left of chat panel) or type @qa"
 Write-Host ""
 Write-Host "Memory:" -ForegroundColor Cyan
 Write-Host "  Global (shared across projects): $GlobalStoreDir" -ForegroundColor Cyan

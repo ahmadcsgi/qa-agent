@@ -99,7 +99,7 @@ If the test FAILED:
 
 ### Step 12: User Loop
 - **APPROVE** → Save to memory, update testrail-coverage.json
-- **EDIT** → Apply correction → append to `~/.qa-agent/corrections.json`
+- **EDIT** → Apply correction → simpan ke decision memory: `node ~/.qa-agent/lib/store.js cor add "ui-automation" "<context>" "<issue>" "<correction>" "<lesson>" "good|bad"`
 - **REJECT** → Save rejection reason to memory
 
 ### Step 13: Save to Memory

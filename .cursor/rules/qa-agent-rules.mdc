@@ -27,14 +27,22 @@ alwaysApply: true
 - Preview before write. ALWAYS run decision ladder: YAGNI → Reuse → Stdlib → Native → Existing Dep → One-liner → Minimum.
 
 ## Memory Protocol
-Two layers:
+Gunakan `node ~/.qa-agent/lib/store.js` untuk semua operasi global memory.
 
-**Global (`~/.qa-agent/`)** — search-cache.json, corrections.json, knowledge.json
+**Cache (O(1) lookup by hash, TTL 24h):**
+- Before MCP call: `node ~/.qa-agent/lib/store.js cache get <hash>`
+- After MCP call: `node ~/.qa-agent/lib/store.js cache set <hash> "<query>" '<results>'`
+
+**Decision memory (outcome: good/bad):**
+- After user correction: `node ~/.qa-agent/lib/store.js cor add <domain> <context> <issue> <correction> <lesson> <outcome>`
+- Before accept suggestion: `node ~/.qa-agent/lib/store.js cor search <text>` → if outcome=bad found, REJECT
+- Before generate: `node ~/.qa-agent/lib/store.js cor list <domain> good` → apply proven patterns
+
+**Knowledge:**
+- After learning: `node ~/.qa-agent/lib/store.js know add <domain> <topic> <content> '<tags>'`
+- Before research: `node ~/.qa-agent/lib/store.js know search <text>`
+
 **Project (`.cursor/qa-memory/`)** — project-context/current.md, generated-tests/
-
-Check `~/.qa-agent/search-cache.json` before MCP calls (TTL: 24h).
-After correction: append to `~/.qa-agent/corrections.json` with `{ domain, context, issue, correction, lesson, timestamp }`.
-After learning: append to `~/.qa-agent/knowledge.json`.
 
 ## Skill Routing
 | Task | Invoke |

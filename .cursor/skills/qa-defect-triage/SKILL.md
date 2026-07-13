@@ -21,8 +21,9 @@ Check completeness: environment, order ID, product, error message, screenshots, 
 - Provide **Evidence Quality Score** (0-100)
 
 ### Step 3: Check Memory
-- Read `~/.qa-agent/search-cache.json` — check for similar incidents
-- Read `~/.qa-agent/corrections.json` — learn from previous triages
+- Cek cache: `node ~/.qa-agent/lib/store.js cache get <hash>` — cari incident serupa
+- Cek decision memory: `node ~/.qa-agent/lib/store.js cor list "triage" "good"` — learn from previous triages
+- Cek juga: `node ~/.qa-agent/lib/store.js cor list "triage" "bad"` — hindari kesalahan masa lalu
 - Read `.cursor/qa-memory/project-context/current.md` — understand project mapping
 
 ### Step 4: Universal Shortcut Search
@@ -79,8 +80,8 @@ Ask: "APPROVE (create ticket), EDIT (correct draft), or REJECT?"
 - **REJECT** → save rejection reason to memory
 
 ### Step 12: Save to Memory
-- Update `~/.qa-agent/search-cache.json` — cache search results
-- Append triage result to `~/.qa-agent/corrections.json`
+- Cache hasil: `node ~/.qa-agent/lib/store.js cache set <hash> "<query>" '<results>'`
+- Simpan ke decision memory: `node ~/.qa-agent/lib/store.js cor add "triage" "<context>" "<issue>" "<correction>" "<lesson>" "good|bad"`
 - Update `project-context/current.md` if new info (ownership, component mapping)
 
 ## Key Decision Points
