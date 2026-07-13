@@ -1,0 +1,32 @@
+{
+  "_note": "Rename this file to visual-test.config.json and place in project root. Then run: node .cursor/skills/qa-visual-test/scripts/run.js",
+
+  "baseUrl": "https://your-staging-app.com",
+  "viewport": "1280x720",
+  "threshold": 0.001,
+  "wait": 2000,
+
+  "pages": [
+    { "name": "home",      "path": "/" },
+    { "name": "login",     "path": "/login" },
+    { "name": "dashboard", "path": "/dashboard", "threshold": 0.005, "wait": 3000 },
+    { "name": "settings",  "path": "/settings" }
+  ],
+
+  "masks": [
+    { "selector": ".date-picker",    "fill": "#ffffff" },
+    { "selector": ".ad-banner",      "fill": "#ffffff" },
+    { "selector": "[data-dynamic]",  "fill": "#f0f0f0" }
+  ],
+
+  "beforeScreenshot": "() => { document.querySelectorAll('.cookie-banner, .toast-notification').forEach(el => el.remove()); }",
+
+  "auth": {
+    "cookies": "auth-cookies.json"
+  },
+
+  "notifyConsoleErrors": true,
+
+  "baseDir": ".cursor/skills/qa-visual-test/baselines",
+  "diffDir": "/tmp/qa-visual-diff"
+}

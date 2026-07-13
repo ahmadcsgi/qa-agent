@@ -98,7 +98,7 @@ Buat file `~/.cursor/mcp.json`:
 }
 ```
 
-> **⚠️ Jangan commit file ini ke git** — berisi credentials pribadi.
+> **⚠️ Do NOT commit this file to git** — contains personal credentials.
 
 ### 2. Paste User Rules
 
@@ -162,7 +162,7 @@ Cursor v2.1+ uses 3 mechanisms for agent customization:
 
 > **Custom Modes were removed** in Cursor v2.1. Use a combination of Rules + Subagents + AGENTS.md instead.
 
-### Cara Membuat Custom Agent Sendiri
+### How to Create Your Own Custom Agent
 
 1. **Create a subagent** — file `.cursor/agents/<name>.md`:
    ```markdown
@@ -250,9 +250,9 @@ All these files are in the repo and ready to use after clone + install.
 
 | Layer | What | Location | Purpose |
 |-------|------|----------|---------|
-| **1. MCP Servers** | Tool providers | `~/.cursor/mcp.json` | Memberi AI akses ke Shortcut, TestRail, Glean, Context7, Cypress, Playwright |
+| **1. MCP Servers** | Tool providers | `~/.cursor/mcp.json` | Provides AI access to Shortcut, TestRail, Glean, Context7, Cypress, Playwright |
 | **2. Memory System** | Persistent context | `.cursor/qa-memory/` | AI learns from corrections, cache, project context |
-| **3. Skills** | Domain instructions | `.cursor/skills/<name>/` | Step-by-step flow per task type, modular & hemat token |
+| **3. Skills** | Domain instructions | `.cursor/skills/<name>/` | Step-by-step flow per task type, modular & token-efficient |
 | **4. User Rules** | Global role & routing | Cursor Settings > Rules | Role definition + routing ke skill + safety gates |
 
 ---
@@ -263,37 +263,37 @@ All these files are in the repo and ready to use after clone + install.
 |-------|---------|-----------|--------|
 | **@qa-search-tickets** | "search ticket about...", "search bug...", "find ticket...", paste error message | Shortcut (`search_stories`), Glean, Memory cache | Similar tickets + relevance score + ownership prediction + historical patterns |
 | **@qa-defect-triage** | Helix link/ID/description, bug report | Shortcut (`search_stories`, `create_story`), Glean (`search`, `read_document`), TestRail | Triage report (classification, severity, RCA draft, test coverage) + draft ticket + approval gate |
-| **@qa-ui-automation** | TestRail URL, "buat automation", "generate cypress test" | TestRail (`get_cases`), Cypress (`run_test`), Playwright (`explore_page`), Context7, Glean | `.feature` file + step definitions + aliases + validated via Cypress run |
-| **@qa-perf-test** | Story ID, "buat perf test", "generate k6 test", "load test" | Shortcut (`get_story`), Git, Context7 | k6 script + risk analysis + thresholds + branch (`perf/<id>-<desc>`) |
-| **@qa-test-cases** | Story ID, "buat test case", "generate test case" | Shortcut (`get_story`), TestRail (`get_cases`, `add_case`, `update_case`, `delete_case`) | TestRail test cases (happy path + negative + boundary) |
+| **@qa-ui-automation** | TestRail URL, "create automation", "generate cypress test" | TestRail (`get_cases`), Cypress (`run_test`), Playwright (`explore_page`), Context7, Glean | `.feature` file + step definitions + aliases + validated via Cypress run |
+| **@qa-perf-test** | Story ID, "create perf test", "generate k6 test", "load test" | Shortcut (`get_story`), Git, Context7 | k6 script + risk analysis + thresholds + branch (`perf/<id>-<desc>`) |
+| **@qa-test-cases** | Story ID, "create test case", "generate test case" | Shortcut (`get_story`), TestRail (`get_cases`, `add_case`, `update_case`, `delete_case`) | TestRail test cases (happy path + negative + boundary) |
 | **@qa-visual-test** | "check UI", "visual regression", "screenshot compare", "layout check", "visual test" | Playwright (internal script), pixelmatch, look_at | JSON report (pass/fail/new) + diff image on failure |
 
 ---
 
 ## Memory System
 
-Lokasi: `.cursor/qa-memory/`
+Location: `.cursor/qa-memory/`
 
 ```
 .cursor/qa-memory/
-├── MEMORY_PROTOCOL.md         ← Aturan baca/tulis memory (WAJIB diikuti AI)
+├── MEMORY_PROTOCOL.md         ← Memory read/write rules (AI MUST follow)
 ├── project-context/
-│   └── current.md             ← Mapping project aktif (framework, conventions, test pattern)
+│   └── current.md             ← Current project context (framework, conventions, test pattern)
 ├── search-cache/
 │   └── shortcut.json          ← Cache query → results (TTL: 24 jam)
 ├── corrections/
-│   ├── automation.md          ← Koreksi generate test
-│   ├── search.md              ← Koreksi search query
-│   ├── test-cases.md          ← Koreksi test case
-│   └── triage.md              ← Koreksi triage
+│   ├── automation.md          ← Correction: automation
+│   ├── search.md              ← Correction: search
+│   ├── test-cases.md          ← Correction: test cases
+│   └── triage.md              ← Correction: triage
 ├── generated-tests/
 │   ├── cypress/               ← Generated UI test references
-│   ├── k6/                    ← Referensi perf test
-│   ├── karate/                ← Referensi API test (future)
-│   └── visual/                ← Referensi visual test
+│   ├── k6/                    ← Reference: perf test
+│   ├── karate/                ← Reference: API test (future)
+│   └── visual/                ← Reference: visual test
 └── knowledge/
     ├── framework-tips.md       ← Tips from Context7
-    └── project-tips.md         ← Pengetahuan spesifik project
+    └── project-tips.md         ← Project-specific knowledge
 ```
 
 ### How the AI Learns
@@ -478,7 +478,7 @@ Never create Shortcut tickets or TestRail cases without user approval.
 
 | Feature | Phase | Status |
 |---------|-------|--------|
-| **Custom Mode "QA Agent"** | — | ❌ Deprecated — Cursor v2.1 menghapus Custom Modes. Digantikan oleh Subagents + Rules + AGENTS.md (lihat Custom Agent Guide) |
+| **Custom Mode "QA Agent"** | — | ❌ Deprecated — Cursor v2.1 removed Custom Modes. Replaced by Subagents + Rules + AGENTS.md (see Custom Agent Guide) |
 | **Karate API test skill** | Phase 2 | 📋 Planned — API test generation from OpenAPI specs |
 | **Multi-project memory** | Phase 2 | 📋 Planned — isolate memory per project |
 | **Slack integration** | Phase 3 | 🔮 Research — triage notifications via Slack |
@@ -490,4 +490,4 @@ Never create Shortcut tickets or TestRail cases without user approval.
 ---
 
 > **Note:** The entire system is based on configuration files and markdown — zero code deployment. Simply clone the `.cursor/` structure to any project and the QA Agent is ready to use.
-# qa-agent
+

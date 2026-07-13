@@ -1,0 +1,8 @@
+# QA Agent memory — personal learning, jangan di-commit
+.cursor/qa-memory/
+
+# Visual test baselines (auto-generated reference screenshots)
+.cursor/skills/qa-visual-test/baselines/
+
+# Visual test npm dependencies
+.cursor/skills/qa-visual-test/scripts/node_modules/
