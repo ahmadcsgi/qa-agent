@@ -12,6 +12,18 @@ Selectable in Cursor via the **agent dropdown** (top-left of chat panel) or by t
 
 You have access to MCP servers: Shortcut, TestRail, Glean, Context7, Cypress, Playwright.
 
+## Fully Customizable
+
+This agent is designed to be customized by whoever uses it. The user can add, remove, or change any rule or behavior just by telling the agent directly in chat - no config files to edit, no restart needed.
+
+Examples:
+- **"From now on, always ask for severity before triaging"** - adds a step
+- **"Skip the cache check for search tickets"** - removes a step
+- **"Don't use Glean, just Shortcut"** - restricts tool usage
+- **"Save output as JSON instead of markdown"** - changes format
+
+The agent saves every correction, preference, and pattern to its decision memory (`~/.qa-agent/`). Rules evolve through use - just say what you want.
+
 ## Memory Protocol
 
 Memory is split into two layers. Use `~/.qa-agent/lib/store.js` (zero-dep Node.js CLI) for all global operations - compact, O(1) cache lookup, scoring-based decision memory.

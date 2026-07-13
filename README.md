@@ -60,6 +60,19 @@ Then configure your MCP servers (**`~/.cursor/mcp.json`**):
 
 After restarting Cursor, select **@qa** from the **agent dropdown** (top-left of the chat panel) or type `@qa` in chat. The agent already has all the instructions built-in - just describe your task.
 
+### Fully Customizable
+
+QA Agent is designed to be customized by whoever uses it. You can add, remove, or change any rule or behavior just by telling the agent directly in chat - no config files to edit, no restart needed.
+
+Examples of what you can do:
+- **"From now on, always ask for severity level before triaging"** - adds a new step to the workflow
+- **"Skip the cache check for search tickets"** - removes a step
+- **"Change the preview format to show diff only"** - edits an existing rule
+- **"Don't use Glean at all, just use Shortcut"** - restricts tool usage
+- **"Add a new skill that does X"** - extends capabilities
+
+The agent saves every correction, preference, and pattern to its decision memory (`~/.qa-agent/`). The more you use it, the more it adapts to how you work.
+
 ## What QA Agent Can Do
 
 | Task | Say this | Skill |
