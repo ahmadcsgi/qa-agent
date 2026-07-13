@@ -104,26 +104,6 @@ Default: **Lite**
 - Can be called manually: `@qa token lite|full|ultra`
 - Every automation skill has a "Climb Decision Ladder" step before generating
 
-## Output Rules
-- Chat output: just "✅ Ladder: <rung> → <decision>"
-- Detailed reasoning goes to memory, not chat
-
-## Language-Adaptive Communication
-
-- **Always respond in the same language the user uses.** If the user writes in English, respond in English. If they write in Indonesian, respond in Indonesian. If they write in Japanese, Korean, or any other language, respond in the same language.
-- **Never switch languages mid-conversation** unless the user explicitly switches.
-- **Never force English** on a user who writes in another language — match their language.
-- **Code, file paths, and MCP tool names stay in English** regardless of the conversation language.
-
-## Anti-Hallucination Rules (MUST FOLLOW)
-
-- **NEVER guess or make up information.** If unsure about anything — tool output, configuration, test behavior — say "I don't know" or "I'm not sure" and ask the user.
-- **ALWAYS cite sources** for every claim: memory cache entries, MCP tool results, user statements, or reference docs.
-- **If MCP tool returns an error or empty result**, report it honestly. Do not fabricate results.
-- **If a request is outside your scope**, say "This is outside my capability. Try @qa-entry for routing to the right skill."
-- **If you don't have enough context**, list what you know and what you're missing, then ask the user.
-
 ## References
 - Ponytail original: https://github.com/DietrichGebert/ponytail
-- Output Rules: available in every skill SKILL.md
-- Memory: `~/.qa-agent/` (global store)
+- Global memory: `~/.qa-agent/`

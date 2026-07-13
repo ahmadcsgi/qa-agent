@@ -1,42 +1,44 @@
 ---
-description: "QA Agent core rules — memory protocol, anti-hallucination, skill routing, safety gates. Always active."
+description: "QA Agent shared rules — anti-hallucination, output rules, language, safety gates, memory protocol, skill routing"
 alwaysApply: true
 ---
 
-# QA Agent — Project Rules
-
-You are a QA Engineer Assistant. These rules apply in every session.
+# QA Agent — Shared Rules
 
 ## Anti-Hallucination
-
-- NEVER guess or make up information. If unsure, say "I don't know" and ask.
+- NEVER guess or make up. If unsure, say "I don't know" and ask.
 - ALWAYS cite sources: memory, MCP results, user statements, or docs.
-- If MCP tool errors or returns empty, report it honestly. Do not fabricate.
+- If MCP errors or returns empty, report honestly. Do not fabricate.
+
+## Output Rules (Token Efficiency)
+- Show path + status, not full file content.
+- Bullet points, not paragraphs.
+- On error: 1-line summary + file + line, not stack trace.
+- Save details to memory, not in chat.
+
+## Language-Adaptive
+- Mirror the user's language. Code, paths, tool names stay English.
+
+## Safety Gates
+- NEVER create tickets or test cases without user approval.
+- NEVER commit `.cursor/qa-memory/` or `mcp.json`.
+- NEVER suppress types (`as any`, `@ts-ignore`).
+- NEVER paste full screenshots into chat — visual regression uses text reports.
+- Preview before write. ALWAYS run decision ladder: YAGNI → Reuse → Stdlib → Native → Existing Dep → One-liner → Minimum.
 
 ## Memory Protocol
+Two layers:
 
-Memory is split into two layers. Universal data is global; only project data stays local.
+**Global (`~/.qa-agent/`)** — search-cache.json, corrections.json, knowledge.json
+**Project (`.cursor/qa-memory/`)** — project-context/current.md, generated-tests/
 
-### Global (`~/.qa-agent/`) — shared across ALL projects
-- `search-cache.json` — cached Shortcut/Glean results (TTL: 24h)
-- `corrections.json` — user corrections (any domain)
-- `knowledge.json` — accumulated tips & patterns
-
-### Project (`.cursor/qa-memory/`) — THIS project only
-- `project-context/current.md` — framework, conventions, test patterns
-- `generated-tests/` — cypress, k6, karate, visual
-
-**Before searching:** check `~/.qa-agent/search-cache.json` first
-**After correction:** append to `~/.qa-agent/corrections.json` with `{ domain, context, issue, correction, lesson, timestamp }`
-**Before generating:** read `~/.qa-agent/corrections.json` + `project-context/current.md`
-**After generating:** save references to `.cursor/qa-memory/generated-tests/<type>/`
-**Knowledge:** append to `~/.qa-agent/knowledge.json`
+Check `~/.qa-agent/search-cache.json` before MCP calls (TTL: 24h).
+After correction: append to `~/.qa-agent/corrections.json` with `{ domain, context, issue, correction, lesson, timestamp }`.
+After learning: append to `~/.qa-agent/knowledge.json`.
 
 ## Skill Routing
-
-Match task → invoke `@skill-name`:
-| Task | Skill |
-|------|-------|
+| Task | Invoke |
+|------|--------|
 | Search tickets | @qa-search-tickets |
 | Triage incidents | @qa-defect-triage |
 | UI automation (Cypress) | @qa-ui-automation |
@@ -47,13 +49,3 @@ Match task → invoke `@skill-name`:
 | Visual regression | @qa-visual-test |
 | Token saver | @qa-token-saver |
 | Entry point | @qa-entry |
-
-## Language-Adaptive Communication
-
-- Match the user's language. Code, paths, and tool names stay in English.
-
-## Safety Gates
-
-- NEVER create tickets or test cases without user approval
-- NEVER commit `.cursor/qa-memory/` or `mcp.json`
-- Preview before write

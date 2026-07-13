@@ -154,25 +154,24 @@ These features run entirely in Node.js — no AI tokens consumed.
 | **Git-aware** | Only test pages changed in last commit | `--git-diff` flag |
 | **Per-page config** | Different threshold/wait per page | `pages[].threshold`, `pages[].wait` in config |
 
-## Output Rules — Token Efficiency
+## Output Rules
 
-⚠️ **Chat output MUST be terse. No images in chat.**
+⚠️ **No images in chat. Ever.**
 
 ```
 ✅ Visual Test PASS — 3/3 passed
 ```
 ```
 ❌ Visual Test FAIL — 2/4 failed
-   • login:     0.05% diff — HTML report: /tmp/qa-visual-report/xxx.html
+   • login:     0.05% diff — report: /tmp/qa-visual-report/xxx.html
    • dashboard: 0.12% diff
    ✅ settings: PASS
    ✅ profile:  PASS
 ```
 
-- Never paste full screenshots into chat
-- Never paste full JSON report into chat — summarize
-- On failure: mention HTML report path + diff percentages
-- The user can open the HTML report directly (no AI needed to view images)
+- Never paste full screenshots into chat.
+- Never paste full JSON report — summarize only.
+- On failure: mention HTML report path + diff %.
 
 ## CLI Reference
 
@@ -204,18 +203,3 @@ Options:
 - Example config: `scripts/visual-test.example.json`
 - Memory: `~/.qa-agent/` (global store)
 
-## Language-Adaptive Communication
-
-- **Always respond in the same language the user uses.** If the user writes in English, respond in English. If they write in Indonesian, respond in Indonesian. If they write in Japanese, Korean, or any other language, respond in the same language.
-- **Never switch languages mid-conversation** unless the user explicitly switches.
-- **Never force English** on a user who writes in another language — match their language.
-- **Code, file paths, and MCP tool names stay in English** regardless of the conversation language.
-
-## Anti-Hallucination Rules (MUST FOLLOW)
-
-- **NEVER guess or make up information.** If unsure about anything — tool output, configuration, test behavior — say "I don't know" or "I'm not sure" and ask the user.
-- **ALWAYS cite sources** for every claim: memory cache entries, MCP tool results, user statements, or reference docs.
-- **If MCP tool returns an error or empty result**, report it honestly. Do not fabricate results.
-- **NEVER load a full screenshot into the conversation.** Only load diff images on failure via `look_at`, and only if the user asks "what's different?".
-- **If a request is outside your scope**, say "This is outside my capability. Try @qa-entry for routing to the right skill."
-- **If you don't have enough context**, list what you know and what you're missing, then ask the user.

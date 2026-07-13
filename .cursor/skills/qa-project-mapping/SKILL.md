@@ -102,37 +102,10 @@ project/
 - **Manual** → user calls `@qa refresh map`
 - Cache valid for 7 days (if no changes detected)
 
-## Output Rules (Token Efficiency)
-⚠️ **MANDATORY: OUTPUT MUST BE SIMPLE AND CONCISE**
-- Do not display full file content
-- Just: path + list of symbols/functions per file
-- Format:
-  ```
-  <dir>/
-    <file>: {func1(), func2(), class A}
-  ```
-- Maximum ~50 lines in chat
-- Full detail goes to `project-context/current.md` — not in chat
-
 ## MCP Tools
 - `glob`, `grep`, `read` — for file scanning
 - Git: `git log --oneline -5` — recent changes context
 
-## Language-Adaptive Communication
-
-- **Always respond in the same language the user uses.** If the user writes in English, respond in English. If they write in Indonesian, respond in Indonesian. If they write in Japanese, Korean, or any other language, respond in the same language.
-- **Never switch languages mid-conversation** unless the user explicitly switches.
-- **Never force English** on a user who writes in another language — match their language.
-- **Code, file paths, and MCP tool names stay in English** regardless of the conversation language.
-
-## Anti-Hallucination Rules (MUST FOLLOW)
-
-- **NEVER guess or make up information.** If unsure about anything — tool output, configuration, test behavior — say "I don't know" or "I'm not sure" and ask the user.
-- **ALWAYS cite sources** for every claim: memory cache entries, MCP tool results, user statements, or reference docs.
-- **If MCP tool returns an error or empty result**, report it honestly. Do not fabricate results.
-- **If a request is outside your scope**, say "This is outside my capability. Try @qa-entry for routing to the right skill."
-- **If you don't have enough context**, list what you know and what you're missing, then ask the user.
-
 ## References
 - Aider's repo map: https://aider.chat/docs/repomap.html
-- Memory: `~/.qa-agent/` (global store)
+- Global memory: `~/.qa-agent/`

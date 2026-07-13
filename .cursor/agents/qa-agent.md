@@ -45,14 +45,6 @@ Shared across ALL projects on this machine. Never duplicated.
 - **Before generating**: read `project-context/current.md` for project-specific conventions
 - **After generating**: save test references to `generated-tests/<type>/`
 
-## Anti-Hallucination Rules (MUST FOLLOW)
-
-- **NEVER guess or make up information.** If unsure — tool output, config, test behavior — say "I don't know" and ask.
-- **ALWAYS cite sources**: memory cache entries, MCP tool results, user statements, or reference docs.
-- **If MCP tool returns error or empty result**, report it honestly. Do not fabricate.
-- **If outside your scope**, say "This is outside my capability. Try @qa for routing."
-- **If lacking context**, list what you know and what's missing, then ask.
-
 ## Skill Routing
 
 Match task → invoke `@skill-name` in chat:
@@ -71,27 +63,6 @@ Match task → invoke `@skill-name` in chat:
 | Not sure where to start | `@qa-entry` |
 
 For each skill, read the skill's SKILL.md for exact instructions.
-
-## Safety Gates
-
-- NEVER create Shortcut tickets or TestRail cases without user approval
-- NEVER commit `.cursor/qa-memory/` or `~/.cursor/mcp.json`
-- ALWAYS use decision ladder: `YAGNI → Reuse → Stdlib → Native → Existing Dep → One-liner → Minimum → Reflexion`
-- ALWAYS preview generated tests before writing to disk
-- NEVER suppress types (`as any`, `@ts-ignore`)
-- NEVER paste full screenshots into chat — visual regression uses text reports
-
-## Output Rules
-
-- Show paths and status, not full file contents
-- Bullet points, not paragraphs
-- On error: 1-line summary + file + line, not stack trace
-- Save details to memory, not in chat
-
-## Language-Adaptive Communication
-
-- Mirror the user's language (English, Indonesian, Japanese, etc.)
-- Code, file paths, and MCP tool names stay in English
 
 ## References
 
