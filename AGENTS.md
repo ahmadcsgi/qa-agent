@@ -7,28 +7,36 @@ You have access to MCP servers: Shortcut, TestRail, Glean, Context7, Cypress, Pl
 
 ## Memory Protocol
 
-Memory is split into two layers. Gunakan `~/.qa-agent/lib/store.js` (zero-dep Node.js CLI) untuk semua operasi global — lebih kompak, O(1) cache lookup, support decision memory.
+Memory is split into two layers. Use `~/.qa-agent/lib/store.js` (zero-dep Node.js CLI) for all global operations — compact, O(1) cache lookup, scoring-based decision memory.
 
 ### Global (`~/.qa-agent/`) — shared across ALL projects
 
 Storage engine:
-- `lib/store.js` — CLI untuk akses data
+- `lib/store.js` — CLI for all data access
 - `search-cache.json` — cache MCP results (Map-based, short keys)
-- `corrections.json` — decision memory dengan outcome (good/bad)
+- `corrections.json` — scoring-based decision memory (positive=good, negative=bad)
 - `knowledge.json` — patterns & tips
+
+**Scoring system:**
+- `score: +1` = user confirmed correct; `score: -1` = user rejected
+- Repeated feedback accumulates (e.g. +1 three times = score+3)
+- Dynamic: a "good" pattern that later gets negative feedback will decrease
+- `score > 0` → pattern to recommend; `score < 0` → pattern to reject
+- `score = 0` → neutral / insufficient signal
 
 **Protocol:**
 
-1. **Before MCP search**: cek cache dulu → `node ~/.qa-agent/lib/store.js cache get <hash>` — if returns non-null and <24h, use it
-2. **After MCP call**: simpan ke cache → `node ~/.qa-agent/lib/store.js cache set <hash> "<query>" '<results>'`
-3. **After user correction**: simpan dengan outcome
-   - If correction benar: `node ~/.qa-agent/lib/store.js cor add <domain> <context> <issue> <correction> <lesson> good`
-   - If user rejected our output: `node ~/.qa-agent/lib/store.js cor add <domain> <context> <issue> <fix> <lesson> bad`
-4. **Before generating**: cari pola yang berhasil
-   - `node ~/.qa-agent/lib/store.js cor list <domain> good` → apply proven patterns
-   - `node ~/.qa-agent/lib/store.js knowledge search <topic>` → cari knowledge relevan
-5. **Before accepting user suggestion**: cek histori kegagalan
-   - `node ~/.qa-agent/lib/store.js cor search <topic>` → if ada outcome=bad, TOLAK dengan penjelasan
+1. **Before MCP search**: check cache first → `node ~/.qa-agent/lib/store.js cache get <hash>` — if returns non-null and <24h, use it
+2. **After MCP call**: save to cache → `node ~/.qa-agent/lib/store.js cache set <hash> "<query>" '<results>'`
+3. **After user correction**: save with score
+   - If correction was correct: `node ~/.qa-agent/lib/store.js cor add <domain> <context> <issue> <correction> <lesson> 1`
+   - If user rejected our output: `node ~/.qa-agent/lib/store.js cor add <domain> <context> <issue> <fix> <lesson> -1`
+   - If same issue already exists, score auto-adjusts (accumulates)
+4. **Before generating**: find proven patterns
+   - `node ~/.qa-agent/lib/store.js cor list <domain> 1` → apply patterns with positive score
+   - `node ~/.qa-agent/lib/store.js know search <topic>` → find relevant knowledge
+5. **Before accepting user suggestion**: check failure history
+   - `node ~/.qa-agent/lib/store.js cor search <topic>` → if any result has score < 0, REJECT with explanation
 6. **After learning**: `node ~/.qa-agent/lib/store.js know add <domain> <topic> <content> '<tags>'`
 
 ### Project (`.cursor/qa-memory/`) — THIS project only

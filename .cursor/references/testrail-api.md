@@ -18,7 +18,7 @@ npx @uarlouski/testrail-mcp-server
 ## Available Tools
 
 ### get_cases(section_id)
-Ambil semua test cases di suatu section.
+Get all test cases in a section.
 ```javascript
 get_cases(section_id: 123)
 // Returns: [{ id, title, type_id, priority_id, estimate, ... }]

@@ -22,7 +22,7 @@ Ask the user (if unclear):
 4. **Depth**: "Brief results (top 5) or detailed (all matches)?"
 
 ### Step 3: Check Memory Cache
-MANDATORY: Cek cache via `node ~/.qa-agent/lib/store.js cache get <hash>` — hash dari query string.
+MANDATORY: Check cache via `node ~/.qa-agent/lib/store.js cache get <hash>` — hash from query string.
 - If returns non-null and < 24 hours → return cached result + notify user
 - If not found or > 24 hours → proceed
 
@@ -64,8 +64,8 @@ Ask: "APPROVE (save cache and return), NARROW (filter further), or EXPAND (re-se
 - **EXPAND** → ask for new query → re-search from Step 4
 
 ### Step 8: Save to Memory
-- Cache hasil: `node ~/.qa-agent/lib/store.js cache set <hash> "<query>" '<results>'`
-- Jika user narrows/expands → simpan ke decision memory: `node ~/.qa-agent/lib/store.js cor add "search" "<context>" "<issue>" "<pattern>" "<lesson>" "good|bad"`
+- Cache results: `node ~/.qa-agent/lib/store.js cache set <hash> "<query>" '<results>'`
+- If user narrows/expands → save to decision memory: `node ~/.qa-agent/lib/store.js cor add "search" "<context>" "<issue>" "<pattern>" "<lesson>" "1|-1"`
 
 ## MCP Tools
 - **Shortcut**: `search_stories(query)` — main search

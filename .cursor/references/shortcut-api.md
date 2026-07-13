@@ -83,5 +83,5 @@ update_story(
 ## API Tips
 - `search_stories` returns max 25 results — narrow query if too broad
 - Use query expansion: exact → semantic → feature → workflow → symptom
-- Cache results in `~/.qa-agent/search-cache.json` (TTL 24h)
+- Cache results via `node ~/.qa-agent/lib/store.js cache set <hash> "<query>" '<results>'` (TTL 24h)
 - Never create/update stories without APPROVAL

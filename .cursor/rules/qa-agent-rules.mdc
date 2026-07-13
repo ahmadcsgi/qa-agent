@@ -27,16 +27,18 @@ alwaysApply: true
 - Preview before write. ALWAYS run decision ladder: YAGNI → Reuse → Stdlib → Native → Existing Dep → One-liner → Minimum.
 
 ## Memory Protocol
-Gunakan `node ~/.qa-agent/lib/store.js` untuk semua operasi global memory.
+Use `node ~/.qa-agent/lib/store.js` for all global memory operations.
+
+**Scoring system:** score=+1 (correct), score=-1 (rejected). Accumulates: +1 three times → score+3. Dynamic: good pattern that later gets negative feedback will decrease. score > 0 → recommend; score < 0 → reject; score = 0 → neutral.
 
 **Cache (O(1) lookup by hash, TTL 24h):**
 - Before MCP call: `node ~/.qa-agent/lib/store.js cache get <hash>`
 - After MCP call: `node ~/.qa-agent/lib/store.js cache set <hash> "<query>" '<results>'`
 
-**Decision memory (outcome: good/bad):**
-- After user correction: `node ~/.qa-agent/lib/store.js cor add <domain> <context> <issue> <correction> <lesson> <outcome>`
-- Before accept suggestion: `node ~/.qa-agent/lib/store.js cor search <text>` → if outcome=bad found, REJECT
-- Before generate: `node ~/.qa-agent/lib/store.js cor list <domain> good` → apply proven patterns
+**Decision memory (scoring-based):**
+- After user correction: `node ~/.qa-agent/lib/store.js cor add <domain> <context> <issue> <correction> <lesson> <score>`
+- Before accept suggestion: `node ~/.qa-agent/lib/store.js cor search <text>` → if score < 0 found, REJECT
+- Before generate: `node ~/.qa-agent/lib/store.js cor list <domain> 1` → apply patterns with positive score
 
 **Knowledge:**
 - After learning: `node ~/.qa-agent/lib/store.js know add <domain> <topic> <content> '<tags>'`

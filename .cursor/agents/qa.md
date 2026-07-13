@@ -14,69 +14,77 @@ You have access to MCP servers: Shortcut, TestRail, Glean, Context7, Cypress, Pl
 
 ## Memory Protocol
 
-Memory is split into two layers. Gunakan `~/.qa-agent/lib/store.js` untuk semua operasi global — lebih cepat, kompak, dan support decision memory.
+Memory is split into two layers. Use `~/.qa-agent/lib/store.js` (zero-dep Node.js CLI) for all global operations — compact, O(1) cache lookup, scoring-based decision memory.
 
 ### 1. Global Memory (`~/.qa-agent/`) — UNIVERSAL
-Shared across ALL projects. Data disimpan dengan short keys (~40% lebih kecil dari JSON biasa).
+Shared across ALL projects. Data uses short field names (~40% smaller than standard JSON).
 
 **Storage engine:**
 ```
-~/.qa-agent/lib/store.js   ← zero-dep Node.js CLI
-~/.qa-agent/search-cache.json  ← cache MCP results (Map-based, O(1) lookup)
-~/.qa-agent/corrections.json   ← decision memory (outcome: good/bad)
-~/.qa-agent/knowledge.json     ← patterns & tips
+~/.qa-agent/lib/store.js          ← CLI for all data access
+~/.qa-agent/search-cache.json     ← MCP results cache (Map-based, short keys)
+~/.qa-agent/corrections.json      ← scoring-based decision memory (positive=good, negative=bad)
+~/.qa-agent/knowledge.json        ← patterns & tips
 ```
 
-**Cache protocol (O(1) lookup):**
+**Scoring system (corrections):**
+- `score: +1` → user confirmed this was correct
+- `score: -1` → user rejected this approach
+- Repeated feedback accumulates: if same issue gets +1 three times, score=3 (strongly good)
+- If a "good" pattern later gets -1 twice, score drops (dynamic)
+- `score > 0` → pattern to recommend when similar case arises
+- `score < 0` → pattern to reject if user proposes similar solution
+- `score = 0` → neutral, insufficient signal
+
+**Cache protocol (O(1) lookup by hash):**
 ```bash
-# Before MCP call: check cache by query hash
-node ~/.qa-agent/lib/store.js cache get <md5-hash>
-# → returns results atau "null"
+# Before MCP call: check cache
+node ~/.qa-agent/lib/store.js cache get <hash>
+# → returns results or "null" (cache miss / expired)
 
 # After MCP call: save to cache
 node ~/.qa-agent/lib/store.js cache set <hash> "<query>" '<json-results>'
 
-# Periodic: remove expired entries (>24h)
+# Periodic maintenance: remove entries >24h old
 node ~/.qa-agent/lib/store.js cache prune
 ```
 
-**Decision memory protocol:**
+**Decision memory protocol (scoring-based):**
 ```bash
-# After user correction: simpan dengan outcome
-node ~/.qa-agent/lib/store.js cor add "<domain>" "<context>" "<issue>" "<correction>" "<lesson>" "good"
+# User confirmed our output was correct → score=+1
+node ~/.qa-agent/lib/store.js cor add "<domain>" "<context>" "<issue>" "<correction>" "<lesson>" "1"
 
-# Before accepting user suggestion: cek apakah solusi ini pernah gagal
-node ~/.qa-agent/lib/store.js cor search "<topic>" | jq '.[] | select(.out=="bad")'
-# → Jika match: TOLAK saran user, jelaskan kenapa dulu gagal
+# User rejected our output → score=-1 (if same issue exists, adjusts existing score)
+node ~/.qa-agent/lib/store.js cor add "<domain>" "<context>" "<issue>" "<fix>" "<lesson>" "-1"
 
-# Before generating: cari pola yang berhasil
-node ~/.qa-agent/lib/store.js cor list "<domain>" "good"
-# → Apply pattern yang sudah terbukti benar
+# Before generating: find proven patterns (score > 0)
+node ~/.qa-agent/lib/store.js cor list "<domain>" "1"
+# → Apply patterns with positive scores
 
-# Cari semua koreksi di domain tertentu
+# Before accepting user suggestion: check for prior failures (score < 0)
+node ~/.qa-agent/lib/store.js cor search "<topic>"
+# → If results exist with negative scores, REJECT the suggestion and explain history
+
+# List all corrections in a domain
 node ~/.qa-agent/lib/store.js cor list "<domain>"
 ```
 
 **Knowledge protocol:**
 ```bash
 # After learning something reusable
-node ~/.qa-agent/lib/store.js know add "<domain>" "<topic>" "<content>" '["tag1","tag2"]'
+node ~/.qa-agent/lib/store.js know add "<domain>" "<topic>" "<content>" '["tag1","tag2"]' "[source]"
 
-# Before researching: cari knowledge yang relevan
+# Before researching: search relevant knowledge
 node ~/.qa-agent/lib/store.js know search "<topic>"
 
-# Lihat semua knowledge di domain
+# List all knowledge in a domain
 node ~/.qa-agent/lib/store.js know list "<domain>"
 ```
 
-**Decision memory — logika:**
-- `outcome: "good"` = keputusan benar. Saat ada case mirip, skill HARUS suggest pattern ini.
-- `outcome: "bad"` = keputusan salah. Jika user nawarin solusi yang match, skill HARUS tolak dan jelaskan riwayat kegagalannya.
-
 **Maintenance:**
 ```bash
-node ~/.qa-agent/lib/store.js compact   # compact semua file
-node ~/.qa-agent/lib/store.js stats     # lihat ukuran & jumlah entry
+node ~/.qa-agent/lib/store.js compact   # compact all files, remove expired cache
+node ~/.qa-agent/lib/store.js stats     # show sizes & entry counts
 ```
 
 ### 2. Project Memory (`.cursor/qa-memory/`) — THIS PROJECT ONLY

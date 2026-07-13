@@ -29,8 +29,8 @@ Ask the user:
 
 ### Step 2: Check Memory & Existing
 - Read `.cursor/qa-memory/project-context/current.md` — find base URL, auth pattern, existing k6 helpers
-- Cek decision memory: `node ~/.qa-agent/lib/store.js cor list "perf-test" "good"` — apply proven patterns
-- Juga cek: `node ~/.qa-agent/lib/store.js cor list "perf-test" "bad"` — hindari kesalahan masa lalu
+- Check decision memory: `node ~/.qa-agent/lib/store.js cor list "perf-test" "1"` — apply proven patterns
+- Also check: `node ~/.qa-agent/lib/store.js cor list "perf-test" "-10"` — avoid past mistakes (score < 0)
 - Search for existing k6 files in the project — reuse helpers (getToken, getGlobal, defineSummary, thresholds, data generators)
 
 ### Step 3: Research (if needed)
@@ -112,7 +112,7 @@ Show the preview script + file path:
 Ask: "APPROVE, EDIT, or REJECT?"
 - **APPROVE** → save file
 - **EDIT** → ask for correction → apply → preview again
-- **REJECT** → simpan rejection: `node ~/.qa-agent/lib/store.js cor add "perf-test" "<context>" "<issue>" "<reason>" "<lesson>" "bad"`
+- **REJECT** → save rejection: `node ~/.qa-agent/lib/store.js cor add "perf-test" "<context>" "<issue>" "<reason>" "<lesson>" "-1"`
 
 ### Step 8: Auto-Run (Optional)
 Ask the user: "Would you like to run it now?"

@@ -136,7 +136,7 @@ For each failed result:
 
 ### Step 8: Save to Memory
 - Save test summary to `.cursor/qa-memory/generated-tests/visual/`
-- Simpan ke decision memory: `node ~/.qa-agent/lib/store.js cor add "visual-test" "<context>" "<issue>" "<correction>" "<lesson>" "good|bad"`
+- Save to decision memory: `node ~/.qa-agent/lib/store.js cor add "visual-test" "<context>" "<issue>" "<correction>" "<lesson>" "1|-1"`
 - Update `project-context/current.md` with baseline status
 
 ## Advanced Features (Zero Token Cost)

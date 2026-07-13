@@ -22,7 +22,7 @@ Ask the user:
 ### Step 2: Understand Context
 - Read Shortcut story → understand acceptance criteria + description
 - Check `.cursor/qa-memory/project-context/current.md` for domain knowledge
-- Check decision memory: `node ~/.qa-agent/lib/store.js cor list "test-cases" "good"` — apply proven patterns
+- Check decision memory: `node ~/.qa-agent/lib/store.js cor list "test-cases" "1"` — apply proven patterns
 - Check TestRail existing cases in related section (via `get_cases`) — avoid duplicates
 
 ### Step 3: Research (if needed)
@@ -104,7 +104,7 @@ add_case(section_id: ..., title: "...", type_id: ..., priority_id: ..., estimate
 
 ### Step 8: Save to Memory
 - Update `.cursor/qa-memory/generated-tests/` with references
-- Simpan ke decision memory: `node ~/.qa-agent/lib/store.js cor add "test-cases" "<context>" "<issue>" "<correction>" "<lesson>" "good|bad"`
+- Save to decision memory: `node ~/.qa-agent/lib/store.js cor add "test-cases" "<context>" "<issue>" "<correction>" "<lesson>" "1|-1"`
 
 ## MCP Tools
 - **Shortcut**: `get_story()` — read story + AC
