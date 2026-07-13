@@ -54,6 +54,10 @@ Then configure your MCP servers (**`~/.cursor/mcp.json`**):
 
 > ⚠️ Do NOT commit `~/.cursor/mcp.json` — contains personal credentials.
 
+### Select the Agent in Chat
+
+After restarting Cursor, select **qa-agent** from the **agent dropdown** (top-left of the chat panel) or type `@qa-agent` in chat. The agent already has all the instructions built-in — just describe your task.
+
 ## What QA Agent Can Do
 
 | Task | Say this | Skill |

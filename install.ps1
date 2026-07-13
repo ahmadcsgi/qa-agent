@@ -162,3 +162,7 @@ Write-Host "  4. Type @qa in chat to start using the QA Agent!"
 Write-Host ""
 Write-Host "Tip: Skills are also available globally at ~\.cursor\skills\" -ForegroundColor Cyan
 Write-Host "     so you can use @qa-* in ANY Cursor project." -ForegroundColor Cyan
+Write-Host ""
+Write-Host "Agent Selection:" -ForegroundColor Bold
+Write-Host "  After restarting Cursor, select 'qa-agent' from the agent dropdown"
+Write-Host "  (top-left of chat panel) or type @qa-agent in chat."
