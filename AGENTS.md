@@ -26,42 +26,30 @@ Examples that **must** persist:
 
 ---
 
-## Memory Protocol
+## Memory Protocol (3 layers)
 
-Two layers. Engine: `~/.qa-agent/lib/store.js` (zero-dep, compact JSON).
+Engine: `~/.qa-agent/lib/store.js` (zero-dep). Detail: `docs/MULTI_PROJECT_MEMORY.md`.
 
-### Global (`~/.qa-agent/`) - shared across ALL projects
+| Layer | Where | Use for |
+|-------|--------|---------|
+| **Global** | `~/.qa-agent/{prefs,corrections,knowledge}.json` | Universal prefs/lessons (`proj: "*"`) |
+| **Project slice** | `~/.qa-agent/projects/<id>/` | Per-repo prefs/cor/know + `context.md` |
+| **Workspace** | `.cursor/qa-memory/` | Living map in this checkout (gitignored) |
 
-| File | Role |
-|------|------|
-| `lib/store.js` | CLI |
-| `prefs.json` | User preferences (adapts behavior) |
-| `search-cache.json` | MCP cache (TTL 24h) |
-| `corrections.json` | Scored lessons (+ good / − bad) |
-| `knowledge.json` | Durable tips |
-
-**Scoring:** `+1` confirmed, `-1` rejected; repeats accumulate; `>0` recommend, `<0` reject.
+**Scoring:** `+1` confirmed, `-1` rejected; accumulates; `>0` recommend, `<0` reject.
 
 **Protocol (cheap → expensive):**
 
-1. **Task start:** `node ~/.qa-agent/lib/store.js boot [domain]` — load prefs + top lessons only
+1. **Workspace open / first task:** `proj ensure` then `boot [domain] --project auto` (merged prefs + top project + global lessons — do not dump JSON in chat)
 2. **Before MCP:** `cache hash` → `cache get` (unless `search.skip_cache`)
-3. **After MCP:** `cache set <hash> "<query>" '<results>'`
-4. **Every user correction / approve / reject:** `cor add … 1|-1` (mandatory — this is how we grow)
-5. **Standing rules from chat:** `pref set <key> <value>`
-6. **Reusable tip:** `know add <domain> <topic> <content> '<tags>'`
-7. **Before accepting a risky suggestion:** `cor search` — block if score `< 0`
+3. **After MCP:** `cache set …`
+4. **Corrections:** project-specific → `cor add … 1|-1 auto` · universal → `… "*"`
+5. **Prefs:** global `pref set key val` · project override `pref set key val --project auto`
+6. **After mapping / big context change:** `proj sync`
+7. **Before generating tests:** read `.cursor/qa-memory/project-context/current.md`
+8. **Risky suggestion:** `cor search` — block if score `< 0`
 
-### Project (`.cursor/qa-memory/`) - THIS project only
-
-| File | Purpose |
-|------|---------|
-| `project-context/current.md` | Framework, conventions, defaults (env, team, users) |
-| `generated-tests/cypress\|k6\|karate\|visual/` | Generated test references |
-
-- **Before generating**: read `project-context/current.md`
-- **After generating**: save references under `generated-tests/<type>/`
-- Template: `.cursor/templates/project-context.current.md`
+Workspace files: `project-context/current.md`, `generated-tests/<type>/`. Template: `.cursor/templates/project-context.current.md`.
 
 ---
 
@@ -129,7 +117,8 @@ Delegate to the appropriate skill by task type. Use `@skill-name` in chat:
 - `.cursor/MCP_TOOLS.md` - MCP tool mapping per skill
 - `.cursor/references/README.md` - offline documentation index
 - `docs/DEMO.md` - install smoke walkthrough
-- `~/.qa-agent/` - global memory store
+- `docs/MULTI_PROJECT_MEMORY.md` - 3-layer memory
+- `~/.qa-agent/` - global + projects/ store
 - `VERSION` / `CHANGELOG.md` - release identity
 
 > **Maintenance:** This file is the single source of truth for agent behavior. `.cursor/agents/qa.md` must only point here — do not duplicate protocols there.

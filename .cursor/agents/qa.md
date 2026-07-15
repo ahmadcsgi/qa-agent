@@ -13,4 +13,4 @@ readonly: false
 
 Also: `.cursor/rules/qa-agent-rules.mdc` · `.cursor/MCP_TOOLS.md` · `.cursor/skills/<skill>/SKILL.md`
 
-Session start for a task: `node ~/.qa-agent/lib/store.js boot [domain]` then work. On every correction: save to memory. If this file and `AGENTS.md` disagree, **`AGENTS.md` wins**.
+Session start: `proj ensure` → `boot [domain] --project auto`. Corrections: `auto` if project-specific, `"*"` if universal. See `docs/MULTI_PROJECT_MEMORY.md`. If this file and `AGENTS.md` disagree, **`AGENTS.md` wins**.

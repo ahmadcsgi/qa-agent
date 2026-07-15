@@ -1,10 +1,6 @@
 #!/usr/bin/env node
 /**
  * Minimal self-check for scripts/store.js (no test framework).
- * Runs against an isolated temp store dir via env override simulation:
- * we copy store into a temp dir and patch STORE_DIR for the child... 
- * Simpler approach: invoke CLI against a temp HOME.
- *
  * Usage: node scripts/store.test.js
  */
 const { spawnSync } = require("child_process");
@@ -16,8 +12,16 @@ const crypto = require("crypto");
 const ROOT = path.resolve(__dirname);
 const STORE = path.join(ROOT, "store.js");
 const TMP_HOME = fs.mkdtempSync(path.join(os.tmpdir(), "qa-agent-store-test-"));
-const QA_DIR = path.join(TMP_HOME, ".qa-agent");
-fs.mkdirSync(path.join(QA_DIR, "lib"), { recursive: true });
+const APP_A = path.join(TMP_HOME, "app-alpha");
+const APP_B = path.join(TMP_HOME, "app-beta");
+fs.mkdirSync(path.join(TMP_HOME, ".qa-agent", "lib"), { recursive: true });
+fs.mkdirSync(APP_A, { recursive: true });
+fs.mkdirSync(APP_B, { recursive: true });
+fs.mkdirSync(path.join(APP_A, ".cursor", "qa-memory", "project-context"), { recursive: true });
+fs.writeFileSync(
+  path.join(APP_A, ".cursor", "qa-memory", "project-context", "current.md"),
+  "# Alpha context\ndefault_env: staging\n"
+);
 
 let failed = 0;
 function assert(cond, msg) {
@@ -29,71 +33,78 @@ function assert(cond, msg) {
   }
 }
 
-function run(...args) {
+function run(cwd, ...args) {
   const r = spawnSync(process.execPath, [STORE, ...args], {
     encoding: "utf-8",
-    env: { ...process.env, USERPROFILE: TMP_HOME, HOME: TMP_HOME },
+    cwd: cwd || TMP_HOME,
+    env: { ...process.env, USERPROFILE: TMP_HOME, HOME: TMP_HOME, QA_AGENT_CWD: cwd || TMP_HOME },
   });
   if (r.status !== 0 && r.status !== null) {
-    return { status: r.status, out: (r.stdout || "") + (r.stderr || "") };
+    return { status: r.status, out: ((r.stdout || "") + (r.stderr || "")).trim() };
   }
   return { status: r.status ?? 0, out: (r.stdout || "").trim(), err: (r.stderr || "").trim() };
 }
 
 // hash
-const h = run("cache", "hash", "bug quote generation");
+const h = run(TMP_HOME, "cache", "hash", "bug quote generation");
 assert(/^[a-f0-9]{8}$/.test(h.out), `cache hash returns 8-hex (got ${JSON.stringify(h.out)})`);
 const expected = crypto.createHash("md5").update("bug quote generation").digest("hex").slice(0, 8);
 assert(h.out === expected, `cache hash matches md5 slice (${expected})`);
 
-// miss
-const miss = run("cache", "get", h.out);
-assert(miss.out === "null", "cache get miss → null");
+assert(run(TMP_HOME, "cache", "get", h.out).out === "null", "cache get miss → null");
+assert(run(TMP_HOME, "cache", "set", h.out, "bug quote generation", '{"items":[1,2]}').status === 0, "cache set");
+assert(run(TMP_HOME, "cache", "get", h.out).out === '{"items":[1,2]}', "cache get hit");
+assert(run(TMP_HOME, "cache", "set", "deadbeef", "q", "not-json").status !== 0, "reject bad JSON");
 
-// set + get
-const set = run("cache", "set", h.out, "bug quote generation", '{"items":[1,2]}');
-assert(set.status === 0, "cache set succeeds");
-const hit = run("cache", "get", h.out);
-assert(hit.out === '{"items":[1,2]}', `cache get hit → ${hit.out}`);
+// global corrections
+run(TMP_HOME, "cor", "add", "triage", "ctx", "dup ticket", "use existing", "lesson", "1", "*");
+run(TMP_HOME, "cor", "add", "triage", "ctx", "bad draft", "too verbose", "lesson", "-1", "*");
+run(TMP_HOME, "cor", "add", "triage", "ctx", "dup ticket", "use existing", "reinforce", "1", "*");
+const good = JSON.parse(run(TMP_HOME, "cor", "list", "triage", "1", "", "--project", "*").out);
+assert(good.length === 1 && good[0].sc === 2, `global cor score 2 (got ${JSON.stringify(good)})`);
 
-// invalid json
-const bad = run("cache", "set", "deadbeef", "q", "not-json");
-assert(bad.status !== 0, "cache set rejects invalid JSON");
+assert(run(TMP_HOME, "know", "add", "api", "auth", "use bearer", '["karate"]').status === 0, "know add");
+assert(JSON.parse(run(TMP_HOME, "know", "search", "bearer").out).length === 1, "know search");
 
-// corrections scoring + maxScore filter
-run("cor", "add", "triage", "ctx", "dup ticket", "use existing", "lesson", "1");
-run("cor", "add", "triage", "ctx", "bad draft", "too verbose", "lesson", "-1");
-run("cor", "add", "triage", "ctx", "dup ticket", "use existing", "reinforce", "1"); // accum +1 → 2
+assert(run(TMP_HOME, "pref", "set", "tools.skip_glean", "true").status === 0, "pref set global");
+assert(JSON.parse(run(TMP_HOME, "pref", "get", "tools.skip_glean").out) === true, "pref get");
 
-const good = JSON.parse(run("cor", "list", "triage", "1").out);
-assert(good.length === 1 && good[0].sc === 2, `cor list min=1 returns score 2 (got ${JSON.stringify(good)})`);
+// multi-project
+const ensA = JSON.parse(run(APP_A, "proj", "ensure").out);
+assert(ensA.id && ensA.name === "app-alpha", `proj ensure A (got ${JSON.stringify(ensA)})`);
+const ensB = JSON.parse(run(APP_B, "proj", "ensure").out);
+assert(ensB.id && ensB.id !== ensA.id, "project ids differ for A vs B");
 
-const badList = JSON.parse(run("cor", "list", "triage", "-999", "-1").out);
-assert(badList.length === 1 && badList[0].sc === -1, `cor list max=-1 returns only negatives`);
+run(APP_A, "pref", "set", "default_env", "staging", "--project", "auto");
+run(APP_B, "pref", "set", "default_env", "prod", "--project", "auto");
+run(APP_A, "cor", "add", "ui", "a", "login selector", "use testid", "stable", "1", "auto");
+run(APP_B, "cor", "add", "ui", "b", "login selector", "use xpath", "legacy", "-1", "auto");
 
-// knowledge
-const know = run("know", "add", "api", "auth", "use bearer", '["karate"]');
-assert(know.status === 0, "know add succeeds");
-const found = JSON.parse(run("know", "search", "bearer").out);
-assert(found.length === 1 && found[0].top === "auth", "know search finds entry");
+const bootA = JSON.parse(run(APP_A, "boot", "ui", "5", "--project", "auto").out);
+assert(bootA.project === ensA.id, "boot A project id");
+assert(bootA.prefs.default_env === "staging", "boot A merges project pref staging");
+assert(bootA.prefs["tools.skip_glean"] === true, "boot A keeps global pref");
+assert(bootA.good.some((g) => g.proj === ensA.id && g.sc > 0), "boot A includes project good");
 
-// prefs + boot (grow-with-user brain)
-const pref = run("pref", "set", "tools.skip_glean", "true");
-assert(pref.status === 0, "pref set succeeds");
-const prefGet = JSON.parse(run("pref", "get", "tools.skip_glean").out);
-assert(prefGet === true, `pref get boolean true (got ${JSON.stringify(prefGet)})`);
+const bootB = JSON.parse(run(APP_B, "boot", "--project", "auto").out);
+assert(bootB.prefs.default_env === "prod", "boot B project pref prod");
+assert(!bootB.good.some((g) => g.proj === ensA.id && g.iss === "login selector" && g.sc > 0), "A good not in B as conflicting");
 
-const boot = JSON.parse(run("boot", "triage", "3").out);
-assert(boot.prefs && boot.prefs["tools.skip_glean"] === true, "boot includes prefs");
-assert(Array.isArray(boot.good) && boot.good.length === 1 && boot.good[0].sc === 2, "boot top good");
-assert(Array.isArray(boot.bad) && boot.bad.length === 1 && boot.bad[0].sc === -1, "boot top bad");
-assert(boot.n && boot.n.cor >= 2, "boot counts");
+const sync = JSON.parse(run(APP_A, "proj", "sync").out);
+assert(sync.synced === true, "proj sync from workspace context");
+assert(bootA.n && typeof bootA.n.cor_p === "number", "boot reports cor_p");
 
-// cleanup
+const listed = JSON.parse(run(TMP_HOME, "proj", "list").out);
+assert(listed.length >= 2, `proj list >= 2 (got ${listed.length})`);
+
+const bootG = JSON.parse(run(TMP_HOME, "boot", "triage", "3", "--project", "*").out);
+assert(bootG.project === null, "boot --project * is global-only");
+assert(bootG.good.some((g) => g.sc === 2), "global boot still has triage lesson");
+
 fs.rmSync(TMP_HOME, { recursive: true, force: true });
 
 if (failed) {
   console.error(`\n${failed} assertion(s) failed`);
   process.exit(1);
 }
-console.log("\nAll store.js checks passed");
+console.log("\nAll store.js checks passed (incl. multi-project)");

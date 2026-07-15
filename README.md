@@ -167,25 +167,27 @@ node .cursor/skills/qa-visual-test/scripts/run.js list     # list baselines
 
 Two layers - universal data is global, project data stays local.
 
-### Global (`~/.qa-agent/`) - shared across ALL projects
+### 3-layer memory
+
 ```
-~/.qa-agent/
-├── prefs.json             ← Your standing prefs (adapts the agent)
-├── search-cache.json      ← Shortcut/Glean cache (TTL: 24h)
-├── corrections.json       ← Scored lessons (+ grow / − never again)
-└── knowledge.json         ← Accumulated tips & patterns
+~/.qa-agent/                         ← Layer 1: global user memory
+├── prefs.json / corrections.json / knowledge.json / search-cache.json
+└── projects/<id>/                   ← Layer 2: per-project slice
+    ├── prefs.json / corrections.json / knowledge.json
+    └── context.md                   ← snapshot (via proj sync)
+
+.cursor/qa-memory/                   ← Layer 3: this workspace (gitignored)
+├── project-context/current.md
+└── generated-tests/
 ```
 
-### Project (`.cursor/qa-memory/`) - THIS project only
+```bash
+node ~/.qa-agent/lib/store.js proj ensure
+node ~/.qa-agent/lib/store.js boot --project auto
+node ~/.qa-agent/lib/store.js proj sync
 ```
-.cursor/qa-memory/
-├── project-context/current.md   ← Framework, conventions, test patterns
-└── generated-tests/             ← Generated test references
-    ├── cypress/
-    ├── k6/
-    ├── karate/
-    └── visual/
-```
+
+See [`docs/MULTI_PROJECT_MEMORY.md`](docs/MULTI_PROJECT_MEMORY.md).
 
 ## Token Efficiency (design intent)
 
@@ -217,7 +219,7 @@ CI (GitHub Actions) runs store checks, skill structure, and the visual compare s
 |---------|--------|
 | Visual regression (`@qa-visual-test`) | ✅ Done |
 | Karate API test skill (`@qa-api-test`) | ✅ Done |
-| Multi-project memory | 📋 Planned |
+| Multi-project memory (3-layer) | ✅ Done — see `docs/MULTI_PROJECT_MEMORY.md` |
 | Slack integration | 🔮 Research |
 | CI/CD integration (store + compare smoke) | ✅ Partial |
 | AI test data generator | 🔮 Research |

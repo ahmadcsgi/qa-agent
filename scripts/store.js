@@ -1,70 +1,34 @@
 #!/usr/bin/env node
 /**
- * QA Agent Storage Engine
- * Zero-dependency Node.js helper for fast, compact, scoring-based memory.
+ * QA Agent Storage Engine — 3-layer memory
  *
- * Design:
- * - Short field names (1-4 chars) → ~40% smaller JSON
- * - Map-based search cache → O(1) lookups by query hash
- * - Scoring system: positive=good(recommend), negative=bad(reject), dynamic auto-adjust
- * - Auto-score: repeated same-issue corrections accumulate (good:+1, bad:-1)
- * - Append-oriented writes → no full-file rewrite for single entry
- * - Compaction → periodic cleanup prevents bloat
+ * Layers:
+ *   1) Global  ~/.qa-agent/{prefs,corrections,knowledge,search-cache}.json
+ *   2) Project ~/.qa-agent/projects/<id>/{prefs,corrections,knowledge,context.md}
+ *   3) Workspace .cursor/qa-memory/ (gitignored; sync → project context.md)
  *
- * Usage:
- *   node ~/.qa-agent/lib/store.js <cmd> [args]
+ * Scope tags (layer B): each cor/know entry may store proj: "*" | "<id>"
  *
- * Commands:
- *   cache hash <query>        → 8-char MD5 hash for a query string
- *   cache get <hash>          → JSON result or "null"
- *   cache set <hash> <q> <j>  → store cached result (JSON may be multi-arg)
- *   cache prune               → remove entries >24h old
- *
- *   cor add <dom> <ctx> <iss> <cor> <les> <sc>   → save decision (+1 or -1)
- *   cor list [dom] [minSc] [maxSc]  → list corrections, filtered by score range
- *   cor search <txt>          → text search corrections
- *
- *   know add <dom> <top> <con> <tags> [src]       → save knowledge
- *   know search <txt>         → text search knowledge
- *   know list [dom]           → list knowledge
- *
- *   pref get [key]            → one pref or all
- *   pref set <key> <value>    → save user preference (adapts agent)
- *   pref del <key>            → remove preference
- *
- *   boot [domain] [n]         → tiny session load: prefs + top good/bad lessons
- *
- *   compact                   → compact all files
- *   stats                     → show sizes & counts
- *
- * Field name legend:
- *   v=version, c=compacted_at, d=data
- *   h=hash, q=query, r=results, t=time, a=accessed
- *   dom=domain, ctx=context, iss=issue, cor=correction
- *   les=lesson, sc=score, top=topic, con=content
- *   tag=tags, src=source, conf=confidence, id=id
- *
- * Scoring:
- *   sc > 0 → good pattern (recommend when similar case arises)
- *   sc < 0 → bad pattern (reject if user proposes similar solution)
- *   sc = 0 → neutral (no strong signal either way)
- *   Auto-adjusts: adding +1 to an existing entry increments score,
- *   adding -1 decrements. Over time, repeated feedback accumulates.
+ * Usage: node ~/.qa-agent/lib/store.js <cmd> [args]
  */
 
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { execSync } = require('child_process');
 
 const STORE_DIR = path.resolve(process.env.HOME || process.env.USERPROFILE || '~', '.qa-agent');
+const PROJECTS_DIR = path.join(STORE_DIR, 'projects');
+const INDEX_FILE = path.join(PROJECTS_DIR, 'index.json');
 const CACHE_FILE = path.join(STORE_DIR, 'search-cache.json');
 const COR_FILE = path.join(STORE_DIR, 'corrections.json');
 const KNOW_FILE = path.join(STORE_DIR, 'knowledge.json');
 const PREF_FILE = path.join(STORE_DIR, 'prefs.json');
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-const VERSION = 2;
+const VERSION = 3;
 const BOOT_DEFAULT_N = 5;
+const CONTEXT_MAX_CHARS = 6000;
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -76,7 +40,11 @@ function now() {
   return new Date().toISOString();
 }
 
-function readJSON(filePath, schema='array') {
+function ensureDir(dir) {
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+}
+
+function readJSON(filePath, schema = 'array') {
   try {
     if (!fs.existsSync(filePath)) {
       return initFile(filePath, schema);
@@ -98,6 +66,7 @@ function readJSON(filePath, schema='array') {
 }
 
 function initFile(filePath, schema) {
+  ensureDir(path.dirname(filePath));
   const init = { v: VERSION, c: now(), d: schema === 'map' ? {} : [] };
   writeJSON(filePath, init);
   return init;
@@ -107,14 +76,14 @@ function arrToMap(arr) {
   const map = {};
   for (const item of arr) {
     if (item && item.q) {
-      const h = hash(item.q);
-      map[h] = item;
+      map[hash(item.q)] = item;
     }
   }
   return map;
 }
 
 function writeJSON(filePath, data) {
+  ensureDir(path.dirname(filePath));
   const tmp = filePath + '.tmp';
   fs.writeFileSync(tmp, JSON.stringify(data));
   fs.renameSync(tmp, filePath);
@@ -124,12 +93,10 @@ function printJSON(data) {
   process.stdout.write(JSON.stringify(data) + '\n');
 }
 
-// Normalize text for similarity matching
 function normalize(text) {
   return String(text).toLowerCase().replace(/\s+/g, ' ').trim();
 }
 
-// Check if two strings are similar (one contains the other, or high word overlap)
 function isSimilar(a, b) {
   const na = normalize(a);
   const nb = normalize(b);
@@ -137,8 +104,176 @@ function isSimilar(a, b) {
   if (na.includes(nb) || nb.includes(na)) return true;
   const wa = na.split(' ');
   const wb = nb.split(' ');
-  const overlap = wa.filter(w => wb.includes(w)).length;
+  const overlap = wa.filter((w) => wb.includes(w)).length;
   return overlap >= Math.min(wa.length, wb.length) * 0.5;
+}
+
+function nextId(entries) {
+  if (!entries.length) return 1;
+  let max = 0;
+  for (const e of entries) {
+    if (typeof e.id === 'number' && e.id > max) max = e.id;
+  }
+  return max + 1;
+}
+
+function cwdRoot() {
+  return process.env.QA_AGENT_CWD || process.cwd();
+}
+
+function gitRemote(cwd) {
+  try {
+    return execSync('git remote get-url origin', {
+      cwd,
+      encoding: 'utf-8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+  } catch {
+    return '';
+  }
+}
+
+function detectProjectMeta(cwd) {
+  const root = path.resolve(cwd || cwdRoot());
+  const remote = gitRemote(root);
+  const key = remote || root;
+  const id = hash(key);
+  const name = path.basename(root);
+  return { id, name, path: root, remote: remote || null };
+}
+
+// ─── Project layer ──────────────────────────────────────────────────────────
+
+function readIndex() {
+  return readJSON(INDEX_FILE, 'map');
+}
+
+function projectDir(id) {
+  return path.join(PROJECTS_DIR, id);
+}
+
+function projectFiles(id) {
+  const dir = projectDir(id);
+  return {
+    dir,
+    prefs: path.join(dir, 'prefs.json'),
+    cor: path.join(dir, 'corrections.json'),
+    know: path.join(dir, 'knowledge.json'),
+    meta: path.join(dir, 'meta.json'),
+    context: path.join(dir, 'context.md'),
+  };
+}
+
+function ensureProjectSlice(meta) {
+  const files = projectFiles(meta.id);
+  ensureDir(files.dir);
+  readJSON(files.prefs, 'map');
+  readJSON(files.cor, 'array');
+  readJSON(files.know, 'array');
+  const index = readIndex();
+  index.d[meta.id] = {
+    id: meta.id,
+    name: meta.name,
+    path: meta.path,
+    remote: meta.remote,
+    lastSeen: now(),
+  };
+  index.c = now();
+  writeJSON(INDEX_FILE, index);
+  writeJSON(files.meta, {
+    v: VERSION,
+    c: now(),
+    d: { id: meta.id, name: meta.name, path: meta.path, remote: meta.remote, lastSeen: now() },
+  });
+  return meta;
+}
+
+function projEnsure(cwdArg) {
+  const meta = detectProjectMeta(cwdArg || cwdRoot());
+  ensureProjectSlice(meta);
+  printJSON(meta);
+  return meta;
+}
+
+function projList() {
+  const index = readIndex();
+  const list = Object.values(index.d || {}).sort((a, b) =>
+    String(b.lastSeen || '').localeCompare(String(a.lastSeen || ''))
+  );
+  printJSON(list);
+}
+
+function projGet(idArg) {
+  const id = idArg === 'auto' || !idArg ? detectProjectMeta().id : idArg;
+  const index = readIndex();
+  const entry = index.d[id];
+  if (!entry) {
+    printJSON(null);
+    return;
+  }
+  const files = projectFiles(id);
+  const hasCtx = fs.existsSync(files.context);
+  printJSON({
+    ...entry,
+    counts: {
+      prefs: Object.keys(readJSON(files.prefs, 'map').d).length,
+      cor: readJSON(files.cor).d.length,
+      know: readJSON(files.know).d.length,
+      context: hasCtx,
+    },
+  });
+}
+
+function projSync(cwdArg) {
+  const meta = ensureProjectSlice(detectProjectMeta(cwdArg || cwdRoot()));
+  const files = projectFiles(meta.id);
+  const src = path.join(meta.path, '.cursor', 'qa-memory', 'project-context', 'current.md');
+  if (!fs.existsSync(src)) {
+    printJSON({ id: meta.id, synced: false, reason: 'no workspace project-context/current.md' });
+    return;
+  }
+  let text = fs.readFileSync(src, 'utf-8');
+  if (text.length > CONTEXT_MAX_CHARS) {
+    text = text.slice(0, CONTEXT_MAX_CHARS) + '\n\n<!-- truncated for multi-project snapshot -->\n';
+  }
+  fs.writeFileSync(files.context, text, 'utf-8');
+  printJSON({ id: meta.id, synced: true, bytes: Buffer.byteLength(text), from: src });
+}
+
+/** Resolve write/read scope: * | auto | <id> */
+function resolveScope(scopeArg) {
+  if (!scopeArg || scopeArg === '*') return { type: 'global', id: '*', projTag: '*' };
+  if (scopeArg === 'auto') {
+    const meta = ensureProjectSlice(detectProjectMeta());
+    return { type: 'project', id: meta.id, projTag: meta.id };
+  }
+  ensureDir(projectDir(scopeArg));
+  const files = projectFiles(scopeArg);
+  readJSON(files.prefs, 'map');
+  readJSON(files.cor, 'array');
+  readJSON(files.know, 'array');
+  return { type: 'project', id: scopeArg, projTag: scopeArg };
+}
+
+function corPath(scope) {
+  return scope.type === 'global' ? COR_FILE : projectFiles(scope.id).cor;
+}
+
+function knowPath(scope) {
+  return scope.type === 'global' ? KNOW_FILE : projectFiles(scope.id).know;
+}
+
+function prefPath(scope) {
+  return scope.type === 'global' ? PREF_FILE : projectFiles(scope.id).prefs;
+}
+
+function parseTrailingProject(args) {
+  // returns { rest, scopeArg } where scopeArg default null (caller decides)
+  const idx = args.findIndex((a) => a === '--project' || a === '-p');
+  if (idx >= 0) {
+    return { rest: args.filter((_, i) => i !== idx && i !== idx + 1), scopeArg: args[idx + 1] || 'auto' };
+  }
+  return { rest: args, scopeArg: null };
 }
 
 // ─── Cache Operations ───────────────────────────────────────────────────────
@@ -193,31 +328,32 @@ function cachePrune() {
   console.log(`Pruned ${removed} expired cache entries`);
 }
 
-// ─── Correction Operations (Scoring-based Decision Memory) ──────────────────
+// ─── Corrections ────────────────────────────────────────────────────────────
 
-function corAdd(domain, context, issue, correction, lesson, score) {
-  const store = readJSON(COR_FILE);
+function corAdd(domain, context, issue, correction, lesson, score, scopeArg) {
+  const scope = resolveScope(scopeArg || '*');
+  const file = corPath(scope);
+  const store = readJSON(file);
   const sc = parseInt(score, 10) || 0;
 
-  // Check if similar entry exists (same domain + similar issue) — adjust score
-  const matchIdx = store.d.findIndex(e =>
-    e.dom === domain && isSimilar(e.iss, issue)
+  const matchIdx = store.d.findIndex(
+    (e) => e.dom === domain && isSimilar(e.iss, issue) && (e.proj || '*') === scope.projTag
   );
 
   if (matchIdx >= 0) {
     const existing = store.d[matchIdx];
     existing.sc = (existing.sc || 0) + sc;
-    existing.ctx = context;  // update context with latest
+    existing.ctx = context;
     existing.cor = correction;
     existing.les = lesson;
+    existing.proj = scope.projTag;
     existing.t = now();
     store.c = now();
-    writeJSON(COR_FILE, store);
+    writeJSON(file, store);
     printJSON(existing);
     return;
   }
 
-  // Create new entry
   const entry = {
     id: nextId(store.d),
     dom: domain,
@@ -225,56 +361,71 @@ function corAdd(domain, context, issue, correction, lesson, score) {
     iss: issue,
     cor: correction,
     les: lesson,
-    sc: sc,
-    t: now()
+    sc,
+    proj: scope.projTag,
+    t: now(),
   };
   store.d.push(entry);
   store.c = now();
-  writeJSON(COR_FILE, store);
+  writeJSON(file, store);
   printJSON(entry);
 }
 
-function nextId(entries) {
-  if (!entries.length) return 1;
-  let max = 0;
-  for (const e of entries) {
-    if (typeof e.id === 'number' && e.id > max) max = e.id;
+function loadCors(scopeArg, domain) {
+  const scopes = [];
+  if (!scopeArg || scopeArg === 'all') {
+    scopes.push(resolveScope('*'));
+    try {
+      scopes.push(resolveScope('auto'));
+    } catch {
+      /* no project */
+    }
+  } else {
+    scopes.push(resolveScope(scopeArg));
   }
-  return max + 1;
+  let entries = [];
+  for (const s of scopes) {
+    const file = corPath(s);
+    const rows = readJSON(file).d || [];
+    entries = entries.concat(rows.map((e) => ({ ...e, proj: e.proj || s.projTag })));
+  }
+  if (domain) entries = entries.filter((e) => e.dom === domain);
+  return entries;
 }
 
-function corList(domain, minScore, maxScore) {
-  const store = readJSON(COR_FILE);
-  let entries = store.d;
-  if (domain) entries = entries.filter(e => e.dom === domain);
+function corList(domain, minScore, maxScore, scopeArg) {
+  let entries = loadCors(scopeArg || 'all', domain);
   if (minScore !== undefined && minScore !== null && minScore !== '') {
     const min = parseInt(minScore, 10);
-    if (!isNaN(min)) entries = entries.filter(e => (e.sc || 0) >= min);
+    if (!isNaN(min)) entries = entries.filter((e) => (e.sc || 0) >= min);
   }
   if (maxScore !== undefined && maxScore !== null && maxScore !== '') {
     const max = parseInt(maxScore, 10);
-    if (!isNaN(max)) entries = entries.filter(e => (e.sc || 0) <= max);
+    if (!isNaN(max)) entries = entries.filter((e) => (e.sc || 0) <= max);
   }
   printJSON(entries);
 }
 
-function corSearch(text) {
-  const store = readJSON(COR_FILE);
+function corSearch(text, scopeArg) {
   const lower = text.toLowerCase();
-  const results = store.d.filter(e =>
-    (e.ctx && e.ctx.toLowerCase().includes(lower)) ||
-    (e.iss && e.iss.toLowerCase().includes(lower)) ||
-    (e.cor && e.cor.toLowerCase().includes(lower)) ||
-    (e.les && e.les.toLowerCase().includes(lower)) ||
-    (e.dom && e.dom.toLowerCase().includes(lower))
+  const results = loadCors(scopeArg || 'all').filter(
+    (e) =>
+      (e.ctx && e.ctx.toLowerCase().includes(lower)) ||
+      (e.iss && e.iss.toLowerCase().includes(lower)) ||
+      (e.cor && e.cor.toLowerCase().includes(lower)) ||
+      (e.les && e.les.toLowerCase().includes(lower)) ||
+      (e.dom && e.dom.toLowerCase().includes(lower)) ||
+      (e.proj && String(e.proj).toLowerCase().includes(lower))
   );
   printJSON(results);
 }
 
-// ─── Knowledge Operations ───────────────────────────────────────────────────
+// ─── Knowledge ──────────────────────────────────────────────────────────────
 
-function knowAdd(domain, topic, content, tagsJson, source) {
-  const store = readJSON(KNOW_FILE);
+function knowAdd(domain, topic, content, tagsJson, source, scopeArg) {
+  const scope = resolveScope(scopeArg || '*');
+  const file = knowPath(scope);
+  const store = readJSON(file);
   let tags = [];
   try {
     tags = JSON.parse(tagsJson || '[]');
@@ -288,38 +439,59 @@ function knowAdd(domain, topic, content, tagsJson, source) {
     con: content,
     tag: tags,
     src: source || 'manual',
+    proj: scope.projTag,
     conf: 1.0,
-    t: now()
+    t: now(),
   };
   store.d.push(entry);
   store.c = now();
-  writeJSON(KNOW_FILE, store);
+  writeJSON(file, store);
   printJSON(entry);
 }
 
-function knowSearch(text) {
-  const store = readJSON(KNOW_FILE);
+function loadKnow(scopeArg, domain) {
+  const scopes = [];
+  if (!scopeArg || scopeArg === 'all') {
+    scopes.push(resolveScope('*'));
+    try {
+      scopes.push(resolveScope('auto'));
+    } catch {
+      /* */
+    }
+  } else {
+    scopes.push(resolveScope(scopeArg));
+  }
+  let entries = [];
+  for (const s of scopes) {
+    entries = entries.concat(
+      (readJSON(knowPath(s)).d || []).map((e) => ({ ...e, proj: e.proj || s.projTag }))
+    );
+  }
+  if (domain) entries = entries.filter((e) => e.dom === domain);
+  return entries;
+}
+
+function knowSearch(text, scopeArg) {
   const lower = text.toLowerCase();
-  const results = store.d.filter(e =>
-    (e.top && e.top.toLowerCase().includes(lower)) ||
-    (e.con && e.con.toLowerCase().includes(lower)) ||
-    (e.dom && e.dom.toLowerCase().includes(lower)) ||
-    (e.tag && e.tag.some(t => t.toLowerCase().includes(lower)))
+  const results = loadKnow(scopeArg || 'all').filter(
+    (e) =>
+      (e.top && e.top.toLowerCase().includes(lower)) ||
+      (e.con && e.con.toLowerCase().includes(lower)) ||
+      (e.dom && e.dom.toLowerCase().includes(lower)) ||
+      (e.tag && e.tag.some((t) => t.toLowerCase().includes(lower)))
   );
   printJSON(results);
 }
 
-function knowList(domain) {
-  const store = readJSON(KNOW_FILE);
-  let entries = store.d;
-  if (domain) entries = entries.filter(e => e.dom === domain);
-  printJSON(entries);
+function knowList(domain, scopeArg) {
+  printJSON(loadKnow(scopeArg || 'all', domain));
 }
 
-// ─── Preferences (user adaptation — tiny key/value map) ───────────────────
+// ─── Preferences ────────────────────────────────────────────────────────────
 
-function prefGet(key) {
-  const store = readJSON(PREF_FILE, 'map');
+function prefGet(key, scopeArg) {
+  const scope = resolveScope(scopeArg || '*');
+  const store = readJSON(prefPath(scope), 'map');
   if (!key) {
     printJSON(store.d);
     return;
@@ -327,69 +499,122 @@ function prefGet(key) {
   printJSON(store.d[key] !== undefined ? store.d[key] : null);
 }
 
-function prefSet(key, value) {
+function prefSet(key, value, scopeArg) {
   if (!key) throw new Error('pref set requires <key> <value>');
-  const store = readJSON(PREF_FILE, 'map');
+  const scope = resolveScope(scopeArg || '*');
+  const store = readJSON(prefPath(scope), 'map');
   let parsed = value;
   try {
     parsed = JSON.parse(value);
   } catch {
-    // keep as string
+    /* string */
   }
   store.d[key] = parsed;
   store.c = now();
-  writeJSON(PREF_FILE, store);
-  printJSON({ [key]: parsed });
+  writeJSON(prefPath(scope), store);
+  printJSON({ scope: scope.projTag, [key]: parsed });
 }
 
-function prefDel(key) {
-  const store = readJSON(PREF_FILE, 'map');
+function prefDel(key, scopeArg) {
+  const scope = resolveScope(scopeArg || '*');
+  const store = readJSON(prefPath(scope), 'map');
   delete store.d[key];
   store.c = now();
-  writeJSON(PREF_FILE, store);
-  printJSON({ deleted: key });
+  writeJSON(prefPath(scope), store);
+  printJSON({ scope: scope.projTag, deleted: key });
 }
 
-/**
- * Tiny session bootstrap — load only what makes the agent smarter without bloating context.
- * Returns prefs + top-N good/bad lessons (optionally filtered by domain).
- */
-function boot(domain, nArg) {
-  const n = Math.min(Math.max(parseInt(nArg, 10) || BOOT_DEFAULT_N, 1), 12);
-  const prefs = readJSON(PREF_FILE, 'map').d;
-  let cors = readJSON(COR_FILE).d || [];
-  if (domain) cors = cors.filter(e => e.dom === domain);
+function mergedPrefs(projectId) {
+  const global = readJSON(PREF_FILE, 'map').d || {};
+  if (!projectId) return { ...global };
+  const local = readJSON(projectFiles(projectId).prefs, 'map').d || {};
+  return { ...global, ...local };
+}
 
-  const slim = (e) => ({
+function topLessons(entries, domain, n, sign) {
+  let list = entries;
+  if (domain) list = list.filter((e) => e.dom === domain);
+  if (sign > 0) list = list.filter((e) => (e.sc || 0) > 0).sort((a, b) => (b.sc || 0) - (a.sc || 0));
+  else list = list.filter((e) => (e.sc || 0) < 0).sort((a, b) => (a.sc || 0) - (b.sc || 0));
+  return list.slice(0, n).map((e) => ({
     dom: e.dom,
     iss: e.iss,
     les: e.les,
     sc: e.sc || 0,
-  });
+    proj: e.proj || '*',
+  }));
+}
 
-  const good = cors
-    .filter(e => (e.sc || 0) > 0)
-    .sort((a, b) => (b.sc || 0) - (a.sc || 0))
-    .slice(0, n)
-    .map(slim);
+/**
+ * boot [domain] [n] [--project auto|id|*]
+ * Merges global + project prefs/lessons (tiny payload).
+ */
+function boot(rawArgs) {
+  const { rest, scopeArg } = parseTrailingProject(rawArgs);
+  let domain = rest[0];
+  let nArg = rest[1];
+  // allow: boot --project auto
+  if (domain === undefined || domain === '') domain = undefined;
+  if (domain && !nArg && /^\d+$/.test(domain)) {
+    nArg = domain;
+    domain = undefined;
+  }
+  const n = Math.min(Math.max(parseInt(nArg, 10) || BOOT_DEFAULT_N, 1), 12);
 
-  const bad = cors
-    .filter(e => (e.sc || 0) < 0)
-    .sort((a, b) => (a.sc || 0) - (b.sc || 0))
-    .slice(0, n)
-    .map(slim);
+  let projectId = null;
+  const want = scopeArg || 'auto';
+  if (want !== '*') {
+    try {
+      projectId = resolveScope(want).id;
+    } catch {
+      projectId = null;
+    }
+  }
 
-  const know = readJSON(KNOW_FILE).d || [];
-  const knowN = domain ? know.filter(e => e.dom === domain).length : know.length;
+  const prefs = mergedPrefs(projectId === '*' ? null : projectId);
+  const globalCors = (readJSON(COR_FILE).d || []).map((e) => ({ ...e, proj: e.proj || '*' }));
+  let projectCors = [];
+  if (projectId && projectId !== '*') {
+    projectCors = (readJSON(projectFiles(projectId).cor).d || []).map((e) => ({
+      ...e,
+      proj: e.proj || projectId,
+    }));
+  }
+
+  const good = [
+    ...topLessons(projectCors, domain, n, 1),
+    ...topLessons(globalCors, domain, n, 1),
+  ];
+  const bad = [
+    ...topLessons(projectCors, domain, n, -1),
+    ...topLessons(globalCors, domain, n, -1),
+  ];
+
+  let contextExcerpt = null;
+  if (projectId && projectId !== '*') {
+    const ctxPath = projectFiles(projectId).context;
+    if (fs.existsSync(ctxPath)) {
+      const raw = fs.readFileSync(ctxPath, 'utf-8');
+      contextExcerpt = raw.length > 800 ? raw.slice(0, 800) + '…' : raw;
+    }
+  }
+
+  const knowG = readJSON(KNOW_FILE).d || [];
+  const knowP =
+    projectId && projectId !== '*' ? readJSON(projectFiles(projectId).know).d || [] : [];
   const cache = readJSON(CACHE_FILE, 'map').d || {};
 
   printJSON({
+    project: projectId && projectId !== '*' ? projectId : null,
     prefs,
     good,
     bad,
+    context: contextExcerpt,
     n: {
-      cor: cors.length,
-      know: knowN,
+      cor_g: globalCors.length,
+      cor_p: projectCors.length,
+      know_g: knowG.length,
+      know_p: knowP.length,
       cache: Object.keys(cache).length,
       prefs: Object.keys(prefs).length,
     },
@@ -399,82 +624,78 @@ function boot(domain, nArg) {
 // ─── Maintenance ────────────────────────────────────────────────────────────
 
 function compact() {
-  const cache = readJSON(CACHE_FILE, 'map');
-  const cutoff = Date.now() - CACHE_TTL_MS;
-  for (const key of Object.keys(cache.d)) {
-    if (new Date(cache.d[key].t).getTime() < cutoff) {
-      delete cache.d[key];
+  for (const [file, schema] of [
+    [CACHE_FILE, 'map'],
+    [COR_FILE, 'array'],
+    [KNOW_FILE, 'array'],
+    [PREF_FILE, 'map'],
+  ]) {
+    if (file === CACHE_FILE) {
+      const cache = readJSON(CACHE_FILE, 'map');
+      const cutoff = Date.now() - CACHE_TTL_MS;
+      for (const key of Object.keys(cache.d)) {
+        if (new Date(cache.d[key].t).getTime() < cutoff) delete cache.d[key];
+      }
+      cache.c = now();
+      writeJSON(CACHE_FILE, cache);
+      continue;
     }
+    const store = readJSON(file, schema);
+    store.c = now();
+    writeJSON(file, store);
   }
-  cache.c = now();
-  writeJSON(CACHE_FILE, cache);
-
-  const cor = readJSON(COR_FILE);
-  cor.c = now();
-  writeJSON(COR_FILE, cor);
-
-  const know = readJSON(KNOW_FILE);
-  know.c = now();
-  writeJSON(KNOW_FILE, know);
-
-  const pref = readJSON(PREF_FILE, 'map');
-  pref.c = now();
-  writeJSON(PREF_FILE, pref);
-
   console.log('Compact complete');
 }
 
 function stats() {
-  let result = {};
+  const result = {};
   for (const [name, file, schema] of [
     ['cache', CACHE_FILE, 'map'],
     ['corrections', COR_FILE, 'array'],
     ['knowledge', KNOW_FILE, 'array'],
-    ['prefs', PREF_FILE, 'map']
+    ['prefs', PREF_FILE, 'map'],
   ]) {
     const store = readJSON(file, schema);
     const size = fs.existsSync(file) ? fs.statSync(file).size : 0;
     const count = schema === 'map' ? Object.keys(store.d).length : store.d.length;
     result[name] = { entries: count, bytes: size };
   }
+  const index = readIndex();
+  result.projects = { entries: Object.keys(index.d || {}).length };
   printJSON(result);
 }
 
 // ─── CLI Router ─────────────────────────────────────────────────────────────
 
+function usage() {
+  console.log(`QA Agent Store v${VERSION} (3-layer memory)
+Usage: node store.js <cmd> [args]
+
+Layers: global (*) | project (~/.qa-agent/projects/<id>) | workspace (.cursor/qa-memory)
+
+  proj ensure [cwd]              register/detect project for cwd
+  proj list                      list known projects
+  proj get [auto|id]             project meta + counts
+  proj sync [cwd]                snapshot workspace project-context → project slice
+
+  cache hash|get|set|prune
+  cor add <dom> <ctx> <iss> <cor> <les> <sc> [scope]
+  cor list [dom] [min] [max] [--project auto|id|*|all]
+  cor search <text> [--project ...]
+  know add <dom> <top> <con> <tags> [src] [scope]
+  know search|list ... [--project ...]
+  pref get|set|del ... [--project auto|id|*]
+  boot [domain] [n] [--project auto|id|*]
+  compact | stats
+
+scope: * = global (default for writes), auto = detect cwd project, or explicit id
+boot merges global + project prefs/lessons (tiny).`);
+}
+
 function main() {
   const args = process.argv.slice(2);
   if (args.length < 1) {
-    console.log(`QA Agent Store v${VERSION}
-Usage: node store.js <cmd> [args]
-
-Commands:
-  cache hash <query>
-  cache get <hash>
-  cache set <hash> <query> <results_json>
-  cache prune
-
-  cor add <domain> <context> <issue> <correction> <lesson> <score>
-  cor list [domain] [minScore] [maxScore]
-  cor search <text>
-
-  know add <domain> <topic> <content> <tags_json> [source]
-  know search <text>
-  know list [domain]
-
-  pref get [key]
-  pref set <key> <value>
-  pref del <key>
-
-  boot [domain] [n]     tiny session brain (prefs + top lessons)
-
-  compact
-  stats
-
-Scoring:
-  score=+1 → good feedback (increments existing score if same issue)
-  score=-1 → bad feedback (decrements existing score)
-  score>0  → pattern to recommend, score<0 → pattern to reject`);
+    usage();
     process.exit(0);
   }
 
@@ -482,42 +703,91 @@ Scoring:
 
   try {
     switch (cmd) {
+      case 'proj':
+      case 'project':
+        switch (args[1]) {
+          case 'ensure':
+          case 'id':
+          case 'detect':
+            return projEnsure(args[2]);
+          case 'list':
+            return projList();
+          case 'get':
+            return projGet(args[2]);
+          case 'sync':
+            return projSync(args[2]);
+          default:
+            console.error('Unknown proj subcommand:', args[1]);
+            process.exit(1);
+        }
+
       case 'cache':
         switch (args[1]) {
-          case 'hash': return cacheHash(args.slice(2).join(' '));
-          case 'get': return cacheGet(args[2]);
-          case 'set': return cacheSet(args[2], args[3], args.slice(4).join(' '));
-          case 'prune': return cachePrune();
-          default: console.error('Unknown cache subcommand:', args[1]); process.exit(1);
+          case 'hash':
+            return cacheHash(args.slice(2).join(' '));
+          case 'get':
+            return cacheGet(args[2]);
+          case 'set':
+            return cacheSet(args[2], args[3], args.slice(4).join(' '));
+          case 'prune':
+            return cachePrune();
+          default:
+            console.error('Unknown cache subcommand:', args[1]);
+            process.exit(1);
         }
 
-      case 'cor':
-        switch (args[1]) {
-          case 'add': return corAdd(args[2], args[3], args[4], args[5], args[6], args[7]);
-          case 'list': return corList(args[2], args[3], args[4]);
-          case 'search': return corSearch(args.slice(2).join(' '));
-          default: console.error('Unknown cor subcommand:', args[1]); process.exit(1);
+      case 'cor': {
+        const { rest, scopeArg } = parseTrailingProject(args.slice(1));
+        switch (rest[0]) {
+          case 'add':
+            return corAdd(rest[1], rest[2], rest[3], rest[4], rest[5], rest[6], rest[7] || scopeArg || '*');
+          case 'list':
+            return corList(rest[1], rest[2], rest[3], scopeArg || 'all');
+          case 'search':
+            return corSearch(rest.slice(1).join(' '), scopeArg || 'all');
+          default:
+            console.error('Unknown cor subcommand:', rest[0]);
+            process.exit(1);
         }
+      }
 
-      case 'know':
-        switch (args[1]) {
-          case 'add': return knowAdd(args[2], args[3], args[4], args[5], args[6]);
-          case 'search': return knowSearch(args.slice(2).join(' '));
-          case 'list': return knowList(args[2]);
-          default: console.error('Unknown know subcommand:', args[1]); process.exit(1);
+      case 'know': {
+        const { rest, scopeArg } = parseTrailingProject(args.slice(1));
+        switch (rest[0]) {
+          case 'add':
+            // know add <dom> <top> <con> <tags> [src]  + optional --project
+            return knowAdd(rest[1], rest[2], rest[3], rest[4], rest[5] || 'manual', scopeArg || '*');
+          case 'search':
+            return knowSearch(rest.slice(1).join(' '), scopeArg || 'all');
+          case 'list':
+            return knowList(rest[1], scopeArg || 'all');
+          default:
+            console.error('Unknown know subcommand:', rest[0]);
+            process.exit(1);
         }
+      }
 
-      case 'pref':
-        switch (args[1]) {
-          case 'get': return prefGet(args[2]);
-          case 'set': return prefSet(args[2], args.slice(3).join(' '));
-          case 'del': return prefDel(args[2]);
-          default: console.error('Unknown pref subcommand:', args[1]); process.exit(1);
+      case 'pref': {
+        const { rest, scopeArg } = parseTrailingProject(args.slice(1));
+        switch (rest[0]) {
+          case 'get':
+            return prefGet(rest[1], scopeArg || '*');
+          case 'set':
+            return prefSet(rest[1], rest.slice(2).join(' '), scopeArg || '*');
+          case 'del':
+            return prefDel(rest[1], scopeArg || '*');
+          default:
+            console.error('Unknown pref subcommand:', rest[0]);
+            process.exit(1);
         }
+      }
 
-      case 'boot': return boot(args[1], args[2]);
-      case 'compact': return compact();
-      case 'stats': return stats();
+      case 'boot':
+        return boot(args.slice(1));
+      case 'compact':
+        return compact();
+      case 'stats':
+        return stats();
 
       default:
         console.error('Unknown command:', cmd);

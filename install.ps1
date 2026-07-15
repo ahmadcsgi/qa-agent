@@ -85,6 +85,7 @@ Write-Info "Creating project directory structure..."
 # ─── Global memory store ───────────────────────────────────────────────────
 Write-Info "Creating global memory store at $GlobalStoreDir ..."
 New-Item -ItemType Directory -Force -Path (JPath $GlobalStoreDir "lib") | Out-Null
+New-Item -ItemType Directory -Force -Path (JPath $GlobalStoreDir "projects") | Out-Null
 
 # Copy storage engine
 if (Test-Path $StoreSrc) {

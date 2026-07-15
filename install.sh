@@ -88,6 +88,7 @@ mkdir -p "$TARGET_DIR/.cursor/qa-memory/generated-tests/visual"
 # ─── Global memory store (~/.qa-agent/) ──────────────────────────────────
 info "Creating global memory store at $GLOBAL_STORE_DIR ..."
 mkdir -p "$GLOBAL_STORE_DIR/lib"
+mkdir -p "$GLOBAL_STORE_DIR/projects"
 
 # Copy storage engine
 if [ -f "$STORE_SRC" ]; then

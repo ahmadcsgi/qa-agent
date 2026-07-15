@@ -85,9 +85,26 @@ const hash = spawnSync(process.execPath, [storeSrc, "cache", "hash", "doctor-pin
 if (hash.status === 0 && /^[a-f0-9]{8}\s*$/.test(hash.stdout)) ok("store.js cache hash");
 else fail("store.js cache hash failed");
 
+const proj = spawnSync(process.execPath, [storeSrc, "proj", "ensure"], {
+  encoding: "utf-8",
+  cwd: REPO,
+  env: { ...process.env, QA_AGENT_CWD: REPO },
+});
+if (proj.status === 0) {
+  try {
+    const meta = JSON.parse((proj.stdout || "").trim());
+    if (meta.id) ok(`proj ensure → ${meta.id}`);
+    else fail("proj ensure returned no id");
+  } catch {
+    fail("proj ensure invalid JSON");
+  }
+} else soft("proj ensure failed (non-fatal)");
+
 const globalStore = path.join(HOME, ".qa-agent", "lib", "store.js");
 if (exists(globalStore)) ok(`installed ~/.qa-agent/lib/store.js`);
 else soft("global store not installed — run install.ps1 / install.sh");
+if (exists(path.join(HOME, ".qa-agent", "projects"))) ok("~/.qa-agent/projects/ present");
+else soft("projects/ dir missing — re-run installer");
 
 // MCP config (presence only)
 console.log("\nMCP config");

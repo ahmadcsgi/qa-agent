@@ -4,6 +4,14 @@ All notable changes to QA Agent are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project uses [SemVer](https://semver.org/).
 
+## [1.3.0] - 2026-07-15
+
+### Added
+- **Multi-project memory (3 layers):** global + `~/.qa-agent/projects/<id>/` + workspace `.cursor/qa-memory/`
+- CLI: `proj ensure|list|get|sync`; `boot --project auto|*|<id>`; scoped `cor`/`pref`/`know`
+- Scope tags on entries (`proj: "*"` or project id)
+- Docs: `docs/MULTI_PROJECT_MEMORY.md`
+
 ## [1.2.1] - 2026-07-15
 
 ### Added
