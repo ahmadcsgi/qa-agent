@@ -304,7 +304,7 @@ Write-Host "     See .cursor\MCP_TOOLS.md for required servers"
 Write-Host ""
 Write-Host "  2. node scripts\doctor.js"
 Write-Host ""
-Write-Host "  3. Restart Cursor, select '@qa' (or type @qa)"
+Write-Host "  3. Restart Cursor, then type /qa (or select @qa)"
 Write-Host "     Demo: docs\DEMO.md"
 Write-Host ""
 Write-Host "Lifecycle: .\update.ps1  |  .\uninstall.ps1  |  CHANGELOG.md" -ForegroundColor Cyan
