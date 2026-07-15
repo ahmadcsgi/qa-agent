@@ -79,8 +79,8 @@ Compare with generating a Cypress test (~2,000 tokens) or k6 test (~1,500 tokens
 ┌─────────────────────────────────────────────────────────┐
 │  Storage Layer                                          │
 │  baselines/          ← Git-ignored PNG baselines        │
-│  /tmp/qa-visual-diff/  ← Temp diff + capture images     │
-│  /tmp/qa-visual-report/ ← HTML reports (ephemeral)      │
+│  <os.tmpdir()>/qa-visual-diff/  ← Temp diff + capture images     │
+│  <os.tmpdir()>/qa-visual-report/ ← HTML reports (ephemeral)      │
 │  .cursor/qa-memory/generated-tests/visual/ ← History    │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -199,5 +199,5 @@ The script exits with code 1 on failure, making it CI-ready:
   if: failure()
   with:
     name: visual-diffs
-    path: /tmp/qa-visual-diff/
+    path: <os.tmpdir()>/qa-visual-diff/
 ```

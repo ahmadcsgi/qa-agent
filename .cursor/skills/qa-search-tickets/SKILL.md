@@ -22,12 +22,14 @@ Ask the user (if unclear):
 4. **Depth**: "Brief results (top 5) or detailed (all matches)?"
 
 ### Step 3: Check Memory Cache
-MANDATORY: Check cache via `node ~/.qa-agent/lib/store.js cache get <hash>` - hash from query string.
-- If returns non-null and < 24 hours → return cached result + notify user
-- If not found or > 24 hours → proceed
+MANDATORY:
+1. `node ~/.qa-agent/lib/store.js cache hash "<query>"` → hash
+2. `node ~/.qa-agent/lib/store.js cache get <hash>`
+- If returns non-null → return cached result + notify user
+- If `null` → proceed
 
 ### Step 4: Search Shortcut
-Use Shortcut MCP: `search_stories(query)`
+Use Shortcut MCP: `stories-search` with a query string
 Query expansion strategy (details in reference/search-strategy.md):
 - Exact Match → Semantic → Feature → Workflow → Object → Symptom → Historical
 - Search ALL work item types (defect, story, chore, task, need-help, investigation, spike, enhancement)
@@ -69,8 +71,8 @@ or type your own answer
 - If user narrows/expands → save to decision memory: `node ~/.qa-agent/lib/store.js cor add "search" "<context>" "<issue>" "<pattern>" "<lesson>" "1|-1"`
 
 ## MCP Tools
-- **Shortcut**: `search_stories(query)` - main search
-- **Glean**: `search(query)` - if additional business context is needed
+- **Shortcut**: `stories-search` - main search
+- **Glean**: `search` - if additional business context is needed
 
 ## References
 - Search strategy detail: `reference/search-strategy.md`

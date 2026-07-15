@@ -10,7 +10,7 @@ description: Generate TestRail test cases from Shortcut stories. Interactive flo
 ### Step 1: Gather Context
 Ask the user:
 1. **Source**: "Do you have a Shortcut story ID or link?"
-   - If yes → read the story via Shortcut MCP (`get_story`)
+   - If yes → read the story via Shortcut MCP (`stories-get-by-id`)
    - If not → ask for a brief feature description
 2. **Coverage**: "What test cases are needed?"
    - **Positive only** - just the happy path
@@ -23,7 +23,7 @@ Ask the user:
 - Read Shortcut story → understand acceptance criteria + description
 - Check `.cursor/qa-memory/project-context/current.md` for domain knowledge
 - Check decision memory: `node ~/.qa-agent/lib/store.js cor list "test-cases" "1"` - apply proven patterns
-- Check TestRail existing cases in related section (via `get_cases`) - avoid duplicates
+- Check TestRail existing cases in related section (via `getCases`) - avoid duplicates
 
 ### Step 3: Research (if needed)
 - Context7 for domain-specific testing patterns
@@ -89,7 +89,7 @@ Details:
 ```
 
 Ask user (type number or custom):
-1. APPROVE - Save to TestRail via `add_case()` one by one
+1. APPROVE - Save to TestRail via `addCase` one by one
 2. EDIT - Ask for correction -> apply -> preview again -> loop
 3. REJECT - Save rejection reason to memory
 or type your own answer
@@ -97,19 +97,19 @@ or type your own answer
 ### Step 7: Save to TestRail
 Use TestRail MCP:
 ```
-add_case(section_id: ..., title: "...", type_id: ..., priority_id: ..., estimate: ..., steps: "...", expected: "...")
+addCase({ sectionId, title, typeId, priorityId, estimate, customSteps, customExpected })
 ```
 
-- type_id: 1=Positive, 2=Negative, 3=Edge, 4=Boundary (per TestRail config)
-- priority_id: based on story priority
+- type/priority IDs vary per TestRail project — check with `getCaseTypes` / project fields
+- priority based on story priority
 
 ### Step 8: Save to Memory
 - Update `.cursor/qa-memory/generated-tests/` with references
 - Save to decision memory: `node ~/.qa-agent/lib/store.js cor add "test-cases" "<context>" "<issue>" "<correction>" "<lesson>" "1|-1"`
 
 ## MCP Tools
-- **Shortcut**: `get_story()` - read story + AC
-- **TestRail**: `get_cases()`, `add_case()`, `get_sections()`, `get_section()` - manage test cases
+- **Shortcut**: `stories-get-by-id` - read story + AC
+- **TestRail**: `getCases`, `addCase`, `getSections`, `getSection` - manage test cases
 - **Context7**: domain testing patterns
 - **Glean**: internal docs
 

@@ -21,7 +21,7 @@
 | `--viewport` | string | `1280x720` | Browser viewport `WxH` |
 | `--threshold` | float | `0.001` | Per-pixel mismatch threshold (0-1) |
 | `--base-dir` | path | `baselines/` | Baseline PNG directory |
-| `--diff-dir` | path | `/tmp/qa-visual-diff` | Diff image directory |
+| `--diff-dir` | path | `<os.tmpdir()>/qa-visual-diff` | Diff image directory |
 | `--update-baselines` | flag | `false` | Save screenshots as new baselines |
 | `--wait` | number | `2000` | Milliseconds to wait after page load |
 | `--git-diff` | flag | `false` | Only test pages changed in last commit |
@@ -65,7 +65,7 @@ The config file (`visual-test.config.json`) is auto-detected in the project root
   "notifyConsoleErrors": true,
 
   "baseDir": ".cursor/skills/qa-visual-test/baselines",
-  "diffDir": "/tmp/qa-visual-diff"
+  "diffDir": "<os.tmpdir()>/qa-visual-diff"
 }
 ```
 
@@ -83,7 +83,7 @@ The config file (`visual-test.config.json`) is auto-detected in the project root
 | `auth.cookies` | string | `null` | Path to cookies JSON file for auth |
 | `notifyConsoleErrors` | boolean | `true` | Capture JS console errors in report |
 | `baseDir` | string | `baselines/` | Baseline images directory |
-| `diffDir` | string | `/tmp/qa-visual-diff` | Diff images and captures directory |
+| `diffDir` | string | `<os.tmpdir()>/qa-visual-diff` | Diff images and captures directory |
 
 ### Page Config Fields
 
@@ -196,10 +196,10 @@ Set different thresholds per page for strict or lenient checks:
 
 ## HTML Report
 
-On failure, a self-contained HTML report is generated at `/tmp/qa-visual-report/`:
+On failure, a self-contained HTML report is generated at `<os.tmpdir()>/qa-visual-report/`:
 
 ```
-📄 HTML report: /tmp/qa-visual-report/visual-report-2026-07-13T10-30-00-000Z.html (94.5 KB)
+📄 HTML report: <os.tmpdir()>/qa-visual-report/visual-report-2026-07-13T10-30-00-000Z.html (94.5 KB)
 ```
 
 The report includes:
@@ -247,7 +247,7 @@ The report includes:
       "diffPercent": 0.05,
       "diffPixels": 1234,
       "totalPixels": 2468000,
-      "diffPath": "/tmp/qa-visual-diff/dashboard-diff-123456.png",
+      "diffPath": "<os.tmpdir()>/qa-visual-diff/dashboard-diff-123456.png",
       "consoleErrors": [
         "Uncaught TypeError: Cannot read property 'foo' of undefined"
       ]
@@ -288,7 +288,7 @@ The report includes:
 .cursor/skills/qa-visual-test/scripts/node_modules/
 
 # Diff artifacts (generated on failure - ephemeral)
-# /tmp/qa-visual-diff/  (already in /tmp, no .gitignore needed)
+# <os.tmpdir()>/qa-visual-diff/  (OS temp; no .gitignore needed)
 ```
 
 ## Common Workflows

@@ -101,7 +101,7 @@ The script outputs JSON to stdout:
 
 **On FAILURE**, the script also generates a self-contained HTML report:
 ```
-📄 HTML report: /tmp/qa-visual-report/visual-report-xxx.html (94.5 KB)
+📄 HTML report: <os.tmpdir()>/qa-visual-report/visual-report-xxx.html (94.5 KB)
 ```
 
 HTML report shows baseline | actual | diff side-by-side - **no need for AI to load images**.
@@ -163,7 +163,7 @@ These features run entirely in Node.js - no AI tokens consumed.
 ```
 ```
 ❌ Visual Test FAIL - 2/4 failed
-   • login:     0.05% diff - report: /tmp/qa-visual-report/xxx.html
+   • login:     0.05% diff - report: <os.tmpdir()>/qa-visual-report/xxx.html
    • dashboard: 0.12% diff
    ✅ settings: PASS
    ✅ profile:  PASS

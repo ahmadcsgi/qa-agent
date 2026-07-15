@@ -63,8 +63,8 @@ Trigger: "token saver", "save tokens", "token", "ponytail", "ladder", "lite", "f
 Trigger: "create automation", "generate test", "automate", "make test", TestRail case ID (`C12345`)
 Ask:
 - Do you have a **Shortcut story ID** or **TestRail link**?
-- **Environment** (e.g. 26.2, 25.4, 26.1)
-- **User** (default `telflow_pa` or custom)
+- **Environment** (from project memory, or staging/production)
+- **Test user** (from `project-context/current.md`, or custom)
 
 → Route to: `@qa-ui-automation`
 

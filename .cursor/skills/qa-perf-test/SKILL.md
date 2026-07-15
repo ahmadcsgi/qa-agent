@@ -10,7 +10,7 @@ description: Generate k6 performance tests from Shortcut stories or API specs. I
 ### Step 1: Gather Context
 Ask the user:
 1. **Source**: "Do you have a Shortcut story ID, API endpoint, or flow to load test?"
-   - Story → read via Shortcut MCP (`get_story`)
+   - Story → read via Shortcut MCP (`stories-get-by-id`)
    - Endpoint → ask for details (method, payload, headers)
    - Flow → ask for endpoint sequence
 2. **Scenario Type**: "What test scenario?"
@@ -29,8 +29,8 @@ Ask the user:
 
 ### Step 2: Check Memory & Existing
 - Read `.cursor/qa-memory/project-context/current.md` - find base URL, auth pattern, existing k6 helpers
-- Check decision memory: `node ~/.qa-agent/lib/store.js cor list "perf-test" "1"` - apply proven patterns
-- Also check: `node ~/.qa-agent/lib/store.js cor list "perf-test" "-10"` - avoid past mistakes (score < 0)
+- Check decision memory: `node ~/.qa-agent/lib/store.js cor list "perf-test" "1"` - proven patterns (score >= 1)
+- Avoid past mistakes: `node ~/.qa-agent/lib/store.js cor list "perf-test" "-999" "-1"`
 - Search for existing k6 files in the project - reuse helpers (getToken, getGlobal, defineSummary, thresholds, data generators)
 
 ### Step 3: Research (if needed)
@@ -137,9 +137,9 @@ k6 run --out json=results.json path/to/test.js
 - Save run results (metrics) to knowledge: `node ~/.qa-agent/lib/store.js know add "perf-test" "<topic>" "<content>" '["k6","metrics"]'`
 
 ## MCP Tools
-- **Shortcut**: `get_story()` - read story for context
+- **Shortcut**: `stories-get-by-id` - read story for context
 - **Context7**: k6 documentation (only if needed)
-- **Glean**: internal API docs / Confluence
+- **Glean**: `search` / `read_document` - internal API docs / Confluence
 
 ## References
 - `.cursor/references/k6-testing.md` - k6 syntax

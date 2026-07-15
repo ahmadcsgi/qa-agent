@@ -68,27 +68,21 @@ Priority (like Aider's PageRank):
 3. **Low** - Helper utilities, rarely-changed files
 
 ### Step 6: Generate Compact Map
-Output format (token-efficient, like Aider):
+Output format (token-efficient, like Aider). Example shape — replace with **actual** project paths/names:
 ```
 project/
-  package.json: { scripts: {test, test:smoke, test:daily}, deps: cypress13, cucumber }
-  cypress.config.js: { baseUrl, supportFile, specPattern }
-  cypress/
+  package.json: { scripts: {test, test:smoke}, deps: <frameworks> }
+  <test-config>: { baseUrl, supportFile, specPattern }
+  <ui-tests>/
     support/
-      commands.js: { login(), selectQuote(), generateDoc() }
-    aliases/
-      quote.aliases.js: { quoteNumber, premium, submitBtn }
-    step_definitions/
-      STEP_REGISTRY.md: { login, createQuote, generateDocument }
-    features/
-      quote-generation.feature [6 scenarios] @daily @flex_quote
-      login.feature [3 scenarios] @smoke
-  features/
-    api/
-      quote-api.feature [5 scenarios] @regression
-  k6/
-    scenarios/
-      quote-load.js { options: 10VU 1m, thresholds: p95<2000 }
+      commands.js: { login(), <helpers...> }
+    aliases/ or page-objects/: { <element maps> }
+    step_definitions/ or steps/: { <step names> }
+    features/ or e2e/: { <feature files + tags> }
+  <api-tests>/
+    { <endpoint features / specs> }
+  <perf>/
+    { <k6 scenarios + thresholds> }
 ```
 
 ### Step 7: Save to Memory

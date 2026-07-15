@@ -28,5 +28,5 @@
   "notifyConsoleErrors": true,
 
   "baseDir": ".cursor/skills/qa-visual-test/baselines",
-  "diffDir": "/tmp/qa-visual-diff"
+  "_diffDirNote": "Omit diffDir to use OS temp dir (os.tmpdir()/qa-visual-diff). Works on Windows, macOS, Linux."
 }

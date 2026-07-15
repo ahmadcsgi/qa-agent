@@ -15,12 +15,13 @@
  *   node ~/.qa-agent/lib/store.js <cmd> [args]
  *
  * Commands:
+ *   cache hash <query>        → 8-char MD5 hash for a query string
  *   cache get <hash>          → JSON result or "null"
- *   cache set <hash> <q> <j>  → store cached result
+ *   cache set <hash> <q> <j>  → store cached result (JSON may be multi-arg)
  *   cache prune               → remove entries >24h old
  *
  *   cor add <dom> <ctx> <iss> <cor> <les> <sc>   → save decision (+1 or -1)
- *   cor list [dom] [minSc]    → list corrections, filtered
+ *   cor list [dom] [minSc] [maxSc]  → list corrections, filtered by score range
  *   cor search <txt>          → text search corrections
  *
  *   know add <dom> <top> <con> <tags> [src]       → save knowledge
@@ -134,6 +135,10 @@ function isSimilar(a, b) {
 
 // ─── Cache Operations ───────────────────────────────────────────────────────
 
+function cacheHash(query) {
+  process.stdout.write(hash(query) + '\n');
+}
+
 function cacheGet(hashKey) {
   const store = readJSON(CACHE_FILE, 'map');
   const entry = store.d[hashKey];
@@ -155,7 +160,13 @@ function cacheGet(hashKey) {
 
 function cacheSet(hashKey, query, resultsJson) {
   const store = readJSON(CACHE_FILE, 'map');
-  store.d[hashKey] = { q: query, r: JSON.parse(resultsJson), t: now(), a: now() };
+  let parsed;
+  try {
+    parsed = JSON.parse(resultsJson);
+  } catch (err) {
+    throw new Error(`Invalid JSON for cache set: ${err.message}`);
+  }
+  store.d[hashKey] = { q: query, r: parsed, t: now(), a: now() };
   writeJSON(CACHE_FILE, store);
 }
 
@@ -200,7 +211,7 @@ function corAdd(domain, context, issue, correction, lesson, score) {
 
   // Create new entry
   const entry = {
-    id: store.d.length > 0 ? store.d[store.d.length - 1].id + 1 : 1,
+    id: nextId(store.d),
     dom: domain,
     ctx: context,
     iss: issue,
@@ -215,13 +226,26 @@ function corAdd(domain, context, issue, correction, lesson, score) {
   printJSON(entry);
 }
 
-function corList(domain, minScore) {
+function nextId(entries) {
+  if (!entries.length) return 1;
+  let max = 0;
+  for (const e of entries) {
+    if (typeof e.id === 'number' && e.id > max) max = e.id;
+  }
+  return max + 1;
+}
+
+function corList(domain, minScore, maxScore) {
   const store = readJSON(COR_FILE);
   let entries = store.d;
   if (domain) entries = entries.filter(e => e.dom === domain);
   if (minScore !== undefined && minScore !== null && minScore !== '') {
     const min = parseInt(minScore, 10);
     if (!isNaN(min)) entries = entries.filter(e => (e.sc || 0) >= min);
+  }
+  if (maxScore !== undefined && maxScore !== null && maxScore !== '') {
+    const max = parseInt(maxScore, 10);
+    if (!isNaN(max)) entries = entries.filter(e => (e.sc || 0) <= max);
   }
   printJSON(entries);
 }
@@ -243,12 +267,18 @@ function corSearch(text) {
 
 function knowAdd(domain, topic, content, tagsJson, source) {
   const store = readJSON(KNOW_FILE);
+  let tags = [];
+  try {
+    tags = JSON.parse(tagsJson || '[]');
+  } catch (err) {
+    throw new Error(`Invalid tags JSON: ${err.message}`);
+  }
   const entry = {
-    id: store.d.length > 0 ? store.d[store.d.length - 1].id + 1 : 1,
+    id: nextId(store.d),
     dom: domain,
     top: topic,
     con: content,
-    tag: JSON.parse(tagsJson || '[]'),
+    tag: tags,
     src: source || 'manual',
     conf: 1.0,
     t: now()
@@ -326,12 +356,13 @@ function main() {
 Usage: node store.js <cmd> [args]
 
 Commands:
+  cache hash <query>
   cache get <hash>
   cache set <hash> <query> <results_json>
   cache prune
 
   cor add <domain> <context> <issue> <correction> <lesson> <score>
-  cor list [domain] [minScore]
+  cor list [domain] [minScore] [maxScore]
   cor search <text>
 
   know add <domain> <topic> <content> <tags_json> [source]
@@ -354,6 +385,7 @@ Scoring:
     switch (cmd) {
       case 'cache':
         switch (args[1]) {
+          case 'hash': return cacheHash(args.slice(2).join(' '));
           case 'get': return cacheGet(args[2]);
           case 'set': return cacheSet(args[2], args[3], args.slice(4).join(' '));
           case 'prune': return cachePrune();
@@ -363,7 +395,7 @@ Scoring:
       case 'cor':
         switch (args[1]) {
           case 'add': return corAdd(args[2], args[3], args[4], args[5], args[6], args[7]);
-          case 'list': return corList(args[2], args[3]);
+          case 'list': return corList(args[2], args[3], args[4]);
           case 'search': return corSearch(args.slice(2).join(' '));
           default: console.error('Unknown cor subcommand:', args[1]); process.exit(1);
         }

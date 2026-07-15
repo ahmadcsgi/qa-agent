@@ -19,7 +19,8 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from "node:fs";
 import { execSync } from "node:child_process";
-import { resolve, dirname, basename } from "node:path";
+import { tmpdir } from "node:os";
+import { resolve, dirname, basename, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
 import { compareScreenshots } from "./compare.js";
@@ -30,6 +31,7 @@ const __dirname = dirname(__filename);
 const SCRIPTS_DIR = __dirname;
 const SKILL_DIR = resolve(SCRIPTS_DIR, "..");
 const DEFAULT_BASE_DIR = resolve(SKILL_DIR, "baselines");
+const DEFAULT_DIFF_DIR = join(tmpdir(), "qa-visual-diff");
 const CONFIG_FILE = resolve(process.cwd(), "visual-test.config.json");
 
 // ─── CLI / Config ───────────────────────────────────────────────────────────
@@ -71,7 +73,7 @@ function loadConfig(args) {
     existsSync(CONFIG_FILE) ? CONFIG_FILE : null;
   const fileConfig = configPath ? JSON.parse(readFileSync(configPath, "utf-8")) : {};
   const baseDir = resolve(args.baseDir || fileConfig.baseDir || DEFAULT_BASE_DIR);
-  const diffDir = args.diffDir || fileConfig.diffDir || "/tmp/qa-visual-diff";
+  const diffDir = args.diffDir || fileConfig.diffDir || DEFAULT_DIFF_DIR;
 
   // Merge: CLI args override file config
   return {

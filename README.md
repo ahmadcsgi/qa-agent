@@ -17,9 +17,10 @@ Choose your OS and run the installer:
 
 The installer will:
 - Copy all 10 skills to `.cursor/skills/` (project) and `~/.cursor/skills/` (global)
-- Install subagent, rules, AGENTS.md, MCP_TOOLS.md
+- Install subagent, rules, AGENTS.md, MCP_TOOLS.md, and `.cursor/references/`
+- Scaffold project memory from `.cursor/templates/project-context.current.md`
 - Create the memory directory structure
-- Optionally install visual regression dependencies (Playwright + pixelmatch)
+- Optionally install visual regression dependencies (Playwright + pixelmatch) on Windows and Unix
 
 Then configure your MCP servers (**`~/.cursor/mcp.json`**):
 
@@ -132,18 +133,12 @@ Storage engine:
 
 **Protocol:**
 
-1. **Before MCP search**: check cache first → `node ~/.qa-agent/lib/store.js cache get <hash>` - if returns non-null and <24h, use it
-2. **After MCP call**: save to cache → `node ~/.qa-agent/lib/store.js cache set <hash> "<query>" '<results>'`
-3. **After user correction**: save with score
-   - If correction was correct: `node ~/.qa-agent/lib/store.js cor add <domain> <context> <issue> <correction> <lesson> 1`
-   - If user rejected our output: `node ~/.qa-agent/lib/store.js cor add <domain> <context> <issue> <fix> <lesson> -1`
-   - If same issue already exists, score auto-adjusts (accumulates)
-4. **Before generating**: find proven patterns
-   - `node ~/.qa-agent/lib/store.js cor list <domain> 1` → apply patterns with positive score
-   - `node ~/.qa-agent/lib/store.js know search <topic>` → find relevant knowledge
-5. **Before accepting user suggestion**: check failure history
-   - `node ~/.qa-agent/lib/store.js cor search <topic>` → if any result has score < 0, REJECT with explanation
-6. **After learning**: `node ~/.qa-agent/lib/store.js know add <domain> <topic> <content> '<tags>'`
+1. **Before MCP search**: `cache hash "<query>"` then `cache get <hash>` — if non-null, use it (TTL 24h)
+2. **After MCP call**: `cache set <hash> "<query>" '<results>'`
+3. **After user correction**: save with score (`cor add ... 1` or `-1`; same issue accumulates)
+4. **Before generating**: `cor list <domain> 1` (good), `cor list <domain> -999 -1` (bad), `know search <topic>`
+5. **Before accepting user suggestion**: `cor search <topic>` → reject if score < 0
+6. **After learning**: `know add <domain> <topic> <content> '<tags>'`
 
 #### Project Memory (`.cursor/qa-memory/`) - THIS project only
 
@@ -156,8 +151,8 @@ Storage engine:
 
 **@qa-search-tickets:** User pastes error / asks "search ticket about..."
 1. Expand their words into 3-4 search queries
-2. Check cache via `node ~/.qa-agent/lib/store.js cache get <hash>` - return cached if < 24h
-3. Call Shortcut `search_stories()` - if no results, try Glean
+2. `cache hash` then `cache get` — return cached if hit
+3. Call Shortcut `stories-search` - if no results, try Glean
 4. Show: similar tickets + relevance score + ownership prediction
 
 **@qa-defect-triage:** User gives Helix link / bug report
@@ -234,14 +229,16 @@ Storage engine:
 └── knowledge.json                ← Patterns & tips
 
 .cursor/
-├── MCP_TOOLS.md                    ← MCP tool reference
-├── agents/qa-agent.md              ← Cursor subagent
+├── MCP_TOOLS.md                    ← MCP tool reference (live tool names)
+├── agents/qa.md                    ← Cursor subagent (@qa)
 ├── rules/qa-agent-rules.mdc        ← Always-active rules
+├── references/                     ← Offline MCP/framework docs
+├── templates/                      ← project-context template for install
 ├── qa-memory/                      ← Project-specific (gitignored)
 │   ├── project-context/current.md
 │   └── generated-tests/
 └── skills/                         ← 10 modular skills
-    ├── qa-visual-test/             ← Visual regression (NEW)
+    ├── qa-visual-test/             ← Visual regression (pixelmatch)
     │   ├── SKILL.md
     │   ├── reference/
     │   └── scripts/
@@ -266,7 +263,7 @@ Comparison runs in Node.js (pixelmatch), not in AI context. Cost per scenario:
 | Scenario | AI Tokens | What Happens |
 |----------|-----------|-------------|
 | All PASS | ~10 | "✅ 3/3 passed" |
-| Has FAIL | ~30 + HTML report | "❌ 1 failed - see /tmp/qa-visual-report/xxx.html" |
+| Has FAIL | ~30 + HTML report | "❌ 1 failed - see HTML report under OS temp (qa-visual-report/)" |
 | User asks "what changed?" | ~300 | `look_at` diff image once |
 | HTML report itself | **0** | Self-contained file, user opens directly |
 
@@ -312,12 +309,20 @@ Two layers - universal data is global, project data stays local.
 
 **Estimated per session:** < 500 tokens for instructions (User Rules + 1 skill + relevant memory).
 
+## Testing
+
+```bash
+node scripts/store.test.js
+```
+
+CI (GitHub Actions) runs this self-check plus a skill-structure smoke test on push/PR.
+
 ## Future Enhancements
 
 | Feature | Status |
 |---------|--------|
 | Visual regression (`@qa-visual-test`) | ✅ Done |
-| Karate API test skill | 📋 Planned |
+| Karate API test skill (`@qa-api-test`) | ✅ Done |
 | Multi-project memory | 📋 Planned |
 | Slack integration | 🔮 Research |
 | CI/CD integration | 🔮 Research |

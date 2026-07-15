@@ -24,8 +24,8 @@ Ask the user:
 ### Step 2: Understand API
 - Read the story/AC to understand the business logic
 - Check `.cursor/qa-memory/project-context/current.md` for base URL and auth patterns
-- Check decision memory: `node ~/.qa-agent/lib/store.js cor list "api-test" "1"` - apply proven patterns
-- Also check: `node ~/.qa-agent/lib/store.js cor list "api-test" "-10"` - avoid past mistakes (score < 0)
+- Check decision memory: `node ~/.qa-agent/lib/store.js cor list "api-test" "1"` - apply proven patterns (score >= 1)
+- Avoid past mistakes: `node ~/.qa-agent/lib/store.js cor list "api-test" "-999" "-1"` - score <= -1
 - If OpenAPI spec is available → read to get request/response schema
 
 ### Step 3: Research (if needed)
@@ -123,8 +123,8 @@ Ask the user: "Would you like to run it now?"
 - Update `.cursor/qa-memory/project-context/current.md` if new endpoint info
 
 ## MCP Tools
-- **Shortcut**: `get_story()` - read context
-- **Glean**: internal API docs
+- **Shortcut**: `stories-get-by-id` - read story context
+- **Glean**: `search`, `read_document` - internal API docs
 - **Context7**: Karate framework docs
 - (No direct Karate MCP - run via terminal)
 

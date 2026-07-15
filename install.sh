@@ -50,10 +50,12 @@ REPO_DIR="$(cd "$(dirname "$0")" && pwd 2>/dev/null || pwd)"
 SKILLS_SRC="$REPO_DIR/.cursor/skills"
 AGENTS_SRC="$REPO_DIR/.cursor/agents"
 RULES_SRC="$REPO_DIR/.cursor/rules"
+REFS_SRC="$REPO_DIR/.cursor/references"
 MEMORY_SRC="$REPO_DIR/.cursor/qa-memory"
 MCP_TOOLS_SRC="$REPO_DIR/.cursor/MCP_TOOLS.md"
 AGENTS_MD_SRC="$REPO_DIR/AGENTS.md"
 STORE_SRC="$REPO_DIR/scripts/store.js"
+CONTEXT_TPL_SRC="$REPO_DIR/.cursor/templates/project-context.current.md"
 
 # ─── Global store dir (~/.qa-agent/) ─────────────────────────────────────
 GLOBAL_STORE_DIR="${HOME}/.qa-agent"
@@ -187,12 +189,26 @@ if [ -f "$MCP_TOOLS_SRC" ] && [ "$TARGET_DIR" != "$REPO_DIR" ]; then
   ok "MCP_TOOLS.md installed"
 fi
 
-# ─── Copy project-context/current.md (if exists) ──────────────────────────
-if [ -f "$MEMORY_SRC/project-context/current.md" ] && [ "$TARGET_DIR" != "$REPO_DIR" ]; then
-  TARGET_PC="$TARGET_DIR/.cursor/qa-memory/project-context/current.md"
-  if [ ! -f "$TARGET_PC" ]; then
+# ─── Copy offline references ──────────────────────────────────────────────
+if [ -d "$REFS_SRC" ]; then
+  if [ "$TARGET_DIR" != "$REPO_DIR" ]; then
+    mkdir -p "$TARGET_DIR/.cursor/references"
+    cp -r "$REFS_SRC"/* "$TARGET_DIR/.cursor/references/"
+    ok "Offline references installed (.cursor/references/)"
+  else
+    info "Running in-place — references already present"
+  fi
+fi
+
+# ─── Copy project-context template ────────────────────────────────────────
+TARGET_PC="$TARGET_DIR/.cursor/qa-memory/project-context/current.md"
+if [ ! -f "$TARGET_PC" ]; then
+  if [ -f "$MEMORY_SRC/project-context/current.md" ]; then
     cp "$MEMORY_SRC/project-context/current.md" "$TARGET_PC"
     ok "project-context/current.md installed"
+  elif [ -f "$CONTEXT_TPL_SRC" ]; then
+    cp "$CONTEXT_TPL_SRC" "$TARGET_PC"
+    ok "project-context/current.md installed from template"
   fi
 fi
 

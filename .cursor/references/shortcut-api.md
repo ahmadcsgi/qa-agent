@@ -1,16 +1,18 @@
 # Shortcut MCP API Quick Reference
 
+Actual tool names from the Shortcut MCP server.
+
 ## Search Stories
 
 ### Basic search
 ```
-search_stories(query: "bug quote generation")
+stories-search(query: "bug quote generation")
 ```
 
 ### Search with filters
 Shortcut search supports natural language + filters:
-- `project:"Quote Engine"` - filter by project
-- `owner:"budi"` - filter by owner
+- `project:"My Project"` - filter by project
+- `owner:"name"` - filter by owner
 - `type:defect` - filter by story type
 - `state:open` - filter by workflow state
 - `label:"regression"` - filter by label
@@ -18,17 +20,17 @@ Shortcut search supports natural language + filters:
 
 ### Advanced search examples
 ```
-# Find open defects in Quote Engine
-search_stories("type:defect state:open project:\"Quote Engine\"")
+# Find open defects in a project
+stories-search(query: "type:defect state:open project:\"My Project\"")
 
 # Find stories related to pricing
-search_stories("pricing workbook")
+stories-search(query: "pricing workbook")
 
 # Find recent bugs
-search_stories("type:defect created:\">2024-01-01\"")
+stories-search(query: "type:defect created:\">2024-01-01\"")
 
 # Find by error message
-search_stories("NullPointerException generateQuote")
+stories-search(query: "NullPointerException generateQuote")
 ```
 
 ### Search ALL types
@@ -39,11 +41,11 @@ Include: open, closed, completed, archived, in-progress, ready-for-review, block
 
 ## Get Story Details
 ```
-stories-get-current
+stories-get-by-id(storyPublicId: "12345")
 ```
 
-Available fields:
-- `id` - story number
+Common fields in the response:
+- `id` / public ID - story number
 - `name` - title
 - `description` - full description (Markdown)
 - `story_type` - defect, story, chore, etc.
@@ -53,35 +55,33 @@ Available fields:
 - `labels` - array of labels
 - `deadline` - due date
 - `created_at`, `updated_at` - timestamps
-- `requested_by_id` - creator
-- `external_tickets` - linked Helix/other tickets
 - `tasks` - checklist items
-- `comments` - discussion (limit 10)
+- `comments` - discussion
 
 ## Create Story (only after APPROVAL)
 ```
-create_story(
-  name: "Bug: Quote generation fails for premium > 1M",
+stories-create(
+  name: "Bug: Feature X fails for edge case Y",
   description: "## Steps to Reproduce\n1. ...\n## Actual\n...\n## Expected\n...",
-  story_type: "defect",
-  project_id: 123,
-  owner_ids: ["user-uuid"],
-  labels: ["bug", "quote"],
-  external_tickets: [{ external_id: "HELIX-123", url: "..." }]
+  type: "defect",
+  team: "<team-id-or-name>"
 )
 ```
 
 ## Update Story
 ```
-update_story(
-  story_id: 456,
+stories-update(
+  storyPublicId: "456",
   current_state: "in-progress",
   description: "Updated description..."
 )
 ```
 
 ## API Tips
-- `search_stories` returns max 25 results - narrow query if too broad
+- `stories-search` may return a limited page of results - narrow query if too broad
 - Use query expansion: exact → semantic → feature → workflow → symptom
-- Cache results via `node ~/.qa-agent/lib/store.js cache set <hash> "<query>" '<results>'` (TTL 24h)
+- Cache workflow:
+  1. `node ~/.qa-agent/lib/store.js cache hash "<query>"` → hash
+  2. `node ~/.qa-agent/lib/store.js cache get <hash>`
+  3. On miss: call MCP, then `cache set <hash> "<query>" '<results>'` (TTL 24h)
 - Never create/update stories without APPROVAL

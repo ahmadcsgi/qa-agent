@@ -10,20 +10,19 @@ description: Generate Cypress Cucumber UI automation from TestRail cases or Shor
 ### Step 1: Gather Context
 Ask the user:
 1. **Source**: "Do you have a Shortcut story ID or TestRail link?"
-2. **Environment**: "Which environment? (e.g. 26.2, 25.4, 26.1, or production)"
-3. **User**: "Use default user `telflow_pa` or custom?"
-   - If custom → "Please provide username and password"
+2. **Environment**: "Which environment? (staging, production, or a named env from project memory)"
+3. **User**: "Which test user? (check `project-context/current.md` for defaults, or provide custom credentials)"
 
 ### Step 2: Learn Project
 Read `.cursor/qa-memory/project-context/current.md`.
-If empty → explore project → save to memory.
+If empty → call `@qa-project-mapping` → save to memory.
 
 ### Step 3: Check Existing
-- Read `.cursor/testrail-coverage.json` to check existing automation
-- Grep `STEP_REGISTRY.md` + features/aliases/steps to check reuse potential
+- If present, read `.cursor/testrail-coverage.json` or project coverage tracker from memory
+- Grep step registry / features / aliases / steps for reuse potential
 
 ### Step 4: Understand Context
-Read TestRail via MCP (`getCases`) or Shortcut story.
+Read TestRail via MCP (`getCase` / `getCases`) or Shortcut (`stories-get-by-id`).
 Understand: feature, workflow, acceptance criteria.
 
 ### Step 5: Research
@@ -32,16 +31,17 @@ Glean for product documentation/Confluence.
 
 ### Step 6: POM Builder - Playwright Exploration
 Use Playwright MCP for page exploration:
-1. `browser_navigate(url)` - open the page in the requested environment
+1. `browser_navigate` - open the page in the requested environment
 2. Log in with the provided user credentials
-3. `browser_get_accessibility_tree()` - get accessibility structure
+3. `browser_snapshot` - get accessibility / DOM structure
 4. Identify elements: form inputs, buttons, dropdowns, tables
 5. Collect element details:
    - `data-testid` (priority 1)
    - `data-namespace` / `data-id` (priority 2)
    - `#id` (priority 3)
    - CSS selectors (last resort)
-6. Save exploration log to `exploration-logs/{featureName}-{YYYY-MM-DD}.md`
+6. Optionally `browser_take_screenshot` for exploration log
+7. Save exploration log to `exploration-logs/{featureName}-{YYYY-MM-DD}.md`
 
 **Alibaba Page-Agent pattern**: https://github.com/alibaba/page-agent
 The idea: collect elements from the page → generate Page Object Model → reuse element aliases in tests.
@@ -83,23 +83,23 @@ BEFORE showing to the user, review the generated output:
 > Principle: "Think once, do correctly." Instead of the user seeing it, correcting it, us fixing it, the user correcting again - it's better to refine ourselves first before preview.
 
 ### Step 10: Auto-Run
-Run the test via Cypress MCP:
+Prefer Cypress MCP (`cypress_run_spec` / `cypress_run_test`). Fallback to project scripts if configured:
 ```bash
 npm run test:{suite} -- -e TAGS="@test_id=C{id}"
 ```
 
 ### Step 11: Auto-Healing
 If the test FAILED:
-1. Read the error message - identify which selector failed
-2. Playwright MCP: re-explore the page → find alternative selectors
+1. Read failure via `cypress_get_failure_context` (or error log)
+2. Playwright MCP: `browser_snapshot` → find alternative selectors
 3. Update alias with new selector
-4. Re-run test
+4. Re-run test (`cypress_rerun_last` or `cypress_run_spec`)
 5. Max 2 healing iterations
 6. If still failing → show error to user + ask for guidance
 
 ### Step 12: User Loop
 Ask user (type number or custom):
-1. APPROVE - Save to memory, update testrail-coverage.json
+1. APPROVE - Save to memory, update coverage tracker if the project uses one
 2. EDIT - Apply correction -> save to decision memory: `node ~/.qa-agent/lib/store.js cor add "ui-automation" "<context>" "<issue>" "<correction>" "<lesson>" "1|-1"`
 3. REJECT - Save rejection reason to memory
 or type your own answer
@@ -107,26 +107,24 @@ or type your own answer
 ### Step 13: Save to Memory
 - Update `.cursor/qa-memory/generated-tests/cypress/` with new test reference
 - Update `project-context/current.md` if there's new info
-- Update `testrail-coverage.json` if section is complete
 
 ## Project Conventions
-- Framework: Cypress 13 + Cucumber/Gherkin
-- Format: `.feature` files (not `.cy.js`)
+Prefer conventions from `project-context/current.md`. Defaults if unspecified:
+- Framework: Cypress + Cucumber/Gherkin when present
+- Format: `.feature` files when using Cucumber
 - Selector priority: alias → `data-testid` → `data-namespace` → `#id` → CSS
-- Auth: Vault-based, never hardcode
-- TestRail tag: `@test_id=C{number}`
-- Feature tag: `@docflow-list-template`
-- Suite tag: `@flex_quote`, `@daily_run`
+- Auth: never hardcode secrets; use project secret manager / env
+- TestRail tag: `@test_id=C{number}` when applicable
 
 ## MCP Tools
-- **TestRail**: `get_cases()`, `get_case()` - get context
-- **Playwright**: `browser_navigate()`, `browser_click()`, `browser_type()`, `browser_get_accessibility_tree()`, `browser_screenshot()` - POM builder
-- **Cypress**: `run_spec()` - auto-run + auto-heal
+- **TestRail**: `getCases`, `getCase` - get context
+- **Shortcut**: `stories-get-by-id` - story AC
+- **Playwright**: `browser_navigate`, `browser_click`, `browser_type`, `browser_snapshot`, `browser_take_screenshot` - POM builder
+- **Cypress**: `cypress_run_spec`, `cypress_run_test`, `cypress_get_failure_context` - auto-run + auto-heal
 - **Context7**: framework docs
 - **Glean**: product docs
 
 ## References
-- Step registry: `cypress/support/step_definitions/STEP_REGISTRY.md`
 - Offline docs: `.cursor/references/playwright-browser.md`
 - Page-agent pattern: https://github.com/alibaba/page-agent
 - Global memory: `~/.qa-agent/`

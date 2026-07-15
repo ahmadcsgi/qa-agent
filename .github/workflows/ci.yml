@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  store-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Run store.js self-check
+        run: node scripts/store.test.js
+
+  skill-structure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify required skills exist
+        run: |
+          set -e
+          for s in qa-entry qa-search-tickets qa-defect-triage qa-ui-automation \
+                   qa-perf-test qa-test-cases qa-api-test qa-project-mapping \
+                   qa-token-saver qa-visual-test; do
+            test -f ".cursor/skills/$s/SKILL.md"
+            echo "OK $s"
+          done
+          test -f scripts/store.js
+          test -f .cursor/MCP_TOOLS.md
+          test -f .cursor/agents/qa.md
+          test -d .cursor/references
+          test -f .cursor/templates/project-context.current.md

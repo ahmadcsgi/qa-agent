@@ -6,7 +6,7 @@ description: Triage Helix incidents end-to-end: understand issue, search duplica
 # QA Defect Triage
 
 ## Role
-Staff+ Incident Intelligence & Defect Triage Engineer for CSG Quote & Order.
+Staff+ Incident Intelligence & Defect Triage Engineer.
 
 ## Interactive Flow
 
@@ -21,18 +21,18 @@ Check completeness: environment, order ID, product, error message, screenshots, 
 - Provide **Evidence Quality Score** (0-100)
 
 ### Step 3: Check Memory
-- Check cache: `node ~/.qa-agent/lib/store.js cache get <hash>` - find similar incidents
-- Check decision memory: `node ~/.qa-agent/lib/store.js cor list "triage" "1"` - learn from previous triages
-- Also check: `node ~/.qa-agent/lib/store.js cor list "triage" "-10"` - avoid past mistakes (score < 0)
+- Hash: `node ~/.qa-agent/lib/store.js cache hash "<incident-key>"` then `cache get <hash>`
+- Check decision memory: `node ~/.qa-agent/lib/store.js cor list "triage" "1"` - proven patterns (score >= 1)
+- Avoid past mistakes: `node ~/.qa-agent/lib/store.js cor list "triage" "-999" "-1"` - score between -999 and -1
 - Read `.cursor/qa-memory/project-context/current.md` - understand project mapping
 
 ### Step 4: Universal Shortcut Search
-`search_stories(query)` - search ALL work item types, ALL statuses
+`stories-search` - search ALL work item types, ALL statuses
 - Search duplicates: if similarity >= 80% → generate "follow existing ticket" email → STOP
 - Search related tickets: defects, stories, investigations
 
 ### Step 5: Knowledge Investigation
-Glean: `search(query)`, `read_document(url)` - Confluence/knowledge base
+Glean: `search`, `read_document` - Confluence/knowledge base
 Search: product docs, known issues, runbooks, troubleshooting guides
 
 ### Step 6: Historical Analysis
@@ -41,7 +41,7 @@ Search: product docs, known issues, runbooks, troubleshooting guides
 
 ### Step 7: Squad Ownership Analysis
 - Primary squad + Secondary squad (based on component/feature)
-- Check Confluence for ownership mapping
+- Check project memory / Confluence for ownership mapping
 
 ### Step 8: Severity + Risk Assessment
 - Sev1: Critical (production down, data loss)
@@ -59,7 +59,7 @@ Classification: **Defect** / **Need Help** / **User Error** / **Expected Behavio
 ### Step 10: Generate Artifacts
 - **Draft Shortcut ticket**: title, description, squad, priority, severity, classification, evidence
 - **Root Cause Analysis (RCA)**: initial assessment
-- **Test coverage check**: search for related test cases in TestRail via `get_cases()`, `get_runs()`
+- **Test coverage check**: TestRail via `getCases`, `getRuns`
 
 ### Step 11: Approval Gate
 Show the draft to the user:
@@ -67,7 +67,7 @@ Show the draft to the user:
 ## Triage Report
 **Classification:** Defect
 **Severity:** Sev2 (High)
-**Squad:** Quote Engine
+**Squad:** <from project memory / ownership map>
 
 **Draft Ticket:** ...
 **RCA:** ...
@@ -75,7 +75,7 @@ Show the draft to the user:
 ```
 
 Ask user (type number or custom):
-1. APPROVE - create ticket via `create_story(...)` + save to memory
+1. APPROVE - create ticket via `stories-create` + save to memory
 2. EDIT - apply corrections -> preview again -> loop
 3. REJECT - save rejection reason to memory
 or type your own answer
@@ -92,13 +92,12 @@ or type your own answer
 - **Defect** - Draft Defect ticket + RCA + test cases → wait approval
 
 ## MCP Tools
-- **Shortcut**: `search_stories(query)`, `create_story(...)` (ONLY after APPROVE), `update_story(...)`
-- **Glean**: `search(query)`, `read_document(url)` - Confluence/knowledge
-- **TestRail**: `get_cases(...)`, `get_runs(...)` - test coverage analysis
+- **Shortcut**: `stories-search`, `stories-create` (ONLY after APPROVE), `stories-update`
+- **Glean**: `search`, `read_document` - Confluence/knowledge
+- **TestRail**: `getCases`, `getRuns` - test coverage analysis
 
 ## References
 - Full process: `reference/triage-process.md`
 - Email templates: `reference/email-templates.md`
 - Output format: `reference/output-format.md`
-- Squad ownership: squad-ownership-link
 - Global memory: `~/.qa-agent/`

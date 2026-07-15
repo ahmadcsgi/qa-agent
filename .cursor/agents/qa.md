@@ -50,11 +50,15 @@ Shared across ALL projects. Data uses short field names (~40% smaller than stand
 
 **Cache protocol (O(1) lookup by hash):**
 ```bash
-# Before MCP call: check cache
+# 1) Hash the query
+node ~/.qa-agent/lib/store.js cache hash "<query>"
+# → e.g. a1b2c3d4
+
+# 2) Before MCP call: check cache
 node ~/.qa-agent/lib/store.js cache get <hash>
 # → returns results or "null" (cache miss / expired)
 
-# After MCP call: save to cache
+# 3) After MCP call: save to cache
 node ~/.qa-agent/lib/store.js cache set <hash> "<query>" '<json-results>'
 
 # Periodic maintenance: remove entries >24h old
@@ -69,9 +73,11 @@ node ~/.qa-agent/lib/store.js cor add "<domain>" "<context>" "<issue>" "<correct
 # User rejected our output → score=-1 (if same issue exists, adjusts existing score)
 node ~/.qa-agent/lib/store.js cor add "<domain>" "<context>" "<issue>" "<fix>" "<lesson>" "-1"
 
-# Before generating: find proven patterns (score > 0)
+# Before generating: proven patterns (score >= 1)
 node ~/.qa-agent/lib/store.js cor list "<domain>" "1"
-# → Apply patterns with positive scores
+
+# Avoid past mistakes (score between -999 and -1)
+node ~/.qa-agent/lib/store.js cor list "<domain>" "-999" "-1"
 
 # Before accepting user suggestion: check for prior failures (score < 0)
 node ~/.qa-agent/lib/store.js cor search "<topic>"

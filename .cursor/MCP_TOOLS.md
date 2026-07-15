@@ -1,56 +1,59 @@
 # MCP Tool Map - QA Agent
 
 Quick reference: which MCP server for which task.
+Tool names below match the **actual MCP server APIs** (verified against live schemas).
 
 ## Shortcut (`shortcut`)
 | Tool | Use Case | Called by |
 |------|----------|----------------|
-| `search_stories(query)` | Search tickets with natural language | `@qa-search-tickets`, `@qa-defect-triage` |
-| `stories-get-current` | View story/defect details | `@qa-defect-triage`, `@qa-ui-automation`, `@qa-test-cases`, `@qa-api-test`, `@qa-perf-test` |
-| `create_story(...)` | Create new ticket (only after approval) | `@qa-defect-triage` |
-| `update_story(...)` | Update existing ticket | `@qa-defect-triage` |
+| `stories-search` | Search tickets with natural language / filters | `@qa-search-tickets`, `@qa-defect-triage` |
+| `stories-get-by-id` | View story/defect details by ID | `@qa-defect-triage`, `@qa-ui-automation`, `@qa-test-cases`, `@qa-api-test`, `@qa-perf-test` |
+| `stories-create` | Create new ticket (only after approval) | `@qa-defect-triage` |
+| `stories-update` | Update existing ticket | `@qa-defect-triage` |
 
 ## TestRail (`testrail`)
 | Tool | Use Case | Called by |
 |------|----------|----------------|
-| `get_cases(section_id)` | View test cases in section | `@qa-ui-automation`, `@qa-test-cases` |
-| `get_case(case_id)` | Test case details | `@qa-ui-automation` |
-| `add_case(...)` | Create new test case (only after approval) | `@qa-test-cases` |
-| `update_case(...)` | Edit test case | `@qa-test-cases` |
-| `delete_case(...)` | Delete test case | `@qa-test-cases` |
-| `get_sections()` | View section list | `@qa-test-cases` |
-| `get_section(id)` | Section details | `@qa-test-cases` |
-| `get_runs(...)` | View test runs | `@qa-defect-triage` |
-| `add_run(...)` | Create new test run | `@qa-ui-automation` |
+| `getCases` | View test cases (by project/suite/section) | `@qa-ui-automation`, `@qa-test-cases` |
+| `getCase` | Test case details | `@qa-ui-automation` |
+| `addCase` | Create new test case (only after approval) | `@qa-test-cases` |
+| `updateCase` | Edit test case | `@qa-test-cases` |
+| `deleteCase` | Delete test case | `@qa-test-cases` |
+| `getSections` | View section list | `@qa-test-cases` |
+| `getSection` | Section details | `@qa-test-cases` |
+| `getRuns` | View test runs | `@qa-defect-triage` |
+| `addRun` | Create new test run | `@qa-ui-automation` |
 
 ## Glean (`glean`)
 | Tool | Use Case | Called by |
 |------|----------|----------------|
-| `search(query)` | Search documents, Confluence, knowledge base | `@qa-defect-triage`, `@qa-ui-automation`, `@qa-api-test`, `@qa-search-tickets` |
-| `read_document(url)` | Read specific document | `@qa-defect-triage` |
-| `chat(query)` | Ask Glean AI | All skills |
+| `search` | Search documents, Confluence, knowledge base | `@qa-defect-triage`, `@qa-ui-automation`, `@qa-api-test`, `@qa-search-tickets` |
+| `read_document` | Read specific document by URL | `@qa-defect-triage` |
+| `chat` | Ask Glean AI | All skills |
 
 ## Context7 (`context7`)
 | Tool | Use Case | Called by |
 |------|----------|----------------|
-| `resolve-library-id(...)` | Find library ID | `@qa-ui-automation` (Cypress), `@qa-api-test` (Karate), `@qa-perf-test` (k6) |
-| `query-docs(...)` | Fetch framework documentation | `@qa-ui-automation`, `@qa-api-test`, `@qa-perf-test` |
+| `resolve-library-id` | Find library ID | `@qa-ui-automation` (Cypress), `@qa-api-test` (Karate), `@qa-perf-test` (k6) |
+| `query-docs` | Fetch framework documentation | `@qa-ui-automation`, `@qa-api-test`, `@qa-perf-test` |
 
 ## Cypress (`cypress`)
 | Tool | Use Case | Called by |
 |------|----------|----------------|
-| `run_test(file)` | Run Cypress test & validate | `@qa-ui-automation` |
-| `open_runner(...)` | Open Cypress Runner | `@qa-ui-automation` |
+| `cypress_run_spec` | Run a Cypress spec file headless | `@qa-ui-automation` |
+| `cypress_run_test` | Run a specific test by name within a spec | `@qa-ui-automation` |
+| `cypress_discover` | Map the Cypress suite | `@qa-ui-automation` |
+| `cypress_get_failure_context` | Compact failure debug bundle | `@qa-ui-automation` |
 
 ## Playwright (`playwright`)
 | Tool | Use Case | Called by |
 |------|----------|----------------|
-| `browser_navigate(url)` | Navigate to a web page | `@qa-ui-automation` |
-| `browser_click(selector)` | Click element | `@qa-ui-automation` |
-| `browser_type(selector, text)` | Type in input field | `@qa-ui-automation` |
-| `browser_get_accessibility_tree()` | Get page accessibility structure | `@qa-ui-automation` |
-| `browser_screenshot()` | Screenshot for exploration log | `@qa-ui-automation` |
-| `browser_evaluate(script)` | Execute JS in browser | `@qa-ui-automation` |
+| `browser_navigate` | Navigate to a web page | `@qa-ui-automation` |
+| `browser_click` | Click element | `@qa-ui-automation` |
+| `browser_type` | Type in input field | `@qa-ui-automation` |
+| `browser_snapshot` | Get page accessibility tree / DOM snapshot | `@qa-ui-automation` |
+| `browser_take_screenshot` | Screenshot for exploration log | `@qa-ui-automation` |
+| `browser_evaluate` | Execute JS in browser | `@qa-ui-automation` |
 
 ## Git (built-in Cursor)
 | Tool | Use Case | Called by |
@@ -58,4 +61,4 @@ Quick reference: which MCP server for which task.
 | `git diff`, `git log` | Check changes | `@qa-perf-test`, `@qa-ui-automation`, `@qa-api-test` |
 | `git checkout -b` | Create new branch | `@qa-perf-test`, `@qa-api-test` |
 
-> **Note:** Detailed tool usage is documented in each skill file (`.cursor/skills/<name>/SKILL.md`).
+> **Note:** Detailed tool usage is documented in each skill file (`.cursor/skills/<name>/SKILL.md`) and offline refs under `.cursor/references/`.

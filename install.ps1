@@ -18,6 +18,15 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+function JPath {
+    param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Parts)
+    $result = $Parts[0]
+    for ($i = 1; $i -lt $Parts.Count; $i++) {
+        $result = Join-Path $result $Parts[$i]
+    }
+    return $result
+}
+
 # ─── Colors ───────────────────────────────────────────────────────────────
 function Write-Info  { Write-Host "[INFO]  $args" -ForegroundColor Cyan }
 function Write-Ok    { Write-Host "[OK]    $args" -ForegroundColor Green }
@@ -27,20 +36,22 @@ function Write-Err   { Write-Host "[ERR]   $args" -ForegroundColor Red }
 $RepoDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoDir = (Resolve-Path $RepoDir).Path
 
-$SkillsSrc    = Join-Path $RepoDir ".cursor" "skills"
-$AgentsSrc    = Join-Path $RepoDir ".cursor" "agents"
-$RulesSrc     = Join-Path $RepoDir ".cursor" "rules"
-$MemorySrc    = Join-Path $RepoDir ".cursor" "qa-memory"
-$McpToolsSrc  = Join-Path $RepoDir ".cursor" "MCP_TOOLS.md"
-$AgentsMdSrc  = Join-Path $RepoDir "AGENTS.md"
-$ReadmeSrc    = Join-Path $RepoDir "README.md"
-$StoreSrc     = Join-Path $RepoDir "scripts" "store.js"
+$SkillsSrc     = JPath $RepoDir ".cursor" "skills"
+$AgentsSrc     = JPath $RepoDir ".cursor" "agents"
+$RulesSrc      = JPath $RepoDir ".cursor" "rules"
+$RefsSrc       = JPath $RepoDir ".cursor" "references"
+$MemorySrc     = JPath $RepoDir ".cursor" "qa-memory"
+$McpToolsSrc   = JPath $RepoDir ".cursor" "MCP_TOOLS.md"
+$AgentsMdSrc   = JPath $RepoDir "AGENTS.md"
+$ReadmeSrc     = JPath $RepoDir "README.md"
+$StoreSrc      = JPath $RepoDir "scripts" "store.js"
+$ContextTplSrc = JPath $RepoDir ".cursor" "templates" "project-context.current.md"
 
 # ─── Global store dir (~\.qa-agent\) ──────────────────────────────────────
 $GlobalStoreDir = Join-Path $env:USERPROFILE ".qa-agent"
 
 # ─── Detect target ─────────────────────────────────────────────────────────
-$TestPath = Join-Path $RepoDir ".cursor" "skills" "qa-entry" "SKILL.md"
+$TestPath = JPath $RepoDir ".cursor" "skills" "qa-entry" "SKILL.md"
 if (Test-Path $TestPath) {
     $TargetDir = $RepoDir
     Write-Info "Detected project root at $TargetDir (running in-place)"
@@ -68,11 +79,11 @@ Write-Info "Creating project directory structure..."
 
 # ─── Global memory store ───────────────────────────────────────────────────
 Write-Info "Creating global memory store at $GlobalStoreDir ..."
-New-Item -ItemType Directory -Force -Path (Join-Path $GlobalStoreDir "lib") | Out-Null
+New-Item -ItemType Directory -Force -Path (JPath $GlobalStoreDir "lib") | Out-Null
 
 # Copy storage engine
 if (Test-Path $StoreSrc) {
-    $LibTarget = Join-Path $GlobalStoreDir "lib" "store.js"
+    $LibTarget = JPath $GlobalStoreDir "lib" "store.js"
     Copy-Item -Path $StoreSrc -Destination $LibTarget -Force
     Write-Ok "  Storage engine installed (~\.qa-agent\lib\store.js)"
 }
@@ -98,7 +109,7 @@ foreach ($file in $GlobalFiles.Keys) {
 }
 
 # ─── Global skills directory ───────────────────────────────────────────────
-$GlobalSkillsDir = Join-Path $env:USERPROFILE ".cursor" "skills"
+$GlobalSkillsDir = JPath $env:USERPROFILE ".cursor" "skills"
 New-Item -ItemType Directory -Force -Path $GlobalSkillsDir | Out-Null
 
 # ─── Copy skills ───────────────────────────────────────────────────────────
@@ -111,7 +122,7 @@ $SkillCount = (Get-ChildItem "$SkillsSrc" -Directory).Count
 if ($TargetDir -ne $RepoDir) {
     Write-Info "Copying skills to project '$TargetDir\.cursor\skills\'..."
     Get-ChildItem "$SkillsSrc\*" -Directory | ForEach-Object {
-        $Target = Join-Path $TargetDir ".cursor" "skills" $_.Name
+        $Target = JPath $TargetDir ".cursor" "skills" $_.Name
         Copy-Item -Path $_.FullName -Destination $Target -Recurse -Force:$Force
     }
     Write-Ok "Project skills installed ($SkillCount skills)"
@@ -140,7 +151,7 @@ Get-ChildItem "$SkillsSrc\*" -Directory | ForEach-Object {
 }
 
 # ─── Global agent directory ────────────────────────────────────────────────
-$GlobalAgentsDir = Join-Path $env:USERPROFILE ".cursor" "agents"
+$GlobalAgentsDir = JPath $env:USERPROFILE ".cursor" "agents"
 New-Item -ItemType Directory -Force -Path $GlobalAgentsDir | Out-Null
 
 # ─── Copy subagent (project + global) ─────────────────────────────────────
@@ -149,7 +160,7 @@ if (-not (Test-Path $AgentFile)) {
     $AgentFile = Join-Path $AgentsSrc "qa-agent.md"  # legacy fallback
 }
 if (Test-Path $AgentFile) {
-    $ProjectAgent = Join-Path $TargetDir ".cursor" "agents" "qa.md"
+    $ProjectAgent = JPath $TargetDir ".cursor" "agents" "qa.md"
     if ($AgentFile -ne $ProjectAgent) {
         Copy-Item -Path $AgentFile -Destination $ProjectAgent -Force:$Force
         Write-Ok "Custom subagent installed (.cursor\agents\qa.md)"
@@ -167,7 +178,7 @@ if (Test-Path $AgentFile) {
 # ─── Copy rules ────────────────────────────────────────────────────────────
 $RulesFile = Join-Path $RulesSrc "qa-agent-rules.mdc"
 if (Test-Path $RulesFile) {
-    $Target = Join-Path $TargetDir ".cursor" "rules" "qa-agent-rules.mdc"
+    $Target = JPath $TargetDir ".cursor" "rules" "qa-agent-rules.mdc"
     if ($RulesFile -ne $Target) {
         Copy-Item -Path $RulesFile -Destination $Target -Force:$Force
         Write-Ok "Project rules installed (.cursor\rules\qa-agent-rules.mdc)"
@@ -194,21 +205,68 @@ if (Test-Path $ReadmeSrc) {
 
 # ─── Copy MCP_TOOLS.md ────────────────────────────────────────────────────
 if (Test-Path $McpToolsSrc) {
-    $Target = Join-Path $TargetDir ".cursor" "MCP_TOOLS.md"
+    $Target = JPath $TargetDir ".cursor" "MCP_TOOLS.md"
     if ($McpToolsSrc -ne $Target) {
         Copy-Item -Path $McpToolsSrc -Destination $Target -Force:$Force
         Write-Ok "MCP_TOOLS.md installed"
     }
 }
 
-# ─── Copy project-context/current.md (if exists) ──────────────────────────
-$ProjectContextSrc = Join-Path $MemorySrc "project-context" "current.md"
-if (Test-Path $ProjectContextSrc) {
-    $Target = Join-Path $TargetDir ".cursor" "qa-memory" "project-context" "current.md"
-    if (-not (Test-Path $Target)) {
-        Copy-Item -Path $ProjectContextSrc -Destination $Target -Force
+# ─── Copy offline references ───────────────────────────────────────────────
+if (Test-Path $RefsSrc) {
+    $RefsTarget = JPath $TargetDir ".cursor" "references"
+    if ($RefsSrc -ne $RefsTarget) {
+        New-Item -ItemType Directory -Force -Path $RefsTarget | Out-Null
+        Copy-Item -Path (Join-Path $RefsSrc "*") -Destination $RefsTarget -Recurse -Force:$Force
+        Write-Ok "Offline references installed (.cursor\references\)"
+    }
+    else {
+        Write-Info "Running in-place - references already present"
+    }
+}
+
+# ─── Copy project-context template ─────────────────────────────────────────
+$ProjectContextSrc = JPath $MemorySrc "project-context" "current.md"
+$ProjectContextTarget = JPath $TargetDir ".cursor" "qa-memory" "project-context" "current.md"
+if (-not (Test-Path $ProjectContextTarget)) {
+    if (Test-Path $ProjectContextSrc) {
+        Copy-Item -Path $ProjectContextSrc -Destination $ProjectContextTarget -Force
         Write-Ok "project-context/current.md installed"
     }
+    elseif (Test-Path $ContextTplSrc) {
+        Copy-Item -Path $ContextTplSrc -Destination $ProjectContextTarget -Force
+        Write-Ok "project-context/current.md installed from template"
+    }
+}
+
+# ─── Visual test npm install (optional) ───────────────────────────────────
+$VisualScriptsDir = JPath $TargetDir ".cursor" "skills" "qa-visual-test" "scripts"
+$VisualPkg = Join-Path $VisualScriptsDir "package.json"
+$VisualMods = Join-Path $VisualScriptsDir "node_modules"
+if ((Test-Path $VisualPkg) -and -not (Test-Path $VisualMods)) {
+    Write-Host ""
+    Write-Info "Visual regression dependencies found. Install now? (y/N)"
+    $answer = Read-Host
+    if ($answer -eq "y" -or $answer -eq "Y") {
+        Push-Location $VisualScriptsDir
+        try {
+            npm install --silent
+            npx playwright install chromium 2>$null
+            Write-Ok "Visual regression dependencies installed"
+            Write-Info "  Run: node .cursor\skills\qa-visual-test\scripts\run.js init"
+        }
+        finally {
+            Pop-Location
+        }
+    }
+    else {
+        Write-Info "  Skip npm install. Run manually when needed:"
+        Write-Info "    cd $VisualScriptsDir"
+        Write-Info "    npm install && npx playwright install chromium"
+    }
+}
+elseif (Test-Path $VisualMods) {
+    Write-Ok "Visual regression dependencies already installed"
 }
 
 # ─── Done ──────────────────────────────────────────────────────────────────

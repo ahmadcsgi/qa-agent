@@ -9,25 +9,27 @@
  */
 
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
-import { resolve, dirname } from "node:path";
+import { tmpdir } from "node:os";
+import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const DEFAULT_REPORT_DIR = join(tmpdir(), "qa-visual-report");
 
 /**
  * Generate a self-contained HTML report.
  *
  * @param {object} report - The full JSON report from run.js
  * @param {object} options
- * @param {string} options.reportDir - Output directory (default: /tmp/qa-visual-report/)
+ * @param {string} options.reportDir - Output directory (default: os.tmpdir()/qa-visual-report)
  * @param {string} options.baseDir - Baseline images directory
  * @param {string} options.screenshotDir - Captured screenshots directory
  * @returns {string} Path to generated HTML file
  */
 export function generateHtmlReport(report, options = {}) {
   const {
-    reportDir = "/tmp/qa-visual-report",
+    reportDir = DEFAULT_REPORT_DIR,
     baseDir = "",
     screenshotDir = "",
   } = options;

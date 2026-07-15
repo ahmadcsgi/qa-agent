@@ -11,9 +11,12 @@
  */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { tmpdir } from "node:os";
+import { dirname, join, resolve } from "node:path";
 import pixelmatch from "pixelmatch";
 import { PNG } from "pngjs";
+
+const DEFAULT_DIFF_DIR = join(tmpdir(), "qa-visual-diff");
 
 /**
  * Compare a screenshot against its baseline.
@@ -23,7 +26,7 @@ import { PNG } from "pngjs";
  * @param {object} [options]
  * @param {number} [options.threshold=0.001] - Mismatch threshold per pixel (0-1)
  * @param {boolean} [options.generateDiff=true] - Write diff image on mismatch
- * @param {string} [options.diffDir] - Directory for diff images (default: /tmp/qa-visual-diff/)
+ * @param {string} [options.diffDir] - Directory for diff images (default: os.tmpdir()/qa-visual-diff)
  * @returns {{
  *   match: boolean,
  *   diffPixels: number,
@@ -37,7 +40,7 @@ export function compareScreenshots(screenshotPath, baselinePath, options = {}) {
   const {
     threshold = 0.001,
     generateDiff = true,
-    diffDir = "/tmp/qa-visual-diff",
+    diffDir = DEFAULT_DIFF_DIR,
   } = options;
 
   // Validate both files exist

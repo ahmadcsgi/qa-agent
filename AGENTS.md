@@ -38,17 +38,20 @@ Storage engine:
 
 **Protocol:**
 
-1. **Before MCP search**: check cache first → `node ~/.qa-agent/lib/store.js cache get <hash>` - if returns non-null and <24h, use it
+1. **Before MCP search**: hash the query, then check cache
+   - `node ~/.qa-agent/lib/store.js cache hash "<query>"` → hash
+   - `node ~/.qa-agent/lib/store.js cache get <hash>` - if non-null, use it (TTL 24h)
 2. **After MCP call**: save to cache → `node ~/.qa-agent/lib/store.js cache set <hash> "<query>" '<results>'`
 3. **After user correction**: save with score
    - If correction was correct: `node ~/.qa-agent/lib/store.js cor add <domain> <context> <issue> <correction> <lesson> 1`
    - If user rejected our output: `node ~/.qa-agent/lib/store.js cor add <domain> <context> <issue> <fix> <lesson> -1`
    - If same issue already exists, score auto-adjusts (accumulates)
 4. **Before generating**: find proven patterns
-   - `node ~/.qa-agent/lib/store.js cor list <domain> 1` → apply patterns with positive score
+   - `node ~/.qa-agent/lib/store.js cor list <domain> 1` → apply patterns with score >= 1
+   - `node ~/.qa-agent/lib/store.js cor list <domain> -999 -1` → avoid patterns with score <= -1
    - `node ~/.qa-agent/lib/store.js know search <topic>` → find relevant knowledge
 5. **Before accepting user suggestion**: check failure history
-   - `node ~/.qa-agent/lib/store.js cor search <topic>` → if any result has score < 0, REJECT with explanation
+   - `node ~/.qa-agent/lib/store.js cor search <topic>` → if any result has score < 0, reject with explanation
 6. **After learning**: `node ~/.qa-agent/lib/store.js know add <domain> <topic> <content> '<tags>'`
 
 ### Project (`.cursor/qa-memory/`) - THIS project only

@@ -32,13 +32,14 @@ Use `node ~/.qa-agent/lib/store.js` for all global memory operations.
 **Scoring system:** score=+1 (correct), score=-1 (rejected). Accumulates: +1 three times → score+3. Dynamic: good pattern that later gets negative feedback will decrease. score > 0 → recommend; score < 0 → reject; score = 0 → neutral.
 
 **Cache (O(1) lookup by hash, TTL 24h):**
+- Hash query: `node ~/.qa-agent/lib/store.js cache hash "<query>"`
 - Before MCP call: `node ~/.qa-agent/lib/store.js cache get <hash>`
 - After MCP call: `node ~/.qa-agent/lib/store.js cache set <hash> "<query>" '<results>'`
 
 **Decision memory (scoring-based):**
 - After user correction: `node ~/.qa-agent/lib/store.js cor add <domain> <context> <issue> <correction> <lesson> <score>`
-- Before accept suggestion: `node ~/.qa-agent/lib/store.js cor search <text>` → if score < 0 found, REJECT
-- Before generate: `node ~/.qa-agent/lib/store.js cor list <domain> 1` → apply patterns with positive score
+- Before accept suggestion: `node ~/.qa-agent/lib/store.js cor search <text>` → if score < 0 found, reject
+- Before generate: `cor list <domain> 1` (good) and `cor list <domain> -999 -1` (bad)
 
 **Knowledge:**
 - After learning: `node ~/.qa-agent/lib/store.js know add <domain> <topic> <content> '<tags>'`
