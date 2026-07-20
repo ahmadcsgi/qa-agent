@@ -27,8 +27,22 @@ const PREF_FILE = path.join(STORE_DIR, 'prefs.json');
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const VERSION = 3;
-const BOOT_DEFAULT_N = 5;
+const BOOT_DEFAULT_N = 3;
+const BOOT_CONTEXT_CHARS = 400;
 const CONTEXT_MAX_CHARS = 6000;
+/** Prefs always included in boot (token thrift). */
+const BOOT_PREF_ALWAYS = ['output.', 'tools.', 'search.', 'mcp.', 'mode.'];
+/** Extra pref key prefixes per boot domain. */
+const BOOT_PREF_BY_DOMAIN = {
+  testcases: ['testcases.', 'testrail.'],
+  triage: ['triage.'],
+  search: ['search.'],
+  automation: ['automation.', 'ui.', 'cypress.'],
+  api: ['api.', 'karate.'],
+  perf: ['perf.', 'k6.'],
+  visual: ['visual.'],
+  mapping: ['mapping.', 'project.'],
+};
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -546,6 +560,28 @@ function topLessons(entries, domain, n, sign) {
 }
 
 /**
+ * Keep boot prefs small: always-include prefixes + domain prefixes.
+ * No domain → only BOOT_PREF_ALWAYS (plus undotted keys).
+ */
+function filterPrefsForBoot(prefs, domain) {
+  const prefixes = [...BOOT_PREF_ALWAYS];
+  if (domain) {
+    prefixes.push(`${domain}.`);
+    const extra = BOOT_PREF_BY_DOMAIN[String(domain).toLowerCase()];
+    if (extra) prefixes.push(...extra);
+  }
+  const out = {};
+  for (const [k, v] of Object.entries(prefs || {})) {
+    if (!domain && !k.includes('.')) {
+      out[k] = v;
+      continue;
+    }
+    if (prefixes.some((p) => k.startsWith(p))) out[k] = v;
+  }
+  return out;
+}
+
+/**
  * boot [domain] [n] [--project auto|id|*]
  * Merges global + project prefs/lessons (tiny payload).
  */
@@ -571,7 +607,8 @@ function boot(rawArgs) {
     }
   }
 
-  const prefs = mergedPrefs(projectId === '*' ? null : projectId);
+  const prefsAll = mergedPrefs(projectId === '*' ? null : projectId);
+  const prefs = filterPrefsForBoot(prefsAll, domain);
   const globalCors = (readJSON(COR_FILE).d || []).map((e) => ({ ...e, proj: e.proj || '*' }));
   let projectCors = [];
   if (projectId && projectId !== '*') {
@@ -595,7 +632,8 @@ function boot(rawArgs) {
     const ctxPath = projectFiles(projectId).context;
     if (fs.existsSync(ctxPath)) {
       const raw = fs.readFileSync(ctxPath, 'utf-8');
-      contextExcerpt = raw.length > 800 ? raw.slice(0, 800) + '…' : raw;
+      contextExcerpt =
+        raw.length > BOOT_CONTEXT_CHARS ? raw.slice(0, BOOT_CONTEXT_CHARS) + '…' : raw;
     }
   }
 
@@ -617,6 +655,7 @@ function boot(rawArgs) {
       know_p: knowP.length,
       cache: Object.keys(cache).length,
       prefs: Object.keys(prefs).length,
+      prefs_all: Object.keys(prefsAll).length,
     },
   });
 }

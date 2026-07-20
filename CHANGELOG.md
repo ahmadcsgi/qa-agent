@@ -4,6 +4,42 @@ All notable changes to QA Agent are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project uses [SemVer](https://semver.org/).
 
+## [1.4.2] - 2026-07-20
+
+### Added
+- `testrail-case-generate.mdc`: mandatory Learn > Plan > Draft > **batch of 5** > ACC/EDIT/REJECT/DELETE > then TestRail write
+- Boot prefs filter by domain prefix (`filterPrefsForBoot`) to shrink session payload
+
+### Changed
+- `@qa-test-cases` + methodology enforce generate flow and batch-of-5 chat gate
+- DNA / `AGENTS.md` point to generate rule as must-follow for new cases
+
+## [1.4.1] - 2026-07-20
+
+### Changed
+- **Neutral repo:** no org/product hardcodes. Incident templates (`incident-email.md`) replace Helix-named docs. Generic TestRail section/checklist rules
+- **Cursor lite:** only `qa-agent-rules.mdc` is `alwaysApply: true`. Domain rules (TestRail draft/titles/section/checklist, punctuation, bug description) are requestable
+- Slimmer `AGENTS.md` + `@qa-entry`. Boot defaults: `n=3`, context excerpt 400 chars
+
+### Removed
+- `helix-email.md` (replaced by `incident-email.md`)
+
+## [1.4.0] - 2026-07-20
+
+### Added
+- `@qa-test-execution` skill: TestRail plans, runs, mark Passed/Failed (ACC / explicit request)
+- Methodology Phase **2b** (duplicate case check) and Phase **7** (plan / results)
+- Case maintenance + Shortcut **TC-on-progress to TC-ready** label groom flows
+- Portable TestRail rules in repo: `testrail-case-draft`, `testrail-case-titles`, `testrail-section-version`, `testrail-shortcut-checklist`, `output-punctuation`, `shortcut-bug-description`
+- Installer scaffolds `generated-tests/manual/` and copies all `.cursor/rules/*.mdc`
+- Project-context template fields: TestRail IDs, section map, TC labels, product notes
+- DEMO steps 6–7 for plan/pass and label groom
+
+### Changed
+- `@qa-test-cases` / `@qa-entry` route plan, pass, update case, label groom
+- `MCP_TOOLS.md` + `testrail-api.md` + `shortcut-api.md` document plans, results, tasks, labels
+- `doctor.js` checks new skill, draft rule, methodology
+
 ## [1.3.0] - 2026-07-15
 
 ### Added

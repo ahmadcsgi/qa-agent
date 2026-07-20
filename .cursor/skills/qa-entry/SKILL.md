@@ -1,138 +1,38 @@
 ---
 name: qa-entry
-description: Entry point for all QA tasks. Auto-detect intent from input, ask clarifying questions, route to the correct skill. Use when user says "@qa", pastes any content, or asks vague QA questions.
+description: Entry point for QA tasks. Detect intent, ask if unclear, route to one skill. Use for @qa, vague asks, or pasted links/IDs.
 ---
 
 # QA Entry Point
 
 ## Role
-QA Assistant Receptionist - your job: understand what the user wants, ask for clarification if unclear, route to the correct skill when clear.
+Receptionist: detect intent, clarify if needed, route to **one** skill. Stay short.
 
-## Auto-Detect Intent
-Attempt to auto-detect intent from user input:
+## Boot (first vague / multi-step turn)
+1. `proj ensure` then `boot [domain] --project auto`
+2. Apply prefs / `good` / `bad`. Do **not** dump boot JSON.
+3. If `.cursor/qa-memory/project-context/current.md` missing or >7d → `@qa-project-mapping`
+4. Before generating automation → climb `@qa-token-saver` ladder
 
-| Input Pattern | Likely Intent | Route |
-|---------------|---------------|-------|
-| `https?://(app\.)?shortcut\.com/...` | Shortcut story link - needs test/check | Ask: automation / test case / search? |
-| `https?://.*testrail\.*` | TestRail link - needs test case or automation | Ask: test cases / automation? |
-| `HELIX-\d+` or `INC\d+` | Helix incident - needs triage | `@qa-defect-triage` |
-| Stack trace, `Exception`, `Error` | Error message - needs ticket search | `@qa-search-tickets` |
-| `C\d{5}` | TestRail case ID - needs automation | `@qa-ui-automation` |
-| `http(s)?://.*` (generic) | Endpoint URL - possibly API test | `@qa-api-test` |
-| Story number only (`12345`) | Shortcut story - ask what to do | Ask first |
-| Natural language vague | "help with QA", "test please", "help" | Ask clarifying questions |
+## Intent → skill
 
-## Flow
-### 0. Boot brain (automatic — lite, multi-project)
-At the start of a vague or multi-step request:
-1. `node ~/.qa-agent/lib/store.js proj ensure`
-2. `node ~/.qa-agent/lib/store.js boot [domain] --project auto`
-3. Apply merged `prefs`; follow `good`; avoid `bad` (project lessons win when conflicting)
-4. Do **not** paste the full boot JSON into chat — just act on it
+| Pattern | Route |
+|---------|-------|
+| Shortcut URL / story id | Ask: cases / automation / search? |
+| TestRail URL / `C\d+` | Ask: cases / automation / plan / mark result? |
+| `INC\d+` or incident link / "triage" / bug report | `@qa-defect-triage` |
+| Stack trace / Exception / Error paste | `@qa-search-tickets` |
+| Endpoint URL / "api" / karate | `@qa-api-test` |
+| "test plan" / `plans/view` / "centang" / mark pass|fail | `@qa-test-execution` |
+| "update case" / TC-ready / TC-on-progress | `@qa-test-cases` |
+| "create test case" / story + cases | `@qa-test-cases` |
+| "automate" / Cypress | `@qa-ui-automation` |
+| "perf" / k6 / load | `@qa-perf-test` |
+| "visual" / screenshot compare | `@qa-visual-test` |
+| "scan project" / mapping | `@qa-project-mapping` |
+| Vague | Ask: automation / search / triage / cases / plan-or-results? |
 
-### 0a. Project Mapping (automatic)
-EVERY time entering a new project or an automation skill is called:
-1. Check `.cursor/qa-memory/project-context/current.md` - does it exist?
-2. If not found → call `@qa-project-mapping` to scan
-3. If found and < 7 days old → read the map
-4. If > 7 days old → refresh the map
-5. This MAP becomes the reference for all automation skills (UI, API, perf)
+If unclear: ask for Shortcut, TestRail, or incident ID. Mirror user language.
 
-### 0b. Token Saver (automatic)
-EVERY time before generating a test:
-1. Read the decision ladder from `@qa-token-saver`
-2. Climb 7 rungs: YAGNI → Reuse → Stdlib → Native → Existing Dep → One-liner → Minimum
-3. Record the decision in minimal output
-4. Proceed to generate with confidence that the test is NECESSARY and MINIMAL
-
-1. Listen / read user input
-2. Auto-detect intent (see table above)
-3. If clear → route directly
-4. If unclear → ask clarifying questions
-5. Route to the specific skill
-
-## Clarifying Questions (when input is vague)
-Ask:
-- "What would you like to do? Automation test / search tickets / triage incident / create test cases?"
-- "Do you have a reference link or ID? (Shortcut, TestRail, Helix)"
-
-## Task Routing
-
-### 0. Project Mapping
-Trigger: "refresh map", "mapping project", "scan project", "project map"
-→ Route to: `@qa-project-mapping`
-
-### 0b. Token Saver
-Trigger: "token saver", "save tokens", "token", "ponytail", "ladder", "lite", "full", "ultra"
-→ Route to: `@qa-token-saver`
-
-### 1. UI Automation (Cypress)
-Trigger: "create automation", "generate test", "automate", "make test", TestRail case ID (`C12345`)
-Ask:
-- Do you have a **Shortcut story ID** or **TestRail link**?
-- **Environment** (from project memory, or staging/production)
-- **Test user** (from `project-context/current.md`, or custom)
-
-→ Route to: `@qa-ui-automation`
-
-### 2. API Test (Karate)
-Trigger: "api test", "karate", "endpoint", "create api test", "rest api", paste URL endpoint
-Ask:
-- Do you have a story ID or endpoint URL?
-- **Coverage**: happy path / happy+error / all?
-- **Method**: GET/POST/PUT/DELETE/PATCH?
-- **Environment / base URL?**
-- **Auth method?**
-
-→ Route to: `@qa-api-test`
-
-### 3. Performance Test (k6)
-Trigger: "perf test", "load test", "stress test", "k6", "performance test", "create perf test"
-Ask:
-- Do you have a story ID or endpoint?
-- **Scenario**: load / stress / spike / soak / smoke?
-- **Workload**: how many VUs and duration?
-- **Thresholds**: any SLA target?
-
-→ Route to: `@qa-perf-test`
-
-### 4. Search Ticket
-Trigger: "search ticket", "search bug", "find ticket", "check ticket", paste error message, paste stack trace
-Ask:
-- Brief description of the issue?
-- Specific project?
-- Time range?
-
-→ Route to: `@qa-search-tickets`
-
-### 5. Defect Triage
-Trigger: "triage", "check incident", "helix", "bug report", paste `HELIX-123` or `INC123`
-Ask:
-- Do you have a Helix ID/link/description?
-
-→ Route to: `@qa-defect-triage`
-
-### 6. Test Case
-Trigger: "create test case", "generate test case", "make test case"
-Ask:
-- Do you have a Shortcut story ID?
-- **Coverage**: positive only / +negative / all?
-
-→ Route to: `@qa-test-cases`
-
-### 7. General Question
-Trigger: "how do I...", "what is...", "please explain..."
-→ Answer directly or reference `.cursor/references/`
-
-### 8. Unknown / Fallback
-If intent cannot be detected:
-- Ask: "Sorry, I didn't understand. Could you rephrase? Or choose: Automation test / Search tickets / Triage incident / Create test cases / Other?"
-- If still vague → ask step by step
-
-## MCP Tools
-All MCP tools available - choose based on need.
-
-## References
-- `.cursor/references/README.md` - offline docs index
-- `.cursor/MCP_TOOLS.md` - MCP tool mapping
-- `~/.qa-agent/` - global memory store
+## Refs
+`.cursor/references/README.md` · `.cursor/MCP_TOOLS.md` · `AGENTS.md`

@@ -80,6 +80,7 @@ mkdir -p "$TARGET_DIR/.cursor/skills"
 mkdir -p "$TARGET_DIR/.cursor/agents"
 mkdir -p "$TARGET_DIR/.cursor/rules"
 mkdir -p "$TARGET_DIR/.cursor/qa-memory/project-context"
+mkdir -p "$TARGET_DIR/.cursor/qa-memory/generated-tests/manual"
 mkdir -p "$TARGET_DIR/.cursor/qa-memory/generated-tests/cypress"
 mkdir -p "$TARGET_DIR/.cursor/qa-memory/generated-tests/k6"
 mkdir -p "$TARGET_DIR/.cursor/qa-memory/generated-tests/karate"
@@ -177,10 +178,14 @@ elif [ -f "$AGENTS_SRC/qa-agent.md" ]; then
   fi
 fi
 
-# ─── Copy rules ───────────────────────────────────────────────────────────
-if [ -f "$RULES_SRC/qa-agent-rules.mdc" ] && [ "$TARGET_DIR" != "$REPO_DIR" ]; then
-  cp "$RULES_SRC/qa-agent-rules.mdc" "$TARGET_DIR/.cursor/rules/qa-agent-rules.mdc"
-  ok "Project rules installed (.cursor/rules/qa-agent-rules.mdc)"
+# ─── Copy rules (all .mdc) ────────────────────────────────────────────────
+if [ -d "$RULES_SRC" ]; then
+  mkdir -p "$TARGET_DIR/.cursor/rules"
+  if [ "$TARGET_DIR" != "$REPO_DIR" ]; then
+    cp "$RULES_SRC"/*.mdc "$TARGET_DIR/.cursor/rules/" 2>/dev/null || true
+  fi
+  RULE_COUNT="$(ls "$TARGET_DIR/.cursor/rules"/*.mdc 2>/dev/null | wc -l | tr -d ' ')"
+  ok "Project rules installed ($RULE_COUNT .mdc under .cursor/rules/)"
 fi
 
 # ─── Copy AGENTS.md ───────────────────────────────────────────────────────

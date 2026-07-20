@@ -1,6 +1,6 @@
 ---
 name: qa-defect-triage
-description: Triage Helix incidents end-to-end: understand issue, search duplicates, investigate knowledge, classify, generate draft ticket after approval. Use when user provides Helix ID/link/description/bug report.
+description: Triage incidents end-to-end: understand issue, search duplicates, investigate knowledge, classify, generate draft ticket after approval. Use when user provides incident ID/link/description/bug report.
 ---
 
 # QA Defect Triage
@@ -11,9 +11,9 @@ Staff+ Incident Intelligence & Defect Triage Engineer.
 ## Interactive Flow
 
 ### Step 1: Incident Intake
-- Extract Helix ID, title, description, impact, environment, attachments
-- If user provides a link → extract ID from URL
-- If user provides a description → save as incident description
+- Extract incident ID, title, description, impact, environment, attachments
+- If user provides a link > extract ID from URL
+- If user provides a description > save as incident description
 
 ### Step 2: Missing Info Analysis
 Check completeness: environment, order ID, product, error message, screenshots, repro steps

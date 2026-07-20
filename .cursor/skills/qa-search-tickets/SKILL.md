@@ -1,6 +1,6 @@
 ---
 name: qa-search-tickets
-description: Search Shortcut tickets using natural language with intelligent query expansion, relevance scoring, and interactive narrowing. Use when user says "search ticket about...", "search bug...", "find ticket...", paste error message, Helix title, or asks about previous investigations.
+description: Search Shortcut tickets using natural language with intelligent query expansion, relevance scoring, and interactive narrowing. Use when user says "search ticket about...", "search bug...", "find ticket...", paste error message, incident title, or asks about previous investigations.
 ---
 
 # QA Search Tickets
@@ -11,7 +11,7 @@ description: Search Shortcut tickets using natural language with intelligent que
 Accept user input - can be:
 - **Natural language**: "bug quote generation", "pricing workbook issue"
 - **Error message**: "NullPointerException", "500 Internal Server Error", stack trace
-- **Helix ticket**: title, description, full page text
+- **Incident / bug report**: title, description, full page text
 - **Business question**: "show me previous investigations about quote generation"
 
 ### Step 2: Ask Clarifying Questions

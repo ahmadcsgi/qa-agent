@@ -1,0 +1,39 @@
+---
+description: TestRail titles When/then + [neg]. Short and clear. Load when creating or updating TestRail cases.
+alwaysApply: false
+---
+
+# TestRail case titles
+
+When creating or updating TestRail cases:
+
+## Format
+
+1. **Title:** `When <action/condition>, then <expected result>`
+2. **`and` is optional** only when it adds clarity
+3. **Negative:** start with `[neg]`  
+   Example: `[neg] When Cancel is clicked, then unsaved changes are discarded`
+
+## Clarity
+
+4. Short, clear, unambiguous. Title alone must tell what is tested (~8–16 words)
+5. Prefer **concrete objects + outcomes** (Draft detail, Order form, Published record)
+6. Cut filler (“the user”, “successfully”, “as expected”). Nuance goes in Steps/Expected
+
+## Verb & trigger precision
+
+1. Trigger verb = real AC/UI event (`created`, `opened`, `published`), not a nearby step (`saved` ≠ `created` unless testing Save)
+2. Subject = what the tester looks at (e.g. Draft editor)
+3. Outcome = observable result
+4. If unclear, draft 1 title in chat then ACC/EDIT before TestRail write
+
+| Bad | Good |
+|-----|------|
+| When a New Item is **saved**, then the Draft editor contains default content | When a New Item is **created**, then the Draft editor contains default content |
+| When the user does something and then things update correctly | When Draft content is saved, then content persists |
+| Negative: empty selection behavior | `[neg] When Spec is saved with no selection, then reopen shows no selection` |
+
+## Fields & template
+
+8. Always fill **Preconditions**, **Steps**, and **Expected Result**
+9. Prefer TestRail **Text** template (`templateId: 1`)

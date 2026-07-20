@@ -1,0 +1,58 @@
+---
+description: Shortcut bug descriptions. Summary, steps, actual/expected. Load when drafting bugs.
+alwaysApply: false
+---
+
+# Shortcut bug descriptions
+
+When drafting or writing Shortcut **bug** tickets:
+
+## Required sections (order)
+
+Always include a **description**. Never submit a bug with an empty description.
+
+**1. Summary** (mandatory, before Steps to Reproduce). Cover all three:
+
+| Sub-section | Content |
+|-------------|---------|
+| **What** | One or two sentences. What is the bug about. |
+| **Where** | Screen, module, feature, or flow where it occurs. |
+| **Impact** | What breaks for the user or data. Why it matters. |
+
+**2. Steps to Reproduce** — numbered steps.
+
+**3. Actual Outcome** — observable wrong behaviour.
+
+**4. Expected Outcome** — correct behaviour.
+
+Optional after Summary: Environment, Related story, Additional Notes.
+
+### Summary example
+
+```markdown
+## Summary
+
+**What:** Saving a form without a required Name clears the configuration panel.
+
+**Where:** Admin settings, Configuration panel, Reasons tab.
+
+**Impact:** The right panel goes blank. The user cannot edit the record. Unsaved changes are lost after Close and reopen.
+```
+
+## Punctuation (human tone)
+
+- **Never use semicolons (`;`).** They read as AI-generated.
+- Use **commas (`,`)** to join related clauses in one sentence.
+- End sentences with a **period (`.`)**.
+- Prefer short, direct sentences over long compound lines.
+
+| Avoid | Prefer |
+|-------|--------|
+| `Save fails; panel is empty; data not persisted.` | `Save fails. The panel is empty. Data is not persisted.` |
+| `Toggle ON; click +; leave Name blank` | `Turn the toggle ON, click +, and leave Name blank.` |
+
+## Clarity
+
+- Concrete UI labels and observable results.
+- Numbered steps for reproduction.
+- Actual vs Expected must be clearly separated.

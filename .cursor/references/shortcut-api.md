@@ -71,10 +71,27 @@ stories-create(
 ## Update Story
 ```
 stories-update(
-  storyPublicId: "456",
-  current_state: "in-progress",
-  description: "Updated description..."
+  storyPublicId: 456,
+  labels: [{ name: "TC-ready" }]
 )
+```
+
+Note: `labels` typically **replaces** the label set. Preserve other labels when flipping TC-on-progress → TC-ready.
+
+## Checklist task (qa test link)
+```
+stories-add-task(
+  storyPublicId: 276352,
+  description: "qa test: https://testrails.example/index.php?/cases/view/237001"
+)
+```
+
+Format must use `cases/view/<caseId>` (not suite group_id). See `.cursor/rules/testrail-shortcut-checklist.mdc`.
+
+## Labels
+```
+labels-list()
+labels-get-stories({ labelPublicId: 108294 })  // e.g. TC-on-progress
 ```
 
 ## API Tips
@@ -85,3 +102,4 @@ stories-update(
   2. `node ~/.qa-agent/lib/store.js cache get <hash>`
   3. On miss: call MCP, then `cache set <hash> "<query>" '<results>'` (TTL 24h)
 - Never create/update stories without APPROVAL
+- Label groom: only flip to TC-ready when qa-test checklist exists

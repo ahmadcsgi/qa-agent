@@ -1,0 +1,117 @@
+---
+description: Mandatory TestRail case generate flow. Learn > Plan > Draft batches of 5 > ACC all > then addCase. Load with @qa-test-cases.
+alwaysApply: false
+---
+
+# TestRail case generate (MANDATORY)
+
+When creating **new** TestRail cases from a Shortcut story or ticket, follow this order. **No skipping.**
+
+## Gate (absolute)
+
+Until **every** case in the approved set has user **ACC** (or **ACC all** for that batch, then next batches until done):
+
+- **FORBIDDEN:** `addCase`, `updateCase`, `addSection`, `updateSection`, `deleteCase`, `deleteSection`
+- **FORBIDDEN:** Shortcut `stories-add-task` checklist for cases not yet ACC'd
+- **FORBIDDEN:** writing to TestRail because the story looks Done or AC looks clear
+
+**Violation = hard stop.**
+
+User replies per case or per batch: **ACC** · **EDIT** · **REJECT** · **DELETE**
+
+| Reply | Meaning |
+|-------|---------|
+| **ACC** / **APPROVE** | Keep as drafted (or after EDIT applied) |
+| **EDIT** | User changes fields. Revise that case. Re-ask ACC |
+| **REJECT** | Do not create this case. Drop from write set |
+| **DELETE** | Remove from draft/plan entirely (same as reject for write) |
+| **ACC all** | Approve current batch only (not future batches) |
+
+---
+
+## Step 1 — Learn (Shortcut / ticket)
+
+1. `stories-get-by-id` (full). Read description, AC, comments, epic, labels, custom fields.
+2. Resolve version + section (`testrail-section-version.mdc`). Ask if ambiguous.
+3. Dedup (`getCases` section + refs). Methodology Phase 2b.
+4. **If anything is unclear** (AC, copy, UX, domain meaning, missing screenshot):
+   - Ask the user **or**
+   - Search Glean (`search` / `read_document`) for product docs / runbooks
+   - Do **not** invent behavior
+5. Cite sources: Shortcut · Glean · user · memory.
+
+Stop if blocked. Do not draft yet.
+
+---
+
+## Step 2 — Plan (before full drafts)
+
+Show a short **test plan** in chat:
+
+| # | Proposed title | Type (pos/neg) | Priority | Notes |
+|---|----------------|----------------|----------|-------|
+| 1 | When …, then … | pos | P1 | AC #1 |
+
+Include: total count, section path, open questions.
+
+Wait for: **ACC plan** / **OK** / **EDIT plan** (add/remove/reorder scenarios).
+
+Do **not** show full steps yet. Do **not** write TestRail.
+
+---
+
+## Step 3 — Draft (fields)
+
+After plan is accepted, draft cases using **exactly** these fields (every case):
+
+| # | Field |
+|---|--------|
+| a | **Title** (`When …, then …` · `[neg]` if negative) |
+| b | **Test case objective** |
+| c | **Precondition** |
+| d | **Test step** |
+| e | **Expectation** (Test expectation) |
+
+Also fill **Test data** when values are used. Else `N/A`.
+
+Titles: `testrail-case-titles.mdc`. Punctuation: `output-punctuation.mdc`.
+
+Write full set to: `.cursor/qa-memory/generated-tests/manual/sc-<id>-preview.md`
+
+---
+
+## Step 4 — Show in batches of 5 (chat)
+
+If total cases **≤ 5**: show all. Wait for ACC / EDIT / REJECT / DELETE.
+
+If total cases **> 5**:
+
+1. Show **only cases 1–5** (Part 1/N) with full fields a–e (+ test data).
+2. **STOP.** Wait for user on that batch.
+3. Apply EDIT / drop REJECT+DELETE.
+4. Only when the **current batch** is fully resolved (each remaining case ACC'd, or **ACC all** for that batch) → show the **next 5**.
+5. Repeat until every planned case is ACC'd, REJECT'd, or DELETE'd.
+
+Never dump 6+ full cases in one chat turn.
+
+End each batch with: **Balas ACC / EDIT / REJECT / DELETE** (or **ACC all** for this batch).
+
+---
+
+## Step 5 — Create in TestRail (only after all ACC)
+
+When **every** surviving case across **all** batches is ACC'd:
+
+1. Confirm count in one line (e.g. `8 ACC · 1 REJECT · write 8`).
+2. `addSection` only if needed and previously ACC'd in plan.
+3. `addCase` for ACC'd cases only (`templateId: 1`).
+4. Per case: Shortcut checklist (`testrail-shortcut-checklist.mdc`).
+5. Optional: TC label groom (separate ACC).
+
+**Never** create TestRail cases for REJECT/DELETE or for batches not yet reviewed.
+
+---
+
+## Related
+
+`testrail-case-draft.mdc` · `qa-testcase-methodology.md` · `@qa-test-cases`

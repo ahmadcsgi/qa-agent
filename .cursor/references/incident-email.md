@@ -1,11 +1,13 @@
-# Helix Email & Incident Templates
+# Incident Email Templates
+
+Placeholders: `[INC-123]` = incident ID, `[STORY-456]` = Shortcut story ID. Customize ID format in `project-context`.
 
 ## Duplicate Incident Email
-Subject: Duplicate Incident - [HELIX-123] - Follow existing ticket [STORY-456]
+Subject: Duplicate Incident - [INC-123] - Follow existing ticket [STORY-456]
 
 Hi Team,
 
-This incident ([HELIX-123]) appears to be a duplicate of an existing investigation:
+This incident ([INC-123]) appears to be a duplicate of an existing investigation:
 
 **Existing Ticket:** https://app.shortcut.com/story/456
 **Title:** [Story Title]
@@ -21,7 +23,7 @@ Thanks,
 QA Agent
 
 ## Not a Defect - User Error
-Subject: [HELIX-123] - Not a Defect - Expected Behavior
+Subject: [INC-123] - Not a Defect - Expected Behavior
 
 Hi Team,
 
@@ -37,7 +39,7 @@ Thanks,
 QA Agent
 
 ## Not a Defect - Configuration Issue
-Subject: [HELIX-123] - Configuration Issue - Not a System Defect
+Subject: [INC-123] - Configuration Issue - Not a System Defect
 
 Hi Team,
 
@@ -53,7 +55,7 @@ Thanks,
 QA Agent
 
 ## Defect Confirmation - Draft Ticket
-Subject: [HELIX-123] - Confirmed Defect - New Ticket Created
+Subject: [INC-123] - Confirmed Defect - New Ticket Created
 
 Hi Team,
 
@@ -77,7 +79,7 @@ Thanks,
 QA Agent
 
 ## Need Help - Draft Need Help Ticket
-Subject: [HELIX-123] - Need Help - Assistance Required
+Subject: [INC-123] - Need Help - Assistance Required
 
 Hi Team,
 

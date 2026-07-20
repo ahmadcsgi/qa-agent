@@ -1,0 +1,36 @@
+---
+description: After addCase, add Shortcut checklist qa test: cases/view/<caseId>. Load with @qa-test-cases.
+alwaysApply: false
+---
+
+# TestRail > Shortcut checklist
+
+Whenever you **create** (or ACC-write) TestRail case(s) for a Shortcut story:
+
+## Required
+
+1. **Immediately** add a Shortcut checklist task on that story (`stories-add-task`).
+2. **One checklist item per case** (do not batch multiple case IDs into one task).
+3. **Format:**
+
+```text
+qa test: <TESTRAIL_BASE_URL>/index.php?/cases/view/<caseId>
+```
+
+Resolve `<TESTRAIL_BASE_URL>` from project-context, prefs, or MCP config (never hardcode a company host in this rule).
+
+Example shape:
+
+```text
+qa test: https://your-org.testrail.io/index.php?/cases/view/12345
+```
+
+## Never
+
+- Suite/section links (`suites/view/...&group_id=...`)
+- Run section group links (`runs/view/...&group_id=...`)
+- `tests/view/<id>` unless the user explicitly asks for a **run** instance (those IDs are run-specific)
+
+## Flow
+
+`addCase` (get `caseId`) then `stories-add-task` with the format above, in the same turn as the TestRail write.

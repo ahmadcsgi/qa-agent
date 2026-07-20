@@ -73,6 +73,7 @@ Write-Info "Creating project directory structure..."
     ".cursor\agents",
     ".cursor\rules",
     ".cursor\qa-memory\project-context",
+    ".cursor\qa-memory\generated-tests\manual",
     ".cursor\qa-memory\generated-tests\cypress",
     ".cursor\qa-memory\generated-tests\k6",
     ".cursor\qa-memory\generated-tests\karate",
@@ -182,14 +183,18 @@ if (Test-Path $AgentFile) {
     }
 }
 
-# ─── Copy rules ────────────────────────────────────────────────────────────
-$RulesFile = Join-Path $RulesSrc "qa-agent-rules.mdc"
-if (Test-Path $RulesFile) {
-    $Target = JPath $TargetDir ".cursor" "rules" "qa-agent-rules.mdc"
-    if ($RulesFile -ne $Target) {
-        Copy-Item -Path $RulesFile -Destination $Target -Force:$Force
-        Write-Ok "Project rules installed (.cursor\rules\qa-agent-rules.mdc)"
+# ─── Copy rules (all .mdc in .cursor/rules) ────────────────────────────────
+if (Test-Path $RulesSrc) {
+    $RulesTargetDir = JPath $TargetDir ".cursor" "rules"
+    Ensure-Dir $RulesTargetDir
+    Get-ChildItem -Path $RulesSrc -Filter "*.mdc" -File | ForEach-Object {
+        $Target = Join-Path $RulesTargetDir $_.Name
+        if ($_.FullName -ne $Target) {
+            Copy-Item -Path $_.FullName -Destination $Target -Force:$Force
+        }
     }
+    $RuleCount = (Get-ChildItem -Path $RulesTargetDir -Filter "*.mdc" -File -ErrorAction SilentlyContinue).Count
+    Write-Ok "Project rules installed ($RuleCount .mdc under .cursor\rules\)"
 }
 
 # ─── Copy AGENTS.md ────────────────────────────────────────────────────────

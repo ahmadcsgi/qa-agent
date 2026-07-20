@@ -7,22 +7,29 @@ Tool names below match the **actual MCP server APIs** (verified against live sch
 | Tool | Use Case | Called by |
 |------|----------|----------------|
 | `stories-search` | Search tickets with natural language / filters | `@qa-search-tickets`, `@qa-defect-triage` |
-| `stories-get-by-id` | View story/defect details by ID | `@qa-defect-triage`, `@qa-ui-automation`, `@qa-test-cases`, `@qa-api-test`, `@qa-perf-test` |
+| `stories-get-by-id` | View story/defect details by ID | `@qa-defect-triage`, `@qa-ui-automation`, `@qa-test-cases`, `@qa-test-execution`, `@qa-api-test`, `@qa-perf-test` |
 | `stories-create` | Create new ticket (only after approval) | `@qa-defect-triage` |
-| `stories-update` | Update existing ticket | `@qa-defect-triage` |
+| `stories-update` | Update story (labels, state) — ACC for TC label groom | `@qa-defect-triage`, `@qa-test-cases` |
+| `stories-add-task` | Checklist item (`qa test: …/cases/view/<id>`) | `@qa-test-cases` |
+| `labels-list` / `labels-get-stories` | Find stories by TC-on-progress / TC-ready | `@qa-test-cases` |
 
 ## TestRail (`testrail`)
 | Tool | Use Case | Called by |
 |------|----------|----------------|
-| `getCases` | View test cases (by project/suite/section) | `@qa-ui-automation`, `@qa-test-cases` |
-| `getCase` | Test case details | `@qa-ui-automation` |
-| `addCase` | Create new test case (only after approval) | `@qa-test-cases` |
-| `updateCase` | Edit test case | `@qa-test-cases` |
-| `deleteCase` | Delete test case | `@qa-test-cases` |
-| `getSections` | View section list | `@qa-test-cases` |
-| `getSection` | Section details | `@qa-test-cases` |
-| `getRuns` | View test runs | `@qa-defect-triage` |
-| `addRun` | Create new test run | `@qa-ui-automation` |
+| `getCases` | List cases (section / refs / filter) — dedup before draft | `@qa-test-cases`, `@qa-ui-automation` |
+| `getCase` | Case details (steps, expected) | `@qa-test-cases`, `@qa-ui-automation`, `@qa-test-execution` |
+| `addCase` | Create case (**ACC only**) | `@qa-test-cases` |
+| `updateCase` | Edit case (**ACC only**) | `@qa-test-cases` |
+| `deleteCase` | Delete case (**ACC only**) | `@qa-test-cases` |
+| `moveToSection` | Move case(s) to another section | `@qa-test-cases` |
+| `getSections` / `getSection` | Section tree / details | `@qa-test-cases` |
+| `addSection` / `updateSection` | Create/rename section (**ACC only**) | `@qa-test-cases` |
+| `getPlans` / `addPlan` / `addPlanEntry` | Test plans under milestone | `@qa-test-execution`, `@qa-test-cases` |
+| `getRuns` / `addRun` / `getTests` | Runs and tests in a run | `@qa-test-execution`, `@qa-ui-automation` |
+| `addResultForCase` / `addResultsForCases` | Mark Pass/Fail/Blocked/Retest | `@qa-test-execution` |
+| `getMilestones` | Resolve milestone id for plans | `@qa-test-execution` |
+
+**Result statusId:** `1` Pass · `2` Blocked · `3` Untested · `4` Retest · `5` Fail
 
 ## Glean (`glean`)
 | Tool | Use Case | Called by |

@@ -61,7 +61,7 @@ Clear next steps for the assigned squad.
 ## DRAFT TICKET
 
 Pre-formatted ticket following official guidelines:
-`[Helix ID][DT][Wxx] When ..., Then/But ...`
+`[INC-ID][DT][Wxx] When ..., Then/But ...` (ID format from project-context)
 
 Includes description, repro steps, actual vs expected outcome, attachments, evidence.
 

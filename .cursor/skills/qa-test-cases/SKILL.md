@@ -1,118 +1,56 @@
 ---
 name: qa-test-cases
-description: Generate TestRail test cases from Shortcut stories. Interactive flow: ask for test type coverage (positive/negative/edge/boundary), generates structured cases, saves to TestRail via MCP. Use when asked to create test cases, generate test plan, or write test scenarios.
+description: Generate and maintain TestRail cases from Shortcut stories. Mandatory learn/plan/draft batch-5 ACC gate, checklist, case updates, TC label groom. Ask when unclear.
 ---
 
 # QA Test Cases
 
-## Interactive Flow
+**Generate flow (MANDATORY):** `.cursor/rules/testrail-case-generate.mdc`  
+**Also:** `testrail-case-draft.mdc` · `testrail-case-titles.mdc` · `testrail-shortcut-checklist.mdc` · `testrail-section-version.mdc` · `output-punctuation.mdc`  
+**Methodology:** `.cursor/references/qa-testcase-methodology.md`  
+**Execution:** `@qa-test-execution` (plan / pass / run)  
+**Unclear?** Ask or Glean. Never invent AC, copy, or behavior.
 
-### Step 1: Gather Context
-Ask the user:
-1. **Source**: "Do you have a Shortcut story ID or link?"
-   - If yes → read the story via Shortcut MCP (`stories-get-by-id`)
-   - If not → ask for a brief feature description
-2. **Coverage**: "What test cases are needed?"
-   - **Positive only** - just the happy path
-   - **Positive + Negative** - functional + error handling
-   - **All** - positive + negative + edge cases + boundary
-3. **Priority**: "Happy path only or full coverage?"
-4. **Section**: "Save to a specific TestRail section, or let me decide?"
+## Boot
 
-### Step 2: Understand Context
-- Read Shortcut story → understand acceptance criteria + description
-- Check `.cursor/qa-memory/project-context/current.md` for domain knowledge
-- Check decision memory: `node ~/.qa-agent/lib/store.js cor list "test-cases" "1"` - apply proven patterns
-- Check TestRail existing cases in related section (via `getCases`) - avoid duplicates
+`proj ensure` then `boot testcases --project auto` · `cor list testcases 1 auto`
 
-### Step 3: Research (if needed)
-- Context7 for domain-specific testing patterns
-- Glean for internal product docs / Confluence
-- `.cursor/references/testrail-api.md` for TestRail format
+## Flow (new cases)
 
-### Step 3b: Climb Decision Ladder
-Call the decision ladder from `@qa-token-saver` before generating:
-1. **YAGNI**: Is all coverage really needed? Is positive+negative enough?
-2. **Reuse**: Any similar test case in TestRail? Can duplicate + edit?
-3. **Stdlib**: Standard TestRail template sufficient?
-4. **Native**: Is the story's acceptance criteria enough as test cases?
-5. **Existing dep**: Can existing test case patterns be reused?
-6. **One-liner**: Can test cases be parameterized?
-7. **Minimum**: How many test cases are really needed? Don't create 20 if 5 is enough.
+### 1. Learn
+- Shortcut: `stories-get-by-id` (full)
+- Version + section: `testrail-section-version.mdc`
+- Dedup: Phase 2b
+- Unclear → **ask user** or **Glean** (`search` / `read_document`). Stop if blocked.
 
-### Step 4b: Reflexion - Self-Review Before Preview
-BEFORE showing to the user, review the generated output:
-1. **Correctness**: Do test cases match the story's AC?
-2. **Minimality**: Is the number of test cases matching requested coverage? Or too many?
-3. **Reuse**: Any similar test case in TestRail that could be used as reference?
-4. **Clarity**: Are steps clear and reproducible?
-5. **If there is an issue → refine automatically** (reduce if too many, add if too few)
-6. **Then show** to the user for APPROVE/EDIT/REJECT
+### 2. Plan
+- Table of proposed titles (no full steps yet)
+- Wait **ACC plan** / **EDIT plan**
 
-### Step 5: Generate Test Cases
-Create structured test cases based on requested coverage:
+### 3. Draft
+Fields every case: **Title · Objective · Precondition · Test step · Expectation** (+ Test data if used)  
+Preview file: `.cursor/qa-memory/generated-tests/manual/sc-<id>-preview.md` (complete)
 
-**Format per test case:**
-```
-Title: [action] should [expected result]
-Section: [functional area]
-Type: Positive | Negative | Edge | Boundary
-Steps:
-  1. [step]
-  2. [step]
-Expected: [expected result]
-```
+### 4. Show ≤5 per turn
+If >5 cases: Part 1/N = first 5 only. Wait **ACC / EDIT / REJECT / DELETE** (or **ACC all** for batch). Then next 5. Never dump all at once.
 
-**Rules:**
-- **Positive**: valid flow, happy path, every AC covered
-- **Negative**: invalid input, error states, unauthorized access, null/empty values
-- **Edge**: empty list, single item, max items, concurrent access
-- **Boundary**: min/max values, just below/above threshold, 0, negative numbers
+### 5. Write TestRail (only after all ACC)
+`addCase` for ACC'd only → checklist per case. No write for REJECT/DELETE.
 
-**Estimated counts:**
-- Positive only: 3-5 cases
-- Positive + Negative: 6-10 cases
-- All: 10-20 cases
+### 5b. Label groom (optional)
+`TC-on-progress` → propose **TC-ready** → ACC → `stories-update`
 
-### Step 6: Preview & User Loop
-Show to the user in a clean format:
-```markdown
-## Test Cases Preview
-| # | Title | Type | Section |
-|---|-------|------|---------|
-| 1 | ... | Positive | ... |
+### 6. Memory
+`cor add` on lessons · `proj sync` if mapping changed
 
-Details:
-### TC1: ...
-**Steps:** ...
-**Expected:** ...
-```
+### 7. Plan / results / maintenance
+- Test plan or mark Passed: `@qa-test-execution`
+- Fix existing case: diff preview → ACC → `updateCase`
 
-Ask user (type number or custom):
-1. APPROVE - Save to TestRail via `addCase` one by one
-2. EDIT - Ask for correction -> apply -> preview again -> loop
-3. REJECT - Save rejection reason to memory
-or type your own answer
+## MCP
 
-### Step 7: Save to TestRail
-Use TestRail MCP:
-```
-addCase({ sectionId, title, typeId, priorityId, estimate, customSteps, customExpected })
-```
-
-- type/priority IDs vary per TestRail project — check with `getCaseTypes` / project fields
-- priority based on story priority
-
-### Step 8: Save to Memory
-- Update `.cursor/qa-memory/generated-tests/` with references
-- Save to decision memory: `node ~/.qa-agent/lib/store.js cor add "test-cases" "<context>" "<issue>" "<correction>" "<lesson>" "1|-1"`
-
-## MCP Tools
-- **Shortcut**: `stories-get-by-id` - read story + AC
-- **TestRail**: `getCases`, `addCase`, `getSections`, `getSection` - manage test cases
-- **Context7**: domain testing patterns
-- **Glean**: internal docs
+`stories-get-by-id` · `stories-add-task` · `stories-update` · `getCases` · `getCase` · `getSections` · `addSection` · `addCase` · `updateCase` · `moveToSection` · Glean if domain unclear
 
 ## References
-- `.cursor/references/testrail-api.md` - TestRail format
-- `~/.qa-agent/` - global memory store
+
+`testrail-case-generate.mdc` · `qa-testcase-methodology.md` · `testrail-api.md`

@@ -1,11 +1,11 @@
 # QA Defect Triage - 28-Step Process
 
-Derived from `defectTriage.md` (CSG Q&O).
+Derived from an internal triage playbook. Customize intake fields in `project-context`.
 
 ---
 
 ## Step 1 - Incident Intake
-Extract: Helix ID, Title, Description, Business Impact, Customer Impact, Environment, Attachments, Screenshots, Videos, Logs, Error Messages, API Payloads, API Responses.
+Extract: Incident ID, Title, Description, Business Impact, Customer Impact, Environment, Attachments, Screenshots, Videos, Logs, Error Messages, API Payloads, API Responses.
 
 Identify: Order ID, Agreement ID, Contract ID, Customer ID, Product, Timestamp.
 

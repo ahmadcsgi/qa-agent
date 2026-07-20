@@ -72,10 +72,11 @@ The agent saves every correction, preference, and pattern to its decision memory
 | Task | Say this | Skill |
 |------|----------|-------|
 | Search Shortcut tickets | `"search bug quote generation"`, paste error message | `@qa-search-tickets` |
-| Triage Helix incident | Helix ID/link, bug report | `@qa-defect-triage` |
+| Triage incident | Incident ID/link, bug report | `@qa-defect-triage` |
 | Generate Cypress tests | TestRail case ID, `"create automation for C23768"` | `@qa-ui-automation` |
 | Generate k6 perf tests | Story ID, `"create perf test for login flow"` | `@qa-perf-test` |
 | Create TestRail cases | Story ID, `"create test cases for story 12345"` | `@qa-test-cases` |
+| Test plan / mark Passed | `"buat test plan"`, `"centang di run …"` | `@qa-test-execution` |
 | API tests (Karate) | Endpoint URL, `"api test for /users"` | `@qa-api-test` |
 | Map project structure | `"scan project structure"` | `@qa-project-mapping` |
 | **Visual regression** | `"check UI visually"`, `"run visual test on login page"` | `@qa-visual-test` |
@@ -89,8 +90,8 @@ The agent saves every correction, preference, and pattern to its decision memory
 │  SKILLS (Layer 3)                                       │
 │  @qa-search-tickets  @qa-defect-triage  @qa-ui-automation│
 │  @qa-perf-test       @qa-test-cases     @qa-api-test     │
-│  @qa-project-mapping @qa-token-saver    @qa-entry        │
-│  @qa-visual-test                                         │
+│  @qa-test-execution  @qa-project-mapping @qa-token-saver │
+│  @qa-entry           @qa-visual-test                       │
 ├──────────────────────────────────────────────────────────┤
 │  MEMORY SYSTEM (Layer 2)                                │
 │  ~/.qa-agent/ (global)  .cursor/qa-memory/ (project)   │

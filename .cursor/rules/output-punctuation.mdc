@@ -1,0 +1,42 @@
+---
+description: Punctuation for QA outputs. No em dash, no semicolon, use > for arrows. Load when writing TestRail/Shortcut/chat QA text.
+alwaysApply: false
+---
+
+# Output punctuation
+
+## Never use em dash
+
+- Do **not** use the em dash character `—` (U+2014) in chat, TestRail titles/steps/expected, preview markdown, commits, or PR text.
+- Prefer commas, periods, colons, parentheses, or hyphens `-` instead.
+
+| Avoid | Use |
+|-------|-----|
+| Save is blocked — record is not saved | Save is blocked. Record is not saved |
+| Section A — Module | Section A: Module |
+
+## Never use semicolon
+
+- Do **not** use `;` in chat, TestRail fields, preview markdown, commits, or PR text.
+- Split into separate sentences (period), use a comma, or use a colon.
+
+| Avoid | Use |
+|-------|-----|
+| Transition completes; artefact is created | Transition completes. Artefact is created |
+| Role: Admin; User | Role: Admin or User |
+| AC #1: save; artefact created | AC #1: save. Artefact created |
+
+## Arrow character
+
+- Do **not** use `→` (U+2192).
+- Use `>` instead.
+
+| Avoid | Use |
+|-------|-----|
+| Open Order → Documents tab | Open Order > Documents tab |
+| Zoom > Full screen > Undo | Zoom > Full screen > Undo |
+| `Module A → Screen B` | `Module A > Screen B` |
+
+## Scope
+
+Applies to QA Agent outputs: chat, TestRail cases, Shortcut comments/checklists, preview files under `.cursor/qa-memory/`.

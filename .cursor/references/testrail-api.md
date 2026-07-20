@@ -17,78 +17,91 @@ npx @uarlouski/testrail-mcp-server
 # }
 ```
 
-## Available Tools
+## Cases
 
 ### getCases
-Get test cases (filter by project/suite/section as supported by the server).
 ```javascript
-getCases({ projectId: 1, suiteId: 1, sectionId: 123 })
-// Returns: [{ id, title, type_id, priority_id, estimate, ... }]
+getCases({ projectId: 1, suiteId: 1, sectionId: 100, limit: 250 })
+getCases({ projectId: 1, suiteId: 1, refs: "12345" })
 ```
 
-### getCase
-Detail for one test case.
+### getCase / addCase / updateCase / deleteCase / moveToSection
 ```javascript
 getCase({ caseId: 456 })
-// Returns: { id, title, section_id, template_id, type_id, priority_id, estimate, custom_steps, custom_expected, ... }
+addCase({ sectionId: 100, title: "When …, then …", templateId: 1, customSteps: "…", customExpected: "…", customPrerequisites: "…" })
+updateCase({ caseId: 456, title: "…", customSteps: "…", customExpected: "…" })
+moveToSection({ caseIds: [456], sectionId: 100 })
 ```
 
-### addCase
-Create a new test case (ONLY after APPROVAL).
+**ACC required** before `addCase` · `updateCase` · `deleteCase` · `addSection` (see `testrail-case-draft.mdc`).
+
+## Sections
+
 ```javascript
-addCase({
-  sectionId: 123,
-  title: 'Verify user can login with valid credentials',
-  typeId: 1,        // project-specific type IDs
-  priorityId: 2,
-  estimate: '5m',
-  customSteps: '1. Open login page\n2. Enter email\n3. Enter password\n4. Click Login',
-  customExpected: 'User is redirected to dashboard'
+getSections({ projectId: 1, suiteId: 1, limit: 250 })
+getSection({ sectionId: 100 })
+addSection({ projectId: 1, suiteId: 1, parentId: 100, name: "Child section" })
+```
+
+## Plans · runs · results
+
+### addPlan
+```javascript
+addPlan({
+  projectId: 1,
+  name: "[TEST PLAN] <version> <Squad>",
+  milestoneId: 10,
+  description: "…",
+  entries: [{
+    suite_id: 1,
+    name: "Feature area",
+    include_all: false,
+    case_ids: [101, 102]
+  }]
 })
 ```
 
-### updateCase
-Update an existing test case.
+### getPlans / addPlanEntry
 ```javascript
-updateCase({ caseId: 456, title: 'Updated title', priorityId: 1 })
+getPlans({ projectId: 1 })
+addPlanEntry({ planId: 50, suiteId: 1, name: "Feature area", includeAll: false, caseIds: [101] })
 ```
 
-### deleteCase
-Delete a test case.
-```javascript
-deleteCase({ caseId: 456 })
-```
-
-### getSections / getSection
-```javascript
-getSections({ projectId: 1, suiteId: 1 })
-getSection({ sectionId: 123 })
-```
-
-### getRuns / addRun
+### getRuns / getTests / addRun
 ```javascript
 getRuns({ projectId: 1 })
-addRun({
-  projectId: 1,
-  suiteId: 1,
-  name: 'Smoke Test 2024-01-01',
-  description: 'Daily smoke test',
-  includeAll: false,
-  caseIds: [123, 456, 789]
+getTests({ runId: 60 })
+addRun({ projectId: 1, suiteId: 1, name: "Smoke", includeAll: false, caseIds: [101] })
+```
+
+### addResultsForCases
+```javascript
+addResultsForCases({
+  runId: 60,
+  results: [
+    { caseId: 101, statusId: 1, comment: "Passed for sc-12345" },
+    { caseId: 102, statusId: 1, comment: "Passed for sc-12345" }
+  ]
 })
 ```
 
-## Type / Priority IDs
-Type and priority IDs vary per TestRail project. Prefer `getCaseTypes` / project fields over hardcoded IDs.
+| statusId | Meaning |
+|---------:|---------|
+| 1 | Pass |
+| 2 | Blocked |
+| 3 | Untested |
+| 4 | Retest |
+| 5 | Fail |
 
-| Typical priority | Meaning |
-|------------------|---------|
-| High | Core functionality, blocking |
-| Medium | Important but non-blocking |
-| Low | Nice to have, cosmetic |
+### getMilestones
+```javascript
+getMilestones({ projectId: 1 })
+```
 
 ## Tips
-- Always check existing cases before adding (`getCases`)
-- Use `sectionId` from `getSections` for accurate section targeting
-- Format steps with newline (`\n`) for structured steps
-- Always get APPROVAL before `addCase`, `updateCase`, `deleteCase`
+- Dedup before draft: `getCases` by section **and** refs story id
+- Prefer Text template (`templateId: 1`) with `customSteps` / `customExpected` / `customPrerequisites`
+- Objective / testdata often live in custom fields (`custom_case_testcaseobjective`, `custom_case_testdata`)
+- Always APPROVAL before write tools
+- Plan naming (if used): `[TEST PLAN] <version> <Squad>`
+- Real project/suite/section IDs: from `project-context/current.md`, not hardcoded here

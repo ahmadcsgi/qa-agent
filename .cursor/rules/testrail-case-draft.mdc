@@ -1,0 +1,42 @@
+---
+description: Draft TestRail cases for user ACC before any addCase. Prefer testrail-case-generate.mdc for new cases. Load with @qa-test-cases.
+alwaysApply: false
+---
+
+# TestRail draft > ACC (NON-NEGOTIABLE)
+
+For **new cases from a story**, follow **`testrail-case-generate.mdc`** in full (Learn > Plan > Draft > batch of 5 > ACC all > then write).
+
+## Absolute ban
+
+Until the user explicitly replies **ACC**, **APPROVE**, **ACC all** (per batch), or equivalent for that draft set:
+
+- **FORBIDDEN:** `addCase`, `updateCase`, `addSection`, `updateSection`, `deleteCase`, `deleteSection`
+- **FORBIDDEN:** Shortcut `stories-add-task` for new qa-test checklists of cases not yet approved
+- **FORBIDDEN:** writing cases immediately because the story looks Done or AC is clear
+
+**Violation = hard stop.** Draft only. Wait.
+
+## Required draft fields (every case)
+
+| Field | Required |
+|-------|----------|
+| **Title** | Yes - `When …, then …` · `[neg]` if negative |
+| **Test case objective** | Yes |
+| **Precondition** | Yes |
+| **Test step** | Yes |
+| **Test expectation** | Yes |
+| **Test data** | Yes if any values used. Else `N/A` |
+
+## Delivery (summary)
+
+1. Learn from Shortcut. Unclear → ask or Glean. Never invent.
+2. Show **plan** (titles only). Wait ACC plan / EDIT plan.
+3. Draft fields. Preview file complete under `generated-tests/manual/`.
+4. Chat: **max 5 cases** per turn. Wait ACC / EDIT / REJECT / DELETE before next batch.
+5. Only after **all** surviving cases ACC'd → `addCase` + checklist.
+6. Case **update** / plan / results: same ACC gate (methodology Phase 7 + case maintenance).
+
+## Titles / checklist after ACC
+
+`testrail-case-titles.mdc` · `testrail-shortcut-checklist.mdc`

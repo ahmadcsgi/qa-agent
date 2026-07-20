@@ -1,0 +1,55 @@
+---
+description: Resolve TestRail section from Shortcut version signals. Load with @qa-test-cases before writing cases.
+alwaysApply: false
+---
+
+# TestRail section - version from Shortcut
+
+Before creating cases or sections, read the Shortcut story and **resolve version + product area**.
+
+## 1. Read version signals (in order)
+
+From `stories-get-by-id` (full):
+
+| Signal | Field / source |
+|--------|----------------|
+| **Version (Scheduled Fix)** | custom field |
+| **Version (Identified)** | custom field |
+| **Milestone** | objective name |
+| **Epic** | epic name (often includes version) |
+| **Iteration** | iteration name |
+| **User** | explicit version in chat |
+
+Prefer **Version (Scheduled Fix)** when set, else milestone/epic/iteration.
+
+**If version or product area is ambiguous → ask user** before picking section.
+
+## 2. Product area → suite / section
+
+Do **not** hardcode suite or section IDs in this rule.
+
+Resolve from (in order):
+
+1. `.cursor/qa-memory/project-context/current.md` (TestRail project/suite + section map)
+2. Project prefs / knowledge (`pref` / `know`)
+3. Live TestRail: `getSections` / `getSuites`
+4. Ask the user
+
+## 3. Version → child section
+
+Pattern (team-specific details live in project-context):
+
+- Parent bucket for the release (e.g. `26.3 … Improvement`)
+- Child section named after the story theme
+- Older / no bucket: story-named child under the product-area root
+
+## 4. Before write
+
+1. State in preview: **resolved version**, **chosen section path**, **section id** (existing or new).
+2. `getCases` refs=story — no duplicates.
+3. If no matching bucket → propose `addSection` parent + name, **ask** if unsure.
+
+## 5. Example shape (IDs from your project-context)
+
+Story · Milestone · Epic · Product area  
+→ `{ProductRoot} / {VersionBucket} / {StoryTheme}` (new or existing child)

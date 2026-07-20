@@ -1,6 +1,6 @@
 # Project Context — QA Memory
 
-> Fill this in (or let `@qa-project-mapping` generate it). Used by automation skills before generating tests.
+> Fill this in (or let `@qa-project-mapping` generate it). Used by test-case and automation skills.
 
 **Last updated:** YYYY-MM-DD
 **Framework:** (e.g. Cypress + Cucumber, Playwright, Karate, k6)
@@ -15,8 +15,32 @@
 | Default test user | (ask user / use secret manager — never commit passwords) |
 | Default environment | |
 | Default squad / team | |
-| TestRail project / suite | |
-| Shortcut team / project | |
+| Shortcut team | |
+| TestRail base URL | (e.g. `https://your-org.testrail.io`) |
+| TestRail suite id | |
+| TestRail milestone id (current) | |
+| Test plan name pattern | `[TEST PLAN] <version> <Squad>` |
+
+## TestRail section map (product area)
+
+| Product area | Root section id | Version bucket notes |
+|--------------|-----------------|----------------------|
+| (e.g. ProductArea) | | |
+| (e.g. Lifecycle) | | |
+
+## Label lifecycle (Shortcut)
+
+| Label | Meaning |
+|-------|---------|
+| TC-need | Cases not started |
+| TC-on-progress | Cases being written |
+| TC-ready | Cases exist (checklist with `qa test: …/cases/view/<id>`) |
+| TC-review | Cases under review |
+
+## Product notes (domain)
+
+- Put product-specific defaults here (per project), not in global repo docs.
+- Exact UI validation copy belongs in cases, not invented here.
 
 ## Conventions
 
@@ -24,6 +48,7 @@
 - Test file locations:
 - Branch naming:
 - Auth pattern: (env vars / vault / cookies file — no secrets here)
+- Chat language / TestRail language:
 
 ## Test infrastructure map
 
