@@ -8,6 +8,18 @@
 - staging:
 - production:
 
+## Local test asset paths (fill on each machine — do not commit secrets)
+
+> Used by `@qa-ui-automation`, `@qa-api-test`, `@qa-perf-test`. Leave blank until you know the folder. Agent must ask if empty.
+
+| Asset | Absolute path on this machine |
+|-------|-------------------------------|
+| UI tests (Cypress / Playwright) | |
+| API tests (Karate / Bruno / collections) | |
+| Performance tests (k6) | |
+
+Optional prefs (same values): `paths.ui_tests` · `paths.api_tests` · `paths.perf_tests`
+
 ## Defaults for QA Agent
 
 | Setting | Value |
@@ -45,7 +57,7 @@
 ## Conventions
 
 - Selector priority:
-- Test file locations:
+- Test file locations: see **Local test asset paths** above
 - Branch naming:
 - Auth pattern: (env vars / vault / cookies file — no secrets here)
 - Chat language / TestRail language:

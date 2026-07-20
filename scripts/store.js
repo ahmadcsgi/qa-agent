@@ -31,7 +31,7 @@ const BOOT_DEFAULT_N = 3;
 const BOOT_CONTEXT_CHARS = 400;
 const CONTEXT_MAX_CHARS = 6000;
 /** Prefs always included in boot (token thrift). */
-const BOOT_PREF_ALWAYS = ['output.', 'tools.', 'search.', 'mcp.', 'mode.'];
+const BOOT_PREF_ALWAYS = ['output.', 'tools.', 'search.', 'mcp.', 'mode.', 'paths.'];
 /** Extra pref key prefixes per boot domain. */
 const BOOT_PREF_BY_DOMAIN = {
   testcases: ['testcases.', 'testrail.'],

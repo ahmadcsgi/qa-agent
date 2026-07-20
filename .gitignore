@@ -1,6 +1,9 @@
 # QA Agent memory — personal learning, do not commit
 .cursor/qa-memory/
 
+# private onboard (share offline only — do not push)
+onboard.md
+
 # Cursor plugin cache (noisy machine-local; never relevant to QA Agent)
 .cursor/plugins/
 
