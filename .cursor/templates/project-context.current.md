@@ -8,6 +8,13 @@
 - staging:
 - production:
 
+## Local identity (fill on each machine)
+
+| Field | Value |
+|-------|-------|
+| Squad / team (Shortcut + TestRail + PR `[Squad]`) | |
+| Pref | `squad.name` |
+
 ## Local test asset paths (fill on each machine — do not commit secrets)
 
 > Used by `@qa-ui-automation`, `@qa-api-test`, `@qa-perf-test`. Leave blank until you know the folder. Agent must ask if empty.
@@ -19,6 +26,9 @@
 | Performance tests (k6) | |
 
 Optional prefs (same values): `paths.ui_tests` · `paths.api_tests` · `paths.perf_tests`
+
+**Perf secrets:** follow `EncryptSecret.md` in telflow-product-perf-test (Ansible Vault).  
+**PRs:** `[Squad][TaskId] …` + signed commits. See telflow-rest-api-test `CONTRIBUTING.md` PR rules.
 
 ## Defaults for QA Agent
 
