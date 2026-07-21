@@ -6,10 +6,11 @@ QA Agent uses Cursor MCP for Ticket / TestRail / docs / UI runners. Git, k6 CLI,
 
 | Path | Role |
 |------|------|
-| `~/.cursor/mcp.json` | **Active** servers Cursor loads |
-| `~/.qa-agent/mcp/catalog.json` | Full catalog for profile switching (may contain secrets) |
+| `~/.cursor/mcp.json` | **Active** servers Cursor loads (profile switch) |
+| `~/.qa-agent/mcp/catalog.json` | **Catalog** full install (may contain secrets) |
 | `~/.qa-agent/mcp/catalog.redacted.json` | Safe copy from scrub script |
 | `~/.qa-agent/mcp/backups/` | Automatic backups before profile switch |
+| `~/.cursor/hooks/qa-mcp-auto.js` | sessionStart auto profile (after onboard) |
 | `mcp.json.example` | Template for the recommended **full** set (6) |
 | `mcp.json.optional.example` | Optional **k6** + **karate** |
 
@@ -19,6 +20,7 @@ Never commit personal mcp/catalog files.
 
 ```bash
 node scripts/onboard-wizard.js
+# chat: --print-learn then --apply --squad … --ui … --tools 1,2
 # or: node scripts/setup-mcp.js --full
 ```
 
@@ -36,8 +38,11 @@ Wizard fills catalog with all 6 servers (tokens once). Day-to-day activation is 
 | **optional** | manual | full + k6 + karate |
 | **auto** | recommended | picks ui/api/perf/lite from cwd |
 
+Multi-path prefs: `C:\ui-a|C:\ui-b` (pipe-separated).
+
 ```bash
 node scripts/mcp-mode.js auto
+node scripts/mcp-mode.js auto --if-changed
 node scripts/mcp-mode.js status
 node scripts/mcp-mode.js lite
 node scripts/mcp-mode.js ui
@@ -46,6 +51,10 @@ node scripts/mcp-mode.js ui
 Cypress/Playwright are **not deleted** from catalog when switching to lite. Only the active `mcp.json` changes. Reload Cursor after a switch.
 
 Pref: `mcp.path_aware=true` (set by onboard wizard).
+
+### Auto on new chat
+
+`node scripts/install-mcp-hook.js` wires a **user** `sessionStart` hook so opening any workspace (UI/API/perf or not) can rewrite active MCP. Also `/qa` boot runs `mcp-mode auto --if-changed`.
 
 ### Full always means 6 in catalog
 
@@ -56,12 +65,14 @@ Pref: `mcp.path_aware=true` (set by onboard wizard).
 ```bash
 node scripts/onboard-wizard.js
 # Reload Cursor
-# Open UI test repo → node scripts/mcp-mode.js auto
+# Open UI test repo → new chat (hook) or: node scripts/mcp-mode.js auto
 ```
 
-Path prefs auto-fill Cypress when set:
+Path prefs sync env (first path if multi):
 
 - `paths.ui_tests` → Cypress `CYPRESS_PROJECT_PATH`
+- `paths.perf_tests` → k6 `K6_PROJECT_PATH` (if catalogued)
+- `paths.api_tests` → karate `KARATE_PROJECT_PATH` (if catalogued)
 
 ## Optional k6 / Karate MCP
 

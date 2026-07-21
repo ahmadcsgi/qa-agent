@@ -18,9 +18,18 @@ const readline = require('readline');
 const os = require('os');
 
 function parseArgs(argv) {
+  const onlyIdx = argv.findIndex((a) => a === '--only');
+  let only = null;
+  if (onlyIdx >= 0 && argv[onlyIdx + 1]) {
+    only = argv[onlyIdx + 1]
+      .split(/[,\s]+/)
+      .map((s) => s.trim().toLowerCase())
+      .filter(Boolean);
+  }
   return {
     nonInteractive: argv.includes('--non-interactive') || !process.stdin.isTTY,
     install: argv.includes('--install'),
+    only,
     help: argv.includes('--help') || argv.includes('-h'),
   };
 }
@@ -96,15 +105,23 @@ async function ensure(name, check, installFn, opts, rl) {
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
   if (opts.help) {
-    console.log(`Usage: node scripts/setup-tooling.js [--install] [--non-interactive]
+    console.log(`Usage: node scripts/setup-tooling.js [--install] [--non-interactive] [--only k6,java,mvn]
 
   Detects k6, Java, Maven. Optionally installs via winget (Windows) or brew (macOS).
+  --only limits which tools to check/install (comma list).
 
 Notes:
   - Perf skills use k6 CLI + paths.perf_tests (MCP optional: k6 x mcp).
   - API skills usually use Maven in paths.api_tests (not karate MCP).
-  - Optional karate MCP needs a standalone \`karate\` CLI — skip if you only use mvn.`);
+  - Optional karate MCP needs a standalone karate CLI. Skip if you only use mvn.`);
     return;
+  }
+
+  function want(name) {
+    if (!opts.only || !opts.only.length) return true;
+    const aliases = { maven: 'mvn', 'mvn (maven)': 'mvn', jdk: 'java' };
+    const key = aliases[name.toLowerCase()] || name.toLowerCase();
+    return opts.only.some((o) => o === key || o === name.toLowerCase());
   }
 
   console.log('QA Agent tooling setup');
@@ -120,51 +137,59 @@ Notes:
   const hasWinget = !!run('winget --version');
   const hasBrew = !!run('brew --version');
 
-  await ensure(
-    'k6',
-    () => hasCmd('k6', ['version']) || hasCmd('k6', ['--version']),
-    () => {
-      if (isWin && hasWinget) return wingetInstall('Grafana.k6');
-      if (isMac && hasBrew) return brewInstall('k6');
-      console.log('  Manual: https://grafana.com/docs/k6/latest/set-up/install-k6/');
-      return false;
-    },
-    opts,
-    rl
-  );
+  if (want('k6')) {
+    await ensure(
+      'k6',
+      () => hasCmd('k6', ['version']) || hasCmd('k6', ['--version']),
+      () => {
+        if (isWin && hasWinget) return wingetInstall('Grafana.k6');
+        if (isMac && hasBrew) return brewInstall('k6');
+        console.log('  Manual: https://grafana.com/docs/k6/latest/set-up/install-k6/');
+        return false;
+      },
+      opts,
+      rl
+    );
+  }
 
-  await ensure(
-    'java',
-    () => hasCmd('java', ['-version']) || hasCmd('java', ['--version']),
-    () => {
-      if (isWin && hasWinget) return wingetInstall('EclipseAdoptium.Temurin.17.JDK');
-      if (isMac && hasBrew) return brewInstall('openjdk@17');
-      console.log('  Manual: install JDK 17+');
-      return false;
-    },
-    opts,
-    rl
-  );
+  if (want('java')) {
+    await ensure(
+      'java',
+      () => hasCmd('java', ['-version']) || hasCmd('java', ['--version']),
+      () => {
+        if (isWin && hasWinget) return wingetInstall('EclipseAdoptium.Temurin.17.JDK');
+        if (isMac && hasBrew) return brewInstall('openjdk@17');
+        console.log('  Manual: install JDK 17+');
+        return false;
+      },
+      opts,
+      rl
+    );
+  }
 
-  await ensure(
-    'mvn (Maven)',
-    () => hasCmd('mvn', ['-v']) || hasCmd('mvn', ['--version']),
-    () => {
-      if (isWin && hasWinget) return wingetInstall('Apache.Maven');
-      if (isMac && hasBrew) return brewInstall('maven');
-      console.log('  Manual: https://maven.apache.org/install.html');
-      return false;
-    },
-    opts,
-    rl
-  );
+  if (want('mvn') || want('maven')) {
+    await ensure(
+      'mvn (Maven)',
+      () => hasCmd('mvn', ['-v']) || hasCmd('mvn', ['--version']),
+      () => {
+        if (isWin && hasWinget) return wingetInstall('Apache.Maven');
+        if (isMac && hasBrew) return brewInstall('maven');
+        console.log('  Manual: https://maven.apache.org/install.html');
+        return false;
+      },
+      opts,
+      rl
+    );
+  }
 
   const karateOk = hasCmd('karate', ['--version']) || hasCmd('karate', ['-h']);
-  if (karateOk) console.log('OK  karate CLI (optional MCP possible)');
-  else {
-    console.log('SKIP karate CLI (optional)');
-    console.log('  Most CSG API work uses: mvn test in paths.api_tests');
-    console.log('  Only install karate CLI if you want mcp.json optional "karate" entry');
+  if (!opts.only || !opts.only.length) {
+    if (karateOk) console.log('OK  karate CLI (optional MCP possible)');
+    else {
+      console.log('SKIP karate CLI (optional)');
+      console.log('  Most CSG API work uses: mvn test in paths.api_tests');
+      console.log('  Only install karate CLI if you want mcp.json optional "karate" entry');
+    }
   }
 
   if (rl) rl.close();

@@ -18,14 +18,11 @@
 ## Quick commands
 
 ```bash
+node scripts/onboard-wizard.js --print-learn
+node scripts/onboard-wizard.js --apply --squad "Team" --ui "C:\ui" --tools 1,2
 node scripts/onboard-wizard.js
+node scripts/install-mcp-hook.js
 node scripts/onboard-status.js
-node scripts/setup-mcp.js
 node scripts/mcp-mode.js auto
-node scripts/setup-git.js
-node scripts/setup-tooling.js
-node scripts/setup-prefs.js
-node scripts/mcp-catalog-scrub.js
-node scripts/check-version.js
 node scripts/doctor.js
 ```

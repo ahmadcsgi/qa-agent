@@ -102,6 +102,26 @@ const autoLite = resolveAutoProfile('/work/other', {
 });
 assert(autoLite.profile === 'lite', 'auto outside paths is lite');
 
+const autoMulti = resolveAutoProfile('/work/ui-b/spec', {
+  ui: '/work/ui-a|/work/ui-b',
+  api: '',
+  perf: '',
+});
+assert(autoMulti.profile === 'ui', 'auto multi-path ui');
+
+const {
+  parsePathList,
+  learnActivationRows,
+} = require('./mcp-lib');
+const { extractLinks } = require('./onboard-learn');
+
+assert(parsePathList('a|b').length === 2, 'parsePathList pipe');
+assert(learnActivationRows({ ui: 'x' }).some((r) => /catalog/i.test(r[1])), 'learn rows mention catalog');
+{
+  const links = extractLinks('[SC](https://app.shortcut.com/x) https://testrails.example/cases/view/1');
+  assert(links.length >= 2, 'extractLinks finds markdown + bare');
+}
+
 const {
   scanSecrets,
   redactSecrets,

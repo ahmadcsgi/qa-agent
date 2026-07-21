@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "node scripts/hooks/mcp-auto-session.js",
+        "timeout": 20
+      }
+    ]
+  }
+}

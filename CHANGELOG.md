@@ -4,6 +4,22 @@ All notable changes to QA Agent are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project uses [SemVer](https://semver.org/).
 
+## [1.4.9] - 2026-07-21
+
+### Added
+- Chat onboard: `--print-learn` / `--apply --squad --ui --api --perf --tools`
+- `onboard-learn.js`: parse onboard.md links into prefs `links.*` + learn table rows
+- User `sessionStart` hook (`install-mcp-hook.js` / `hooks/mcp-auto-session.js`) for path-aware auto
+- Multi-path prefs (`pathA|pathB`), path validation warnings
+- `setup-tooling.js --only k6,java,mvn` for targeted installs
+- `mcp-mode.js --quiet --if-changed`
+- Wizard end summary (copy for chat). Sync Cypress/k6/karate env paths
+
+### Changed
+- Learn table distinguishes **catalog** vs **active** mcp.json
+- `/qa onboard` and `@qa-entry` use chat wizard flow
+- ONBOARDING / MCP / FIRST_RUN / onboard.example document wizard as primary
+
 ## [1.4.8] - 2026-07-21
 
 ### Added

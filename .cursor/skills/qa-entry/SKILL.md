@@ -47,21 +47,26 @@ Receptionist: detect intent, clarify if needed, route to **one** skill. Stay sho
 ## Onboard
 
 1. If no `~/.qa-agent/lib/store.js` → `docs/FIRST_RUN.md`. Stop.
-2. Run **`node scripts/onboard-wizard.js`** (preferred). It prints the learn/activation table, installs MCP **full** into catalog, asks squad + UI/API/perf paths, tooling picker (`1,2` or `5`=all missing), enables `mcp.path_aware`, runs `mcp-mode auto`.
-3. Show `node scripts/onboard-status.js`.
-4. Private `onboard.md` for CSG overlay if present. Else public stub + SETUP/FIRST_RUN.
-5. Remind: Reload Cursor. Day-to-day `mcp-mode auto` when opening UI/API/perf folders.
+2. **Chat wizard (preferred in Cursor):**
+   - `node scripts/onboard-wizard.js --print-learn` (table: catalog vs active + links from onboard.md)
+   - Ask in chat: squad, UI/API/perf paths (multi `a|b`), tooling `1,2` or `5` or skip
+   - `node scripts/onboard-wizard.js --apply --squad … --ui … --api … --perf … --tools 1,2`
+3. Terminal-only: `node scripts/onboard-wizard.js` (interactive readline).
+4. Show `onboard-status` + wizard summary. Remind Reload.
+5. Private `onboard.md` if present. Else public stub + FIRST_RUN.
 
 ### MCP path-aware (after onboard)
 
 | Location | Active MCP |
 |----------|------------|
 | Outside test paths | **lite**: Shortcut, TestRail, Glean |
-| Under `paths.ui_tests` | **ui**: + Context7, Cypress, Playwright |
+| Under `paths.ui_tests` (multi ok) | **ui**: + Context7, Cypress, Playwright |
 | Under `paths.api_tests` | **api**: + Context7 (+ karate MCP if catalogued) |
 | Under `paths.perf_tests` | **perf**: + Context7 (+ k6 MCP if catalogued) |
 
 Catalog always keeps full install. Switching only rewrites `~/.cursor/mcp.json`.
+
+**Auto:** user `sessionStart` hook (`install-mcp-hook.js`) + `/qa` boot `mcp-mode auto --if-changed`. Reload once after a profile change.
 
 ## Source matrix (automation)
 

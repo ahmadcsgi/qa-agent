@@ -3,7 +3,8 @@
  * Switch Cursor MCP profile:
  *   lite | ui | api | perf | full | optional | all | auto | status
  *
- * auto: pick ui/api/perf/lite from cwd vs prefs paths.*
+ * auto: pick ui/api/perf/lite from cwd vs prefs paths.* (multi-path: a|b)
+ * Flags: --quiet  --if-changed
  * Catalog keeps full install; active ~/.cursor/mcp.json is rewritten per profile.
  */
 'use strict';
@@ -11,7 +12,6 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { spawnSync } = require('child_process');
 
 const HOME = process.env.HOME || process.env.USERPROFILE || os.homedir();
 const REPO_LIB = path.join(__dirname, 'mcp-lib.js');
@@ -30,10 +30,20 @@ const {
   ensureProfileServersInCatalog,
   scanSecrets,
   readPref,
+  parsePathList,
 } = lib;
 
 const backupDir = path.join(QA_MCP_DIR, 'backups');
 const statePath = path.join(QA_MCP_DIR, 'active-profile.txt');
+
+const argv = process.argv.slice(2);
+const quiet = argv.includes('--quiet');
+const ifChanged = argv.includes('--if-changed');
+const modeArg = argv.find((a) => !a.startsWith('-')) || 'status';
+
+function log(...args) {
+  if (!quiet) console.log(...args);
+}
 
 function repoRoot() {
   if (fs.existsSync(path.join(__dirname, '..', 'mcp.json.example'))) {
@@ -56,13 +66,13 @@ function ensureCatalog() {
   if (fs.existsSync(CATALOG_PATH)) return;
   const seeded = seedCatalogFromExamples(repoRoot());
   if (seeded.seeded) {
-    console.log('Catalog seeded from mcp.json.example (+ optional):', CATALOG_PATH);
+    log('Catalog seeded from mcp.json.example (+ optional):', CATALOG_PATH);
     return;
   }
   if (fs.existsSync(MCP_PATH)) {
     fs.copyFileSync(MCP_PATH, path.join(backupDir, `mcp.${stamp()}.json`));
     fs.copyFileSync(MCP_PATH, CATALOG_PATH);
-    console.log('Catalog created from current mcp.json:', CATALOG_PATH);
+    log('Catalog created from current mcp.json:', CATALOG_PATH);
     return;
   }
   console.error('Missing catalog and mcp.json. Run: node scripts/setup-mcp.js');
@@ -70,6 +80,7 @@ function ensureCatalog() {
 }
 
 function warnSecrets(label, cfg) {
+  if (quiet) return;
   const hits = scanSecrets(cfg);
   if (!hits.length) return;
   console.log(`Warning: ${label} may contain live secrets (${hits.length} field(s)).`);
@@ -84,7 +95,7 @@ function writeJson(p, obj) {
 function normalizeMode(raw) {
   let mode = (raw || 'status').toLowerCase();
   if (mode === 'normal' || mode === 'pro' || mode === 'ultra') {
-    console.log(`Note: '${mode}' → full. Prefer: auto | ui | api | perf | lite`);
+    log(`Note: '${mode}' mapped to full. Prefer: auto | ui | api | perf | lite`);
     mode = 'full';
   }
   return mode;
@@ -98,13 +109,18 @@ function pathsFromPrefs() {
   };
 }
 
+function currentProfile() {
+  if (!fs.existsSync(statePath)) return '';
+  return fs.readFileSync(statePath, 'utf8').trim();
+}
+
 function applyProfile(profile) {
   if (profile === 'full' || profile === 'optional' || profile === 'ui') {
     const ens = ensureProfileServersInCatalog(repoRoot(), {
       optional: profile === 'optional',
     });
     if (ens.added.length) {
-      console.log('Catalog filled missing servers:', ens.added.join(', '));
+      log('Catalog filled missing servers:', ens.added.join(', '));
     }
   }
 
@@ -124,6 +140,18 @@ function applyProfile(profile) {
     console.error('Catalog keys:', Object.keys(catalog.mcpServers || {}).join(', ') || '(none)');
     process.exit(1);
   }
+
+  const prev = currentProfile();
+  if (ifChanged && prev === profile) {
+    // also compare active keys lightly
+    const activeKeys = Object.keys(readJsonSafe(MCP_PATH, {}).mcpServers || {}).sort().join(',');
+    const want = keys.slice().sort().join(',');
+    if (activeKeys === want) {
+      log(`same profile unchanged: ${profile}`);
+      return { profile, keys, changed: false };
+    }
+  }
+
   if (fs.existsSync(MCP_PATH)) {
     fs.copyFileSync(MCP_PATH, path.join(backupDir, `mcp.before-${profile}.${stamp()}.json`));
   }
@@ -132,22 +160,30 @@ function applyProfile(profile) {
   fs.mkdirSync(path.dirname(MCP_PATH), { recursive: true });
   writeJson(MCP_PATH, { mcpServers });
   fs.writeFileSync(statePath, profile, 'utf8');
-  console.log('MCP profile:', profile);
-  console.log('Active servers:', keys.join(', '));
-  console.log('Reload Cursor window for this to take effect.');
-  return { profile, keys };
+  log('MCP profile:', profile);
+  log('Active servers:', keys.join(', '));
+  if (prev && prev !== profile) {
+    log(`switched ${prev} > ${profile}`);
+  }
+  if (!quiet) console.log('Reload Cursor window for this to take effect.');
+  return { profile, keys, changed: true };
+}
+
+function resolveCwd() {
+  return process.env.QA_MCP_HOOK_CWD || process.cwd();
 }
 
 function runAuto() {
   ensureCatalog();
   ensureProfileServersInCatalog(repoRoot(), { optional: false });
   const paths = pathsFromPrefs();
-  const { profile, reason } = resolveAutoProfile(process.cwd(), paths);
-  console.log('mcp-mode auto');
-  console.log(`  cwd: ${process.cwd()}`);
-  console.log(`  → ${profile} (${reason})`);
-  if (!paths.ui && !paths.api && !paths.perf) {
-    console.log('  Tip: set paths via onboard wizard or setup-prefs.js');
+  const cwd = resolveCwd();
+  const { profile, reason } = resolveAutoProfile(cwd, paths);
+  log('mcp-mode auto');
+  log(`  cwd: ${cwd}`);
+  log(`  pick: ${profile} (${reason})`);
+  if (!parsePathList(paths.ui).length && !parsePathList(paths.api).length && !parsePathList(paths.perf).length) {
+    log('  Tip: set paths via onboard wizard or setup-prefs.js');
   }
   return applyProfile(profile);
 }
@@ -157,22 +193,26 @@ function status() {
   ensureProfileServersInCatalog(repoRoot(), { optional: false });
   const catalog = readJsonSafe(CATALOG_PATH, { mcpServers: {} });
   warnSecrets('catalog', catalog);
-  const active = fs.existsSync(statePath) ? fs.readFileSync(statePath, 'utf8').trim() : '(unknown)';
+  const active = currentProfile() || '(unknown)';
   let current = [];
   if (fs.existsSync(MCP_PATH)) {
     current = Object.keys(readJsonSafe(MCP_PATH, {}).mcpServers || {});
   }
   const paths = pathsFromPrefs();
-  const auto = resolveAutoProfile(process.cwd(), paths);
+  const auto = resolveAutoProfile(resolveCwd(), paths);
   console.log('Active profile file:', active);
   console.log(`mcp.json servers (${current.length}):`, current.join(', ') || '(none)');
   console.log('Catalog:', Object.keys(catalog.mcpServers || {}).join(', ') || '(none)');
   console.log(`Full set ready: ${FULL.every((k) => (catalog.mcpServers || {})[k]) ? 'yes' : 'no'}`);
+  console.log(`paths.ui_tests: ${paths.ui || '(empty)'}`);
+  console.log(`paths.api_tests: ${paths.api || '(empty)'}`);
+  console.log(`paths.perf_tests: ${paths.perf || '(empty)'}`);
   console.log(`Auto would pick: ${auto.profile} (${auto.reason})`);
   console.log('Profiles: lite | ui | api | perf | full | optional | all | auto | status');
+  console.log('Flags: --quiet --if-changed');
 }
 
-const mode = normalizeMode(process.argv[2]);
+const mode = normalizeMode(modeArg);
 const PROFILES = {
   lite: 1,
   ui: 1,
@@ -187,7 +227,7 @@ const PROFILES = {
 
 if (mode === 'status' || mode === 'help' || mode === '-h' || mode === '--help') {
   if (mode !== 'status') {
-    console.log(`Usage: node scripts/mcp-mode.js [lite|ui|api|perf|full|optional|all|auto|status]
+    console.log(`Usage: node scripts/mcp-mode.js [lite|ui|api|perf|full|optional|all|auto|status] [--quiet] [--if-changed]
 
   lite       Shortcut, TestRail, Glean (default outside test repos)
   ui         lite + Context7 + Cypress + Playwright (paths.ui_tests)
@@ -196,8 +236,10 @@ if (mode === 'status' || mode === 'help' || mode === '-h' || mode === '--help') 
   full       all 6 recommended servers
   optional   full + k6 + karate
   all        every key in catalog
-  auto       pick ui/api/perf/lite from cwd vs paths.*
-  status     show active / catalog / auto preview`);
+  auto       pick ui/api/perf/lite from cwd vs paths.* (multi: pathA|pathB)
+  status     show active / catalog / auto preview
+  --quiet    less stdout (for hooks)
+  --if-changed  skip rewrite when profile already matches`);
     process.exit(0);
   }
   status();

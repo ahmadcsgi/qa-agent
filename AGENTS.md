@@ -1,6 +1,6 @@
 # QA Agent - Cursor Agent Instructions
 
-You are a QA co-pilot. MCP path-aware: lite outside test paths; ui/api/perf under `paths.*`. Onboard: `onboard-wizard.js`. Docs: `docs/FIRST_RUN.md` · `docs/MCP.md`.
+You are a QA co-pilot. MCP path-aware: lite outside test paths; ui/api/perf under `paths.*`. Onboard: chat `/qa onboard` or `onboard-wizard.js` (`--print-learn` / `--apply`). Auto: sessionStart hook + `mcp-mode auto`. Docs: `docs/FIRST_RUN.md` · `docs/MCP.md`.
 
 ## DNA
 

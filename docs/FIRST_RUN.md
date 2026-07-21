@@ -11,7 +11,7 @@
      Windows:  .\install.ps1
      macOS/Linux:  chmod +x install.sh && ./install.sh
 4. Cursor: Developer: Reload Window  (or restart Cursor)
-5. Chat: `/qa onboard`  (runs onboard-wizard)
+5. Chat: `/qa onboard`  (chat wizard: learn table → ask squad/paths/tools → apply)
    Or terminal: `node scripts/onboard-wizard.js`
    Or `@qa` then type: onboard
 ```
@@ -21,7 +21,7 @@
 | Open **this** folder | Project already has `.cursor/commands/qa.md`, `.cursor/agents/qa.md`, `.cursor/skills/` |
 | `install.ps1` / `install.sh` | Installs `~/.qa-agent` (store, mcp-mode), global skills/agent, scaffolds memory |
 | **Reload Window** | Cursor reloads slash commands + agents. Without this, `/qa` often missing |
-| `/qa onboard` | Runs checklist (MCP, git, prefs, doctor). Uses private `onboard.md` if you added it |
+| `/qa onboard` | Chat wizard: full MCP catalog, paths, tooling picker, path-aware hook. Uses private `onboard.md` links if present |
 
 ## If `/qa` still does not appear
 
@@ -34,11 +34,12 @@
 5. Or run setup yourself in terminal (no agent yet):
 
 ```bash
-node scripts/setup-mcp.js
+node scripts/setup-mcp.js --full
 node scripts/setup-git.js
 node scripts/setup-tooling.js
 node scripts/setup-prefs.js
-node scripts/mcp-mode.js full
+node scripts/install-mcp-hook.js
+node scripts/mcp-mode.js auto
 node scripts/doctor.js
 ```
 
@@ -49,7 +50,7 @@ Then Reload and retry `/qa`.
 1. Clone + install **qa-agent** once (global skills under `~/.cursor/skills/`).
 2. Open your **product** repo in Cursor.
 3. Reload if needed. `/qa` / `@qa` should work from the global install.
-4. Run `setup-prefs.js` (or `/qa` ask to set paths) for that product’s UI/API/perf folders.
+4. Prefer `/qa onboard` once so `paths.*` + sessionStart hook cover UI/API/perf folders.
 
 ## Private CSG `onboard.md`
 

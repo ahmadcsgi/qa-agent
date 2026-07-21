@@ -10,28 +10,25 @@ Full setup: [SETUP.md](SETUP.md) · First clone: [FIRST_RUN.md](FIRST_RUN.md) ·
 1. Clone + Open qa-agent folder in Cursor
 2. .\install.ps1  (or ./install.sh)
 3. Reload Window
-4. /qa onboard   OR   node scripts/onboard-status.js
+4. /qa onboard   OR   node scripts/onboard-wizard.js
 ```
 
 ```bash
 ./install.sh          # or .\install.ps1 on Windows
-node scripts/setup-mcp.js
-node scripts/mcp-mode.js full
-node scripts/setup-git.js
-node scripts/setup-tooling.js      # optional
-node scripts/setup-prefs.js        # squad + paths (+ Cypress MCP sync)
+node scripts/onboard-wizard.js   # preferred (or /qa onboard in chat)
 node scripts/onboard-status.js
 node scripts/check-version.js
 node scripts/doctor.js
 ```
 
-Switch profile:
+Switch / auto profile:
 
 ```bash
-node scripts/mcp-mode.js full
+node scripts/mcp-mode.js auto
+node scripts/mcp-mode.js status
 ```
 
-1. Prefer setup scripts over hand-copying templates.
+1. Prefer onboard wizard over hand-copying templates.
 2. Reload Cursor after MCP changes.
 3. Select **@qa** or type `/qa`.
 

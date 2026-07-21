@@ -33,15 +33,27 @@ cd qa-agent
 
 ## After install + Reload
 
+**Chat (recommended):** `/qa onboard`  
+Agent prints learn table, asks squad + paths + tooling, then applies.
+
+**Terminal:**
+
 ```bash
 node scripts/onboard-wizard.js
-# learn table → full MCP → squad + paths → tooling (1,2 or 5=all) → mcp auto
+# learn table → full MCP → squad + paths (multi a|b) → tooling (1,2 or 5) → hook + auto
+
+# Or chat-equivalent apply:
+# node scripts/onboard-wizard.js --apply --squad "MyTeam" --ui "C:\ui" --api "C:\api" --perf "C:\perf" --tools 1,2
+
 node scripts/onboard-status.js
 ```
 
-Or step-by-step: `setup-mcp.js` / `setup-git.js` / `setup-prefs.js` / `mcp-mode.js auto`.
+Hub links in this file (and private `onboard.md`) are parsed into prefs `links.*`.
 
-Then in chat: `/qa onboard` (runs the same wizard).
+Example public docs:
+
+- Repo: https://github.com/ahmadcsgi/qa-agent
+- MCP guide: see [docs/MCP.md](docs/MCP.md)
 
 ## Private CSG overlay
 

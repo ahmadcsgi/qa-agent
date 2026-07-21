@@ -211,7 +211,30 @@ function resolveProfileKeys(profile, catalog) {
 /** Normalize path for prefix compare (Windows-safe). */
 function normPath(p) {
   if (!p) return '';
-  return path.resolve(String(p)).replace(/\\/g, '/').toLowerCase();
+  try {
+    return path.resolve(String(p)).replace(/\\/g, '/').toLowerCase();
+  } catch {
+    return String(p).replace(/\\/g, '/').toLowerCase();
+  }
+}
+
+/**
+ * Multi-path prefs: separate with | or newlines.
+ * Example: C:\\ui-a|C:\\ui-b
+ */
+function parsePathList(raw) {
+  if (!raw) return [];
+  if (Array.isArray(raw)) {
+    return raw.map((s) => String(s).trim()).filter(Boolean);
+  }
+  return String(raw)
+    .split(/[\|\n]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+function formatPathList(list) {
+  return parsePathList(list).join('|');
 }
 
 function pathIsUnder(cwd, root) {
@@ -221,44 +244,126 @@ function pathIsUnder(cwd, root) {
   return c === r || c.startsWith(r.endsWith('/') ? r : r + '/');
 }
 
+function anyPathUnder(cwd, roots) {
+  return parsePathList(roots).some((r) => pathIsUnder(cwd, r));
+}
+
 /**
- * Pick profile from cwd vs paths.* prefs.
- * UI path → ui (full UI MCP). API → api. Perf → perf. Else → lite.
- * If multiple match, prefer ui > api > perf.
+ * Validate absolute paths. Returns { ok, warnings, missing }.
+ */
+function validatePathList(raw) {
+  const list = parsePathList(raw);
+  const warnings = [];
+  const missing = [];
+  for (const p of list) {
+    if (!path.isAbsolute(p) && !/^[A-Za-z]:[\\/]/.test(p)) {
+      warnings.push(`relative (prefer absolute): ${p}`);
+    }
+    try {
+      if (!fs.existsSync(p)) missing.push(p);
+    } catch {
+      missing.push(p);
+    }
+  }
+  return { ok: list.length === 0 || missing.length === 0, list, warnings, missing };
+}
+
+/**
+ * Pick profile from cwd vs paths.* prefs (each may be multi-path).
+ * Prefer ui > api > perf. Else lite.
  */
 function resolveAutoProfile(cwd, paths) {
   const ui = paths && paths.ui;
   const api = paths && paths.api;
   const perf = paths && paths.perf;
-  if (ui && pathIsUnder(cwd, ui)) {
-    return { profile: 'ui', reason: `cwd under paths.ui_tests` };
+  if (anyPathUnder(cwd, ui)) {
+    return { profile: 'ui', reason: 'cwd under paths.ui_tests' };
   }
-  if (api && pathIsUnder(cwd, api)) {
-    return { profile: 'api', reason: `cwd under paths.api_tests` };
+  if (anyPathUnder(cwd, api)) {
+    return { profile: 'api', reason: 'cwd under paths.api_tests' };
   }
-  if (perf && pathIsUnder(cwd, perf)) {
-    return { profile: 'perf', reason: `cwd under paths.perf_tests` };
+  if (anyPathUnder(cwd, perf)) {
+    return { profile: 'perf', reason: 'cwd under paths.perf_tests' };
   }
   return { profile: 'lite', reason: 'cwd outside UI/API/perf paths' };
 }
 
-/** Learn / activation matrix for onboard wizard output. */
-function learnActivationRows(paths) {
-  const ui = (paths && paths.ui) || '(set paths.ui_tests)';
-  const api = (paths && paths.api) || '(set paths.api_tests)';
-  const perf = (paths && paths.perf) || '(set paths.perf_tests)';
-  return [
-    ['Shortcut', '~/.qa-agent/mcp/catalog.json', 'Always (every workspace)'],
-    ['TestRail', '~/.qa-agent/mcp/catalog.json', 'Always'],
-    ['Glean', '~/.qa-agent/mcp/catalog.json', 'Always'],
-    ['Context7', '~/.qa-agent/mcp/catalog.json', `Auto on UI / API / perf paths`],
-    ['Cypress', '~/.qa-agent/mcp/catalog.json', `Auto when cwd under UI: ${ui}`],
-    ['Playwright', '~/.qa-agent/mcp/catalog.json', `Auto when cwd under UI: ${ui}`],
-    ['k6 CLI', 'PATH (setup-tooling)', `Skills when cwd under perf: ${perf}`],
-    ['Java / Maven', 'PATH (setup-tooling)', `Skills when cwd under API: ${api}`],
+/**
+ * Learn / activation matrix.
+ * Catalog = always installed. Active = ~/.cursor/mcp.json after profile switch.
+ */
+function learnActivationRows(paths, learnedRows) {
+  const ui = formatPathList((paths && paths.ui) || '') || '(set paths.ui_tests)';
+  const api = formatPathList((paths && paths.api) || '') || '(set paths.api_tests)';
+  const perf = formatPathList((paths && paths.perf) || '') || '(set paths.perf_tests)';
+  const storeCat = 'catalog (~/.qa-agent/mcp/catalog.json)';
+  const storeAct = 'active (~/.cursor/mcp.json)';
+  const rows = [
+    ['Shortcut', `${storeCat} + ${storeAct}`, 'Active always (every profile)'],
+    ['TestRail', `${storeCat} + ${storeAct}`, 'Active always'],
+    ['Glean', `${storeCat} + ${storeAct}`, 'Active always'],
+    ['Context7', storeCat, `Active on ui/api/perf/full (not lite). Paths: UI/API/perf`],
+    ['Cypress', storeCat, `Active only ui/full. When cwd under: ${ui}`],
+    ['Playwright', storeCat, `Active only ui/full. When cwd under: ${ui}`],
+    ['k6 MCP (opt)', storeCat, `Active only perf/optional if catalogued. CLI under: ${perf}`],
+    ['karate MCP (opt)', storeCat, `Active only api/optional if catalogued. Maven under: ${api}`],
+    ['k6 / Java / Maven CLI', 'PATH (setup-tooling)', 'Skills use CLI + paths.* (MCP optional)'],
     ['squad.name', '~/.qa-agent/projects/<id>/prefs', 'Agent boot (always)'],
-    ['paths.*', 'prefs + project-context', 'Drives mcp-mode auto'],
+    ['paths.* (multi: a|b)', 'prefs + project-context', 'Drives mcp-mode auto + sessionStart hook'],
   ];
+  if (Array.isArray(learnedRows) && learnedRows.length) {
+    return rows.concat(learnedRows);
+  }
+  return rows;
+}
+
+/**
+ * Sync project path env into catalog and/or active mcp.json.
+ * Multi UI/API/perf: uses first path as primary env value.
+ */
+function syncProjectEnvPaths({ ui, api, perf, targets } = {}) {
+  const files = targets && targets.length ? targets : [CATALOG_PATH, MCP_PATH];
+  const uiPrimary = parsePathList(ui)[0] || '';
+  const apiPrimary = parsePathList(api)[0] || '';
+  const perfPrimary = parsePathList(perf)[0] || '';
+  const updated = [];
+  for (const file of files) {
+    if (!fs.existsSync(file)) continue;
+    let cfg;
+    try {
+      cfg = JSON.parse(fs.readFileSync(file, 'utf8'));
+    } catch {
+      continue;
+    }
+    const s = cfg.mcpServers || {};
+    let changed = false;
+    if (uiPrimary && s.cypress) {
+      s.cypress.env = s.cypress.env || {};
+      if (s.cypress.env.CYPRESS_PROJECT_PATH !== uiPrimary) {
+        s.cypress.env.CYPRESS_PROJECT_PATH = uiPrimary;
+        changed = true;
+      }
+    }
+    if (perfPrimary && s.k6) {
+      s.k6.env = s.k6.env || {};
+      if (s.k6.env.K6_PROJECT_PATH !== perfPrimary) {
+        s.k6.env.K6_PROJECT_PATH = perfPrimary;
+        changed = true;
+      }
+    }
+    if (apiPrimary && s.karate) {
+      s.karate.env = s.karate.env || {};
+      if (s.karate.env.KARATE_PROJECT_PATH !== apiPrimary) {
+        s.karate.env.KARATE_PROJECT_PATH = apiPrimary;
+        changed = true;
+      }
+    }
+    if (changed) {
+      fs.writeFileSync(file, JSON.stringify(cfg, null, 2) + '\n', 'utf8');
+      updated.push(file);
+    }
+  }
+  return updated;
 }
 
 /** Read pref via store.js if present. Returns string or ''. */
@@ -284,9 +389,9 @@ function readPref(key) {
 
 function applyPathPrefs(config) {
   const s = config.mcpServers || {};
-  const ui = readPref('paths.ui_tests');
-  const api = readPref('paths.api_tests');
-  const perf = readPref('paths.perf_tests');
+  const ui = parsePathList(readPref('paths.ui_tests'))[0] || '';
+  const api = parsePathList(readPref('paths.api_tests'))[0] || '';
+  const perf = parsePathList(readPref('paths.perf_tests'))[0] || '';
   if (s.cypress && s.cypress.env && isPlaceholder(s.cypress.env.CYPRESS_PROJECT_PATH) && ui) {
     s.cypress.env.CYPRESS_PROJECT_PATH = ui;
   }
@@ -334,8 +439,13 @@ module.exports = {
   resolveProfileKeys,
   resolveAutoProfile,
   pathIsUnder,
+  anyPathUnder,
+  parsePathList,
+  formatPathList,
+  validatePathList,
   normPath,
   learnActivationRows,
+  syncProjectEnvPaths,
   readPref,
   applyPathPrefs,
   commandOnPath,

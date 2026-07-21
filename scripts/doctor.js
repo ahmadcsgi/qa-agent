@@ -121,6 +121,9 @@ else soft("global store not installed. Run install.ps1 / install.sh");
 const mcpModeLib = path.join(HOME, ".qa-agent", "lib", "mcp-mode.js");
 if (exists(mcpModeLib)) ok("installed ~/.qa-agent/lib/mcp-mode.js");
 else soft("mcp-mode.js missing. Re-run installer");
+const hookJs = path.join(HOME, ".cursor", "hooks", "qa-mcp-auto.js");
+if (exists(hookJs)) ok("sessionStart MCP auto hook installed");
+else soft("MCP auto hook missing. Run: node scripts/install-mcp-hook.js");
 if (exists(path.join(HOME, ".qa-agent", "projects"))) ok("~/.qa-agent/projects/ present");
 else soft("projects/ dir missing. Re-run installer");
 
