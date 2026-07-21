@@ -26,13 +26,25 @@ The installer will:
 - Create the memory directory structure
 - Optionally install visual regression dependencies (Playwright + pixelmatch) on Windows and Unix
 
-Then configure MCP servers:
+Then configure MCP:
 
-1. Copy [`mcp.json.example`](mcp.json.example) → `~/.cursor/mcp.json`
-2. Replace placeholders with your credentials
-3. Restart Cursor
+```bash
+node scripts/setup-mcp.js
+# full (default) = Shortcut + TestRail + Glean + Context7 + Cypress + Playwright
+# --lite = Shortcut + TestRail + Glean only
+# --with-optional = also k6 + karate MCP (see mcp.json.optional.example + mcp.json.optional.md)
+node scripts/setup-git.js
+# installs Git if missing (winget/brew) + asks user.name / user.email
+node scripts/setup-tooling.js
+# optional: k6, Java, Maven
+node scripts/mcp-mode.js status   # later: full | lite | optional | all
+```
 
-> ⚠️ Do NOT commit `~/.cursor/mcp.json` — it contains personal credentials.
+Or copy [`mcp.json.example`](mcp.json.example) → `~/.cursor/mcp.json` and fill secrets manually.
+
+Optional MCP only when you want editor tools for perf/API (not required if you use repo paths): [`mcp.json.optional.example`](mcp.json.optional.example) · notes: [`mcp.json.optional.md`](mcp.json.optional.md).
+
+> Do NOT commit `~/.cursor/mcp.json` — it contains personal credentials.
 
 Health check & session brain:
 

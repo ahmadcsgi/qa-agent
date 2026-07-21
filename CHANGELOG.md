@@ -4,6 +4,37 @@ All notable changes to QA Agent are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project uses [SemVer](https://semver.org/).
 
+## [1.4.4] - 2026-07-21
+
+### Added
+- `scripts/mcp-lib.js` + `scripts/mcp-mode.js` (profiles: `lite` | `full` | `optional` | `all` | `status`). `normal` = alias of `full`
+- `scripts/setup-tooling.js`: detect/install k6, Java, Maven (winget/brew)
+- `scripts/setup-mcp.test.js`: merge/profile/placeholder self-checks
+- `mcp.json.optional.md`: when to skip karate MCP (Maven-first CSG repos)
+- Installer seeds `~/.qa-agent/mcp/catalog.json` from examples if missing (never overwrites existing catalog)
+- Installer optional one-shot: setup-mcp + setup-git + setup-tooling
+- Doctor checks optional MCP CLIs, catalog, k6/java/mvn, mcp-mode install
+
+### Changed
+- `setup-mcp.js` syncs catalog, auto-fills paths from `paths.*` prefs
+- `docs/DEMO.md` uses setup scripts (not hand-copy only)
+- MCP profile language aligned: full (not legacy "normal" as primary)
+
+## [1.4.3] - 2026-07-21
+
+### Added
+- `scripts/setup-mcp.js`: interactive Cursor MCP setup (`--full` default / `--lite`). Writes `~/.cursor/mcp.json`, prompts for TestRail (and optional) tokens. `--normal` = alias of `--full`
+- `mcp.json.optional.example`: optional **k6** + **karate** MCP (`k6 x mcp`, `karate mcp --stdio`). Not required when using `paths.perf_tests` / `paths.api_tests`
+- `scripts/setup-git.js`: detect Git, optional auto-install (winget / Homebrew), configure `user.name` / `user.email` (+ Windows gpg.program helper)
+- `setup-mcp.js --with-optional`: merge k6 + karate into `mcp.json`
+
+### Changed
+- Installer next steps point to `setup-mcp.js` + `setup-git.js`
+- `mcp.json.example` defaults for CSG TestRail + Glean URLs
+- Doctor warns on missing full MCP servers, TestRail placeholders, or missing Git identity
+- Onboard A3 documents MCP setup + optional k6/karate + Git setup
+- Default MCP mode **full** (6 servers). Clarify Git is CLI. k6/Karate optional MCP
+
 ## [1.4.2] - 2026-07-20
 
 ### Added

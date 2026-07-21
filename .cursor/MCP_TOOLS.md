@@ -62,10 +62,29 @@ Tool names below match the **actual MCP server APIs** (verified against live sch
 | `browser_take_screenshot` | Screenshot for exploration log | `@qa-ui-automation` |
 | `browser_evaluate` | Execute JS in browser | `@qa-ui-automation` |
 
-## Git (built-in Cursor)
+## Git (shell, not MCP)
+
 | Tool | Use Case | Called by |
 |------|----------|----------------|
 | `git diff`, `git log` | Check changes | `@qa-perf-test`, `@qa-ui-automation`, `@qa-api-test` |
 | `git checkout -b` | Create new branch | `@qa-perf-test`, `@qa-api-test` |
+
+Setup: `node scripts/setup-git.js` (auto-install via winget/brew if missing, then ask `user.name` / `user.email`). Non-interactive check: `--non-interactive`.
+
+## Profile switch
+
+```bash
+node scripts/mcp-mode.js full|lite|optional|all|status
+# or: node ~/.qa-agent/lib/mcp-mode.js …
+```
+
+## k6 and Karate
+
+| Tool | Default | Optional MCP |
+|------|---------|--------------|
+| **k6** | CLI in `paths.perf_tests` | `mcp.json.optional.example` → `k6 x mcp`. Or `setup-mcp.js --with-optional` |
+| **Karate** | Maven/CLI in `paths.api_tests` | Needs standalone `karate` CLI. Most CSG repos: skip MCP, use `mvn`. See `mcp.json.optional.md` |
+
+CLI install helper: `node scripts/setup-tooling.js` (k6, Java, Maven).
 
 > **Note:** Detailed tool usage is documented in each skill file (`.cursor/skills/<name>/SKILL.md`) and offline refs under `.cursor/references/`.

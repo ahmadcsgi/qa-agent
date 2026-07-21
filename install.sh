@@ -59,6 +59,8 @@ MEMORY_SRC="$REPO_DIR/.cursor/qa-memory"
 MCP_TOOLS_SRC="$REPO_DIR/.cursor/MCP_TOOLS.md"
 AGENTS_MD_SRC="$REPO_DIR/AGENTS.md"
 STORE_SRC="$REPO_DIR/scripts/store.js"
+MCP_LIB_SRC="$REPO_DIR/scripts/mcp-lib.js"
+MCP_MODE_SRC="$REPO_DIR/scripts/mcp-mode.js"
 CONTEXT_TPL_SRC="$REPO_DIR/.cursor/templates/project-context.current.md"
 COMMANDS_SRC="$REPO_DIR/.cursor/commands"
 
@@ -91,12 +93,28 @@ info "Creating global memory store at $GLOBAL_STORE_DIR ..."
 mkdir -p "$GLOBAL_STORE_DIR/lib"
 mkdir -p "$GLOBAL_STORE_DIR/projects"
 
-# Copy storage engine
+# Copy storage engine + MCP helpers
 if [ -f "$STORE_SRC" ]; then
   cp "$STORE_SRC" "$GLOBAL_STORE_DIR/lib/store.js"
   ok "  Storage engine installed (~/.qa-agent/lib/store.js)"
 else
   err "  store.js not found at $STORE_SRC"
+fi
+if [ -f "$MCP_LIB_SRC" ]; then
+  cp "$MCP_LIB_SRC" "$GLOBAL_STORE_DIR/lib/mcp-lib.js"
+  ok "  mcp-lib.js installed"
+fi
+if [ -f "$MCP_MODE_SRC" ]; then
+  cp "$MCP_MODE_SRC" "$GLOBAL_STORE_DIR/lib/mcp-mode.js"
+  ok "  mcp-mode.js installed (lite|full|optional|all|status)"
+fi
+mkdir -p "$GLOBAL_STORE_DIR/mcp"
+if [ ! -f "$GLOBAL_STORE_DIR/mcp/catalog.json" ] && [ -f "$REPO_DIR/mcp.json.example" ]; then
+  node -e "const fs=require('fs');const p=require('path');const home=process.env.HOME;const cat=p.join(home,'.qa-agent','mcp','catalog.json');const a=JSON.parse(fs.readFileSync(process.argv[1],'utf8'));const b=fs.existsSync(process.argv[2])?JSON.parse(fs.readFileSync(process.argv[2],'utf8')):{mcpServers:{}};a.mcpServers=Object.assign({},a.mcpServers||{},b.mcpServers||{});fs.writeFileSync(cat,JSON.stringify(a,null,2)+'\n');" \
+    "$REPO_DIR/mcp.json.example" "$REPO_DIR/mcp.json.optional.example"
+  ok "  MCP catalog seeded (~/.qa-agent/mcp/catalog.json)"
+else
+  info "  MCP catalog exists - skipping seed"
 fi
 
 # Initialize JSON stores (compact format with short field names)
@@ -268,14 +286,39 @@ echo -e "${GREEN}${BOLD}━━━━━━━━━━━━━━━━━━�
 echo ""
 echo -e "${BOLD}Next steps:${NC}"
 echo ""
-echo "  1. Copy mcp.json.example → ~/.cursor/mcp.json and fill secrets"
-echo "     See $TARGET_DIR/.cursor/MCP_TOOLS.md for required servers"
+echo "  1. Setup MCP (interactive, enter tokens):"
+echo "       node scripts/setup-mcp.js"
+echo "     full = Shortcut + TestRail + Glean + Context7 + Cypress + Playwright (default)"
+echo "     lite = Shortcut + TestRail + Glean only"
+echo "     --with-optional = also k6 + karate MCP (optional)"
+echo "     Switch later: node scripts/mcp-mode.js full|lite|status"
 echo ""
-echo "  2. node scripts/doctor.js"
+echo "  2. Setup Git (install if missing + identity):"
+echo "       node scripts/setup-git.js"
 echo ""
-echo "  3. Restart Cursor, then type /qa (or select @qa)"
+echo "  3. Setup tooling (k6 / Java / Maven):"
+echo "       node scripts/setup-tooling.js"
+echo ""
+echo "  4. node scripts/doctor.js"
+echo ""
+echo "  5. Restart Cursor, then type /qa (or select @qa)"
 echo "     Demo: docs/DEMO.md"
+echo "     Private CSG: run onboard.md (share offline, not in git)"
 echo ""
+
+if [ -t 0 ] && [ -z "${CI:-}" ]; then
+  read -r -p "Run setup-mcp + setup-git + setup-tooling now? (y/N) " RUN_NOW || true
+  if [[ "${RUN_NOW:-}" =~ ^[Yy]$ ]]; then
+    info "Starting setup-mcp.js ..."
+    node "$REPO_DIR/scripts/setup-mcp.js" || true
+    info "Starting setup-git.js ..."
+    node "$REPO_DIR/scripts/setup-git.js" || true
+    info "Starting setup-tooling.js ..."
+    node "$REPO_DIR/scripts/setup-tooling.js" || true
+    info "Starting doctor.js ..."
+    node "$REPO_DIR/scripts/doctor.js" || true
+  fi
+fi
 echo -e "${CYAN}Lifecycle: ./update.sh  |  ./uninstall.sh  |  CHANGELOG.md${NC}"
 echo ""
 echo -e "${CYAN}Memory:${NC}"

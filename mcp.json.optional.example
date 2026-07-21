@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "k6": {
+      "command": "k6",
+      "args": ["x", "mcp"],
+      "env": {
+        "K6_PROJECT_PATH": "PATH_TO_PERF_TEST_REPO"
+      }
+    },
+    "karate": {
+      "command": "karate",
+      "args": ["mcp", "--stdio"],
+      "env": {
+        "KARATE_PROJECT_PATH": "PATH_TO_API_TEST_REPO"
+      }
+    }
+  }
+}

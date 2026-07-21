@@ -49,6 +49,8 @@ $McpToolsSrc   = JPath $RepoDir ".cursor" "MCP_TOOLS.md"
 $AgentsMdSrc   = JPath $RepoDir "AGENTS.md"
 $ReadmeSrc     = JPath $RepoDir "README.md"
 $StoreSrc      = JPath $RepoDir "scripts" "store.js"
+$McpLibSrc     = JPath $RepoDir "scripts" "mcp-lib.js"
+$McpModeSrc    = JPath $RepoDir "scripts" "mcp-mode.js"
 $ContextTplSrc = JPath $RepoDir ".cursor" "templates" "project-context.current.md"
 $CommandsSrc   = JPath $RepoDir ".cursor" "commands"
 
@@ -88,7 +90,7 @@ Write-Info "Creating global memory store at $GlobalStoreDir ..."
 New-Item -ItemType Directory -Force -Path (JPath $GlobalStoreDir "lib") | Out-Null
 New-Item -ItemType Directory -Force -Path (JPath $GlobalStoreDir "projects") | Out-Null
 
-# Copy storage engine
+# Copy storage engine + MCP helpers
 if (Test-Path $StoreSrc) {
     $LibTarget = JPath $GlobalStoreDir "lib" "store.js"
     Copy-Item -Path $StoreSrc -Destination $LibTarget -Force
@@ -96,6 +98,29 @@ if (Test-Path $StoreSrc) {
 }
 else {
     Write-Err "  store.js not found at $StoreSrc"
+}
+if (Test-Path $McpLibSrc) {
+    Copy-Item -Path $McpLibSrc -Destination (JPath $GlobalStoreDir "lib" "mcp-lib.js") -Force
+    Write-Ok "  mcp-lib.js installed"
+}
+if (Test-Path $McpModeSrc) {
+    Copy-Item -Path $McpModeSrc -Destination (JPath $GlobalStoreDir "lib" "mcp-mode.js") -Force
+    Write-Ok "  mcp-mode.js installed (lite|full|optional|all|status)"
+}
+# Seed MCP catalog from examples only if missing (never overwrite secrets)
+$McpCatalogDir = JPath $GlobalStoreDir "mcp"
+New-Item -ItemType Directory -Force -Path $McpCatalogDir | Out-Null
+$CatalogPath = Join-Path $McpCatalogDir "catalog.json"
+if (-not (Test-Path $CatalogPath)) {
+    $Ex = Join-Path $RepoDir "mcp.json.example"
+    $Opt = Join-Path $RepoDir "mcp.json.optional.example"
+    if (Test-Path $Ex) {
+        node -e "const fs=require('fs');const p=require('path');const home=process.env.USERPROFILE||process.env.HOME;const cat=p.join(home,'.qa-agent','mcp','catalog.json');const a=JSON.parse(fs.readFileSync(process.argv[1],'utf8'));const b=fs.existsSync(process.argv[2])?JSON.parse(fs.readFileSync(process.argv[2],'utf8')):{mcpServers:{}};a.mcpServers=Object.assign({},a.mcpServers||{},b.mcpServers||{});fs.writeFileSync(cat,JSON.stringify(a,null,2)+'\n');" $Ex $Opt
+        Write-Ok "  MCP catalog seeded (~\.qa-agent\mcp\catalog.json)"
+    }
+}
+else {
+    Write-Info "  MCP catalog exists - skipping seed"
 }
 
 # Initialize JSON stores (compact format with short field names)
@@ -305,14 +330,39 @@ Write-Host "========================================" -ForegroundColor Green
 Write-Host ""
 Write-Host "Next steps:"
 Write-Host ""
-Write-Host "  1. Copy mcp.json.example -> ~\.cursor\mcp.json and fill secrets"
-Write-Host "     See .cursor\MCP_TOOLS.md for required servers"
+Write-Host "  1. Setup MCP (interactive, enter tokens):"
+Write-Host "       node scripts\setup-mcp.js"
+Write-Host "     full = Shortcut + TestRail + Glean + Context7 + Cypress + Playwright (default)"
+Write-Host "     lite = Shortcut + TestRail + Glean only"
+Write-Host "     --with-optional = also k6 + karate MCP (optional)"
+Write-Host "     Switch later: node scripts\mcp-mode.js full|lite|status"
 Write-Host ""
-Write-Host "  2. node scripts\doctor.js"
+Write-Host "  2. Setup Git (install if missing + identity):"
+Write-Host "       node scripts\setup-git.js"
 Write-Host ""
-Write-Host "  3. Restart Cursor, then type /qa (or select @qa)"
+Write-Host "  3. Setup tooling (k6 / Java / Maven):"
+Write-Host "       node scripts\setup-tooling.js"
+Write-Host ""
+Write-Host "  4. node scripts\doctor.js"
+Write-Host ""
+Write-Host "  5. Restart Cursor, then type /qa (or select @qa)"
 Write-Host "     Demo: docs\DEMO.md"
+Write-Host "     Private CSG: run onboard.md (share offline, not in git)"
 Write-Host ""
+
+if ($Host.UI.RawUI -and -not $env:CI) {
+    $runNow = Read-Host "Run setup-mcp + setup-git + setup-tooling now? (y/N)"
+    if ($runNow -match '^[Yy]') {
+        Write-Info "Starting setup-mcp.js ..."
+        & node (Join-Path $RepoDir "scripts\setup-mcp.js")
+        Write-Info "Starting setup-git.js ..."
+        & node (Join-Path $RepoDir "scripts\setup-git.js")
+        Write-Info "Starting setup-tooling.js ..."
+        & node (Join-Path $RepoDir "scripts\setup-tooling.js")
+        Write-Info "Starting doctor.js ..."
+        & node (Join-Path $RepoDir "scripts\doctor.js")
+    }
+}
 Write-Host "Lifecycle: .\update.ps1  |  .\uninstall.ps1  |  CHANGELOG.md" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Memory:" -ForegroundColor Cyan

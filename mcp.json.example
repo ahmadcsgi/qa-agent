@@ -7,13 +7,13 @@
       "command": "npx",
       "args": ["-y", "@uarlouski/testrail-mcp-server"],
       "env": {
-        "TESTRAIL_URL": "https://YOUR_ORG.testrail.io",
+        "TESTRAIL_URL": "https://testrails.live.shared-services.telflow.com",
         "TESTRAIL_USERNAME": "your.email@example.com",
         "TESTRAIL_API_KEY": "YOUR_TESTRAIL_API_KEY"
       }
     },
     "glean": {
-      "url": "https://YOUR_TENANT-be.glean.com/mcp/default"
+      "url": "https://csg-prod-be.glean.com/mcp/default"
     },
     "context7": {
       "url": "https://mcp.context7.com/mcp",
@@ -25,7 +25,7 @@
       "command": "npx",
       "args": ["-y", "cypress-mcp"],
       "env": {
-        "CYPRESS_PROJECT_PATH": "."
+        "CYPRESS_PROJECT_PATH": "PATH_TO_UI_TEST_REPO"
       }
     },
     "playwright": {
