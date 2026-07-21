@@ -237,7 +237,7 @@ function updateProjectContext({ squad, ui, api, perf }) {
   store('proj', 'sync');
 }
 
-function printChatSummary({ squad, ui, api, perf, tools, profileHint }) {
+function printChatSummary({ squad, ui, api, perf, tools, profileHint, prevProfile, changed }) {
   console.log('');
   console.log('=== Copy for chat (summary) ===');
   console.log(`squad: ${squad || '(none)'}`);
@@ -250,9 +250,60 @@ function printChatSummary({ squad, ui, api, perf, tools, profileHint }) {
   console.log(`active: ~/.cursor/mcp.json (profile switch)`);
   console.log(`hook: ~/.cursor/hooks/qa-mcp-auto.js (sessionStart)`);
   if (profileHint) console.log(`auto profile now: ${profileHint}`);
-  console.log('Next: Reload Cursor window once.');
+  if (changed && prevProfile && profileHint && prevProfile !== profileHint) {
+    console.log(`profile switched: ${prevProfile} > ${profileHint}`);
+    console.log('ACTION: Reload Cursor window once (MCP panel).');
+  } else {
+    console.log('Next: Reload Cursor window once if MCP list looks stale.');
+  }
+  console.log('Multi-product: prefs follow the folder you open (proj ensure per cwd).');
   console.log('=== end summary ===');
   console.log('');
+}
+
+function formText(lang) {
+  if (lang === 'en') {
+    return `Onboard — fill in below (copy, edit, send back)
+
+1. Team / squad name
+   example: Dragon
+
+2. Local absolute paths. Leave blank or write skip if none yet.
+   Multi-repo: pathA|pathB
+
+   A. UI testing (Cypress / Playwright)
+   B. API testing (Karate / Maven)
+   C. Performance testing (k6)
+
+3. Install tooling that is missing?
+   1 = Git
+   2 = k6
+   3 = Java
+   4 = Maven
+   5 = all missing
+
+   Answer: 1,2   or  5   or  skip`;
+  }
+  return `Onboard — isi data di bawah (salin, edit, kirim balik)
+
+1. Nama team / squad
+   contoh: Dragon
+
+2. Path lokal (absolut). Kosongkan atau tulis skip jika belum ada.
+   Multi-repo: pathA|pathB
+
+   A. UI testing (Cypress / Playwright)
+   B. API testing (Karate / Maven)
+   C. Performance testing (k6)
+
+3. Install tooling yang belum terpasang?
+   1 = Git
+   2 = k6
+   3 = Java
+   4 = Maven
+   5 = semua yang missing
+
+   Jawab: 1,2   atau  5   atau  skip`;
 }
 
 function parseCli(argv) {
@@ -261,11 +312,17 @@ function parseCli(argv) {
     if (i < 0 || !argv[i + 1]) return '';
     return argv[i + 1];
   };
+  const langRaw = (get('--lang') || 'id').toLowerCase();
   return {
     help: argv.includes('--help') || argv.includes('-h'),
     skipMcp: argv.includes('--skip-mcp'),
     printLearn: argv.includes('--print-learn'),
+    printForm: argv.includes('--print-form'),
+    printTools: argv.includes('--print-tools'),
+    resume: argv.includes('--resume'),
+    dryRun: argv.includes('--dry-run'),
     apply: argv.includes('--apply'),
+    lang: langRaw === 'en' ? 'en' : 'id',
     squad: get('--squad'),
     ui: get('--ui'),
     api: get('--api'),
@@ -291,7 +348,53 @@ function showLearnTable(paths) {
   console.log('Auto switch: sessionStart hook + /qa boot runs mcp-mode auto.');
 }
 
-async function applyAnswers({ squad, ui, api, perf, tools, skipMcp, interactive }) {
+async function applyAnswers({ squad, ui, api, perf, tools, skipMcp, interactive, dryRun }) {
+  const norm = (v) => {
+    const t = (v || '').trim();
+    if (!t || /^skip$/i.test(t)) return '';
+    return t;
+  };
+  squad = norm(squad);
+  ui = norm(ui);
+  api = norm(api);
+  perf = norm(perf);
+
+  if (dryRun) {
+    console.log('--- DRY RUN (no writes) ---');
+    console.log({ squad, ui, api, perf, tools: tools || '(none)', skipMcp: !!skipMcp });
+    reportPathValidation('UI', ui);
+    reportPathValidation('API', api);
+    reportPathValidation('perf', perf);
+    spawnSync(process.execPath, [path.join(REPO, 'scripts', 'onboard-progress.js'), '--tools'], {
+      stdio: 'inherit',
+    });
+    console.log('Re-run without --dry-run to apply.');
+    return;
+  }
+
+  // Block apply if UI path set but missing on disk (re-ask signal for chat)
+  if (ui) {
+    const v = validatePathList(ui);
+    if (v.missing.length) {
+      console.error('BLOCK: UI path(s) not found on disk:');
+      for (const m of v.missing) console.error('  -', m);
+      console.error('Fix paths and re-run --apply (or use --dry-run to preview).');
+      process.exit(2);
+    }
+  }
+  for (const [label, raw] of [
+    ['API', api],
+    ['perf', perf],
+  ]) {
+    if (!raw) continue;
+    const v = validatePathList(raw);
+    if (v.missing.length) {
+      console.error(`BLOCK: ${label} path(s) not found:`);
+      for (const m of v.missing) console.error('  -', m);
+      process.exit(2);
+    }
+  }
+
   if (!skipMcp) {
     console.log('--- MCP full install (catalog) ---');
     const mcp = spawnSync(process.execPath, [path.join(REPO, 'scripts', 'setup-mcp.js'), '--full'], {
@@ -323,7 +426,10 @@ async function applyAnswers({ squad, ui, api, perf, tools, skipMcp, interactive 
   updateProjectContext({ squad, ui, api, perf });
   const synced = syncProjectEnvPaths({ ui, api, perf });
   if (synced.length) {
-    console.log('Synced project path env on:', synced.map((p) => path.basename(path.dirname(p)) + '/' + path.basename(p)).join(', '));
+    console.log(
+      'Synced project path env on:',
+      synced.map((p) => path.basename(path.dirname(p)) + '/' + path.basename(p)).join(', ')
+    );
   }
 
   let rl = null;
@@ -338,6 +444,9 @@ async function applyAnswers({ squad, ui, api, perf, tools, skipMcp, interactive 
     stdio: 'inherit',
   });
 
+  const statePath = path.join(HOME, '.qa-agent', 'mcp', 'active-profile.txt');
+  const prevProfile = fs.existsSync(statePath) ? fs.readFileSync(statePath, 'utf8').trim() : '';
+
   console.log('\n--- Apply path-aware MCP ---');
   const auto = spawnSync(process.execPath, [path.join(REPO, 'scripts', 'mcp-mode.js'), 'auto'], {
     encoding: 'utf8',
@@ -349,16 +458,18 @@ async function applyAnswers({ squad, ui, api, perf, tools, skipMcp, interactive 
   const paths = { ui, api, perf };
   showLearnTable(paths);
 
-  spawnSync(process.execPath, [path.join(REPO, 'scripts', 'onboard-status.js')], {
+  spawnSync(process.execPath, [path.join(REPO, 'scripts', 'onboard-progress.js')], {
     stdio: 'inherit',
   });
 
-  const profileHint = (autoOut.match(/MCP profile:\s*(\w+)/) || autoOut.match(/pick:\s*(\w+)/) || [])[1];
-  printChatSummary({ squad, ui, api, perf, tools, profileHint });
+  const profileHint =
+    (autoOut.match(/MCP profile:\s*(\w+)/) || autoOut.match(/pick:\s*(\w+)/) || [])[1] || '';
+  const changed = /switched|MCP profile:/i.test(autoOut) && !/unchanged/i.test(autoOut);
+  printChatSummary({ squad, ui, api, perf, tools, profileHint, prevProfile, changed });
 
   console.log('Next:');
-  console.log('  1. Reload Cursor window (MCP + hooks)');
-  console.log('  2. Open UI/API/perf repo. New chat runs sessionStart auto-switch.');
+  console.log('  1. Reload Cursor window once if profile changed or MCP list stale');
+  console.log('  2. Optional Part C (CSG overlay) if onboard.md present');
   console.log('  3. /qa for daily work');
   console.log('');
 }
@@ -369,10 +480,14 @@ async function main() {
     console.log(`Usage:
   node scripts/onboard-wizard.js
   node scripts/onboard-wizard.js --print-learn
+  node scripts/onboard-wizard.js --print-form [--lang id|en]
+  node scripts/onboard-wizard.js --print-tools
+  node scripts/onboard-wizard.js --resume
+  node scripts/onboard-wizard.js --dry-run --squad NAME --ui PATH ...
   node scripts/onboard-wizard.js --apply --squad NAME --ui PATH [--api PATH] [--perf PATH] [--tools 1,2] [--skip-mcp]
 
-Multi-path: separate with |  e.g. --ui "C:\\\\ui-a|C:\\\\ui-b"
-Chat flow: print-learn > ask in chat > --apply with answers.`);
+Multi-path: pathA|pathB
+Chat: --resume > --print-learn > --print-tools > --print-form > --apply`);
     return;
   }
 
@@ -384,17 +499,32 @@ Chat flow: print-learn > ask in chat > --apply with answers.`);
     perf: prefGet('paths.perf_tests') || readPref('paths.perf_tests'),
   };
 
+  if (opts.resume) {
+    spawnSync(process.execPath, [path.join(REPO, 'scripts', 'onboard-progress.js'), '--resume'], {
+      stdio: 'inherit',
+    });
+    return;
+  }
+  if (opts.printTools) {
+    spawnSync(process.execPath, [path.join(REPO, 'scripts', 'onboard-progress.js'), '--tools'], {
+      stdio: 'inherit',
+    });
+    return;
+  }
+  if (opts.printForm) {
+    console.log(formText(opts.lang));
+    return;
+  }
   if (opts.printLearn) {
     showLearnTable(curPaths);
     return;
   }
-
-  console.log('QA Agent onboard wizard');
-  console.log(`  Platform: ${process.platform}`);
-  console.log(`  CWD: ${process.cwd()}`);
-  showLearnTable(curPaths);
-
-  if (opts.apply) {
+  if (opts.apply || opts.dryRun) {
+    if (!opts.dryRun) {
+      console.log('QA Agent onboard wizard');
+      console.log(`  Platform: ${process.platform}`);
+      console.log(`  CWD: ${process.cwd()}`);
+    }
     await applyAnswers({
       squad: opts.squad || prefGet('squad.name'),
       ui: opts.ui || curPaths.ui,
@@ -403,9 +533,15 @@ Chat flow: print-learn > ask in chat > --apply with answers.`);
       tools: opts.tools,
       skipMcp: opts.skipMcp,
       interactive: false,
+      dryRun: !!opts.dryRun,
     });
     return;
   }
+
+  console.log('QA Agent onboard wizard');
+  console.log(`  Platform: ${process.platform}`);
+  console.log(`  CWD: ${process.cwd()}`);
+  showLearnTable(curPaths);
 
   if (!opts.skipMcp) {
     console.log('--- MCP full install (catalog) ---');
@@ -423,12 +559,39 @@ Chat flow: print-learn > ask in chat > --apply with answers.`);
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   console.log('\n--- Identity & paths ---');
   console.log('Tip: multiple repos per type: pathA|pathB');
+  console.log('(Enter keeps current. Type skip to clear optional.)');
   const squad = await ask(rl, '1. Team / squad name', prefGet('squad.name'));
   console.log('2. Local absolute paths:');
-  const ui = await ask(rl, '   A. UI testing (Cypress/Playwright)', curPaths.ui);
-  const api = await ask(rl, '   B. API testing (Karate/Maven)', curPaths.api);
-  const perf = await ask(rl, '   C. Performance testing (k6)', curPaths.perf);
+  let ui = await ask(rl, '   A. UI testing (Cypress/Playwright)', curPaths.ui);
+  let api = await ask(rl, '   B. API testing (Karate/Maven)', curPaths.api);
+  let perf = await ask(rl, '   C. Performance testing (k6)', curPaths.perf);
 
+  // Re-ask once if path missing
+  for (let i = 0; i < 1; i++) {
+    const checks = [
+      ['A UI', 'ui', ui],
+      ['B API', 'api', api],
+      ['C perf', 'perf', perf],
+    ];
+    let bad = false;
+    for (const [label, key, raw] of checks) {
+      if (!raw || /^skip$/i.test(raw)) continue;
+      const v = validatePathList(raw);
+      if (v.missing.length) {
+        bad = true;
+        console.log(`Path not found (${label}): ${v.missing.join(' | ')}`);
+        const again = await ask(rl, `   Re-enter ${label} (or skip)`, raw);
+        if (key === 'ui') ui = again;
+        if (key === 'api') api = again;
+        if (key === 'perf') perf = again;
+      }
+    }
+    if (!bad) break;
+  }
+
+  spawnSync(process.execPath, [path.join(REPO, 'scripts', 'onboard-progress.js'), '--tools'], {
+    stdio: 'inherit',
+  });
   await toolingPicker(rl, '');
   rl.close();
 
@@ -440,6 +603,7 @@ Chat flow: print-learn > ask in chat > --apply with answers.`);
     tools: 'skip',
     skipMcp: true,
     interactive: false,
+    dryRun: false,
   });
 }
 

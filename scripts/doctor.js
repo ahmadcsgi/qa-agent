@@ -74,6 +74,8 @@ console.log("\nRepository");
   ["docs/MCP.md", path.join(REPO, "docs", "MCP.md")],
   ["docs/FIRST_RUN.md", path.join(REPO, "docs", "FIRST_RUN.md")],
   ["scripts/onboard-status.js", path.join(REPO, "scripts", "onboard-status.js")],
+  ["scripts/onboard-progress.js", path.join(REPO, "scripts", "onboard-progress.js")],
+  ["scripts/onboard-wizard.js", path.join(REPO, "scripts", "onboard-wizard.js")],
   ["agents/qa.md", path.join(REPO, ".cursor", "agents", "qa.md")],
   ["rules/qa-agent-rules.mdc", path.join(REPO, ".cursor", "rules", "qa-agent-rules.mdc")],
   ["rules/testrail-case-draft.mdc", path.join(REPO, ".cursor", "rules", "testrail-case-draft.mdc")],
@@ -124,6 +126,8 @@ else soft("mcp-mode.js missing. Re-run installer");
 const hookJs = path.join(HOME, ".cursor", "hooks", "qa-mcp-auto.js");
 if (exists(hookJs)) ok("sessionStart MCP auto hook installed");
 else soft("MCP auto hook missing. Run: node scripts/install-mcp-hook.js");
+if (exists(path.join(REPO, "scripts", "onboard-progress.js"))) ok("scripts/onboard-progress.js present");
+else soft("onboard-progress.js missing");
 if (exists(path.join(HOME, ".qa-agent", "projects"))) ok("~/.qa-agent/projects/ present");
 else soft("projects/ dir missing. Re-run installer");
 

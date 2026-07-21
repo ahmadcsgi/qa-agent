@@ -164,8 +164,14 @@ function applyProfile(profile) {
   log('Active servers:', keys.join(', '));
   if (prev && prev !== profile) {
     log(`switched ${prev} > ${profile}`);
+    if (!quiet) {
+      console.log('');
+      console.log(`>>> Reload Cursor window once (MCP: ${prev} > ${profile})`);
+      console.log('');
+    }
+  } else if (!quiet) {
+    console.log('Reload Cursor window if MCP panel looks stale.');
   }
-  if (!quiet) console.log('Reload Cursor window for this to take effect.');
   return { profile, keys, changed: true };
 }
 

@@ -4,6 +4,21 @@ All notable changes to QA Agent are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project uses [SemVer](https://semver.org/).
 
+## [1.5.0] - 2026-07-21
+
+### Added
+- `onboard-progress.js`: live Ready table, `--resume`, `--tools`, `--json`
+- Wizard: `--resume`, `--print-tools`, `--print-form [--lang id|en]`, `--dry-run`
+- Path re-ask (interactive) and `--apply` exit 2 when UI/API/perf path missing on disk
+- Chat onboard: TodoWrite steps include tooling detect + Part C optional
+- Clearer Reload banner when MCP profile switches (`prev > next`)
+- Boot one-liner guidance: `MCP: <profile> (auto)`
+- DEMO ≈3-minute path
+
+### Changed
+- Private/public onboard agent instructions aligned to resume/apply flow
+- Multi-product note: prefs follow opened folder (`proj ensure`)
+
 ## [1.4.10] - 2026-07-21
 
 ### Changed

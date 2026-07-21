@@ -17,14 +17,17 @@ Dry-run only: `node scripts/onboard-status.js`
 
 | Step | What |
 |------|------|
-| Learn table | Catalog vs active MCP + links from `onboard.md` / example |
-| MCP | Install **full** into `~/.qa-agent/mcp/catalog.json` once |
-| Prefs | Squad + `paths.ui_tests` / `api` / `perf` (multi: `a|b`) |
-| Tooling | Picker `1,2` or `5`=all missing (git / k6 / java / mvn) |
-| Auto | `mcp.path_aware` + user `sessionStart` hook + `mcp-mode auto` |
+| Resume / Ready | `onboard-wizard.js --resume` / `onboard-progress.js` |
+| Learn table | Catalog vs active MCP + links from onboard.md |
+| Tooling detect | OK/MISS before ask |
+| Prefs | Squad + paths (multi `a\|b`) via spaced form or `--apply` |
+| MCP | Install **full** into catalog once |
+| Auto | `mcp.path_aware` + sessionStart hook + `mcp-mode auto` |
+| Part C | Optional CSG overlay if private `onboard.md` |
 
-Chat (`/qa onboard`): `--print-learn` then ask answers then `--apply …`.  
-Terminal: interactive `onboard-wizard.js`.
+Chat (`/qa onboard`): TodoWrite ticks + resume → learn → tools → form → apply.  
+Terminal: interactive `onboard-wizard.js`. Preview: `--dry-run`.
+
 
 ## Why two files?
 

@@ -8,65 +8,47 @@ You are the **QA Agent** for this workspace. Stay lite, fast, and token-thrifty.
 3. Silent:
    - `node ~/.qa-agent/lib/store.js proj ensure`
    - `node ~/.qa-agent/lib/store.js boot --project auto`
-   - If pref `mcp.path_aware` is true: `node scripts/mcp-mode.js auto --if-changed` (if profile changed, tell user to Reload once). Do not dump JSON.
+   - If pref `mcp.path_aware` is true: `node scripts/mcp-mode.js auto --if-changed`
+   - After auto: print **one line only** e.g. `MCP: lite (auto)` or `MCP: ui (auto) — Reload once` if profile changed. Do not dump JSON.
 4. Treat text after `/qa` as the task.
-5. **onboard / onboarding / setup:** follow **Chat onboard** below (do not assume interactive terminal).
+5. **onboard / onboarding / setup:** follow **Chat onboard** below.
 6. **automate:** `C…` / TestRail → UI from TestRail. Shortcut / `sc-` → from Shortcut. Then `@qa-ui-automation`.
 7. Else route via `@qa-entry`.
 
 ## Chat onboard (wizard in chat)
 
-### Progress checklist (required)
+### Progress checklist (TodoWrite — required)
 
-Create a TodoWrite list at start. Mark each item `completed` as soon as that step finishes (so the user sees progress):
+| # | Step | Mark done when |
+|---|------|----------------|
+| 1 | Resume / Ready | `onboard-wizard.js --resume` (or `onboard-progress.js --resume`) shown |
+| 2 | Learn table | `--print-learn` shown |
+| 3 | Tooling detect | `--print-tools` shown (OK/MISS) |
+| 4 | Collect answers | user replied to form |
+| 5 | Apply | `--apply` succeeded (or `--dry-run` first if user wants preview) |
+| 6 | Hook + auto | apply finished (includes hook) |
+| 7 | Ready + Reload | progress table + Reload note |
+| 8 | Part C optional | asked user about CSG overlay (GPG / triage) if `onboard.md` present. Skip if public-only |
 
-1. Learn table (`--print-learn`)
-2. Collect answers (squad + paths + tooling)
-3. Apply (`--apply` …)
-4. Hook + `mcp-mode auto`
-5. Ready status + Reload reminder
+Tick each TodoWrite item as it completes.
 
-### Steps
+### Flow
 
-1. Run `node scripts/onboard-wizard.js --print-learn`. Show a **short** table (or point to output). Mark step 1 done.
-2. Ask for answers with the **exact layout below** (not one crammed line). Mark step 2 `in_progress`, then `completed` when user replies.
-3. Run:
-   ```
-   node scripts/onboard-wizard.js --apply --squad "..." --ui "..." --api "..." --perf "..." --tools 1,2
-   ```
-   Omit empty flags. `--skip-mcp` only if catalog already full. Mark step 3 done.
-4. Confirm hook + auto (wizard does this). Mark step 4 done.
-5. Show summary + `onboard-status`. Remind **Reload Window**. Mark step 5 done.
-6. Private `onboard.md` if present. Else `onboard.example.md` + `docs/FIRST_RUN.md`.
+1. `--resume` — show what is already ✓ / still missing. Skip asking for fields that are already valid.
+2. `--print-learn` — short table.
+3. `--print-tools` — OK/MISS before asking tooling.
+4. `--print-form [--lang id|en]` — use **exact layout** (mirror user language: ID default, EN if user writes English).
+5. Optional: `--dry-run --squad … --ui …` to preview.
+6. `--apply --squad … --ui … [--api …] [--perf …] [--tools 1,2]`. Omit empty. `--skip-mcp` only if catalog already full.
+   - If exit code 2 (path not found): re-ask that path only. Do not invent paths.
+7. Show progress Ready + summary. If profile switched: **Reload Window once**.
+8. If private `onboard.md`: offer **Part C** (triage tone, GPG signing check via `setup-git.js`, EncryptSecret pointer). Optional checklist item.
 
-### Question layout (copy this shape — do not flatten into one line)
+### Question layout (never one crammed line)
 
-```text
-Onboard — isi data di bawah (salin, edit, kirim balik)
+Use output of `--print-form` (or paste the same shape). Multi-product: prefs are per opened folder (`proj ensure`).
 
-1. Nama team / squad
-   contoh: Dragon
-
-2. Path lokal (absolut). Kosongkan atau tulis skip jika belum ada.
-   Multi-repo: pathA|pathB
-
-   A. UI testing (Cypress / Playwright)
-   B. API testing (Karate / Maven)
-   C. Performance testing (k6)
-
-3. Install tooling yang belum terpasang?
-   1 = Git
-   2 = k6
-   3 = Java
-   4 = Maven
-   5 = semua yang missing
-
-   Jawab: 1,2   atau  5   atau  skip
-```
-
-Optional: ask **one question at a time** (1 → 2A → 2B → 2C → 3) if the user prefers. Still update the checklist after each answer.
-
-Terminal-only: `node scripts/onboard-wizard.js` (interactive).
+Terminal-only: `node scripts/onboard-wizard.js` (interactive + path re-ask).
 
 ## Hard rules
 - Never invent MCP results. Cite sources.

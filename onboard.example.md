@@ -13,10 +13,9 @@
 
 Details: [docs/FIRST_RUN.md](docs/FIRST_RUN.md)
 
-Dry-run Ready table (works in terminal even before `/qa`):
-
 ```bash
-node scripts/onboard-status.js
+node scripts/onboard-progress.js --resume   # Ready + what is left
+node scripts/onboard-status.js              # legacy dry-run table
 ```
 
 ## Clone
@@ -34,30 +33,32 @@ cd qa-agent
 ## After install + Reload
 
 **Chat (recommended):** `/qa onboard`  
-Agent prints learn table, asks squad + paths + tooling, then applies.
+Flow: resume → learn table → tooling OK/MISS → spaced form → apply → Reload if needed.
 
 **Terminal:**
 
 ```bash
+node scripts/onboard-wizard.js --resume
+node scripts/onboard-wizard.js --print-learn
+node scripts/onboard-wizard.js --print-tools
+node scripts/onboard-wizard.js --print-form
+# preview:
+node scripts/onboard-wizard.js --dry-run --squad "MyTeam" --ui "C:\ui"
+# apply:
+node scripts/onboard-wizard.js --apply --squad "MyTeam" --ui "C:\ui" --api "C:\api" --perf "C:\perf" --tools 1,2
+# or fully interactive:
 node scripts/onboard-wizard.js
-# learn table → full MCP → squad + paths (multi a|b) → tooling (1,2 or 5) → hook + auto
-
-# Or chat-equivalent apply:
-# node scripts/onboard-wizard.js --apply --squad "MyTeam" --ui "C:\ui" --api "C:\api" --perf "C:\perf" --tools 1,2
-
-node scripts/onboard-status.js
 ```
 
-Hub links in this file (and private `onboard.md`) are parsed into prefs `links.*`.
-
-Example public docs:
+Hub links here (and private `onboard.md`) are parsed into prefs `links.*`.
 
 - Repo: https://github.com/ahmadcsgi/qa-agent
-- MCP guide: see [docs/MCP.md](docs/MCP.md)
+- MCP: [docs/MCP.md](docs/MCP.md)
 
 ## Private CSG overlay
 
-Teammates who need DGIT/Q&O specifics get private `onboard.md` **offline**. Gitignored. Never push.
+Teammates who need DGIT/Q&O specifics get private `onboard.md` **offline**. Gitignored. Never push.  
+After wizard, agent may offer **Part C** (triage / GPG) from that file.
 
 | Public (this repo) | Private (offline only) |
 |--------------------|------------------------|
@@ -70,7 +71,7 @@ Local: [`VERSION`](VERSION). Compare: `node scripts/check-version.js`.
 
 ## Next docs
 
-- [docs/FIRST_RUN.md](docs/FIRST_RUN.md) — clone → install → Reload → `/qa`  
+- [docs/FIRST_RUN.md](docs/FIRST_RUN.md)  
 - [docs/SETUP.md](docs/SETUP.md)  
 - [docs/MCP.md](docs/MCP.md)  
 - [docs/DEMO.md](docs/DEMO.md)  

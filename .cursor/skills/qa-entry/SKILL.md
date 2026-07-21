@@ -47,39 +47,21 @@ Receptionist: detect intent, clarify if needed, route to **one** skill. Stay sho
 ## Onboard
 
 1. If no `~/.qa-agent/lib/store.js` → `docs/FIRST_RUN.md`. Stop.
-2. **Checklist (TodoWrite):** learn table → collect answers → apply → hook/auto → Ready/Reload. Tick each when done.
+2. **TodoWrite checklist:** resume → learn → tools detect → collect → apply → hook/auto → Ready/Reload → Part C optional.
 3. **Chat wizard:**
-   - `node scripts/onboard-wizard.js --print-learn`
-   - Ask with the spaced layout in `/qa` command (not one crammed line). Or one question at a time.
-   - `node scripts/onboard-wizard.js --apply --squad … --ui … --api … --perf … --tools 1,2`
-4. Terminal-only: `node scripts/onboard-wizard.js` (interactive readline).
-5. Show summary + `onboard-status`. Remind Reload.
-6. Private `onboard.md` if present. Else public stub + FIRST_RUN.
+   - `node scripts/onboard-wizard.js --resume`
+   - `--print-learn` then `--print-tools` then `--print-form [--lang id|en]`
+   - Skip fields already ✓ on resume
+   - Optional `--dry-run …` then `--apply --squad … --ui … --tools 1,2`
+   - Path missing (exit 2) → re-ask that path only
+4. Terminal: `node scripts/onboard-wizard.js` (interactive + re-ask).
+5. One-line boot MCP status. Reload if profile switched.
+6. Multi-product: open that product folder (prefs per `proj ensure` cwd).
+7. Private `onboard.md` → offer Part C (triage/GPG). Else public stub.
 
-### Question shape (chat)
+### Question shape
 
-```text
-Onboard — isi data di bawah (salin, edit, kirim balik)
-
-1. Nama team / squad
-   contoh: Dragon
-
-2. Path lokal (absolut). Kosongkan atau tulis skip jika belum ada.
-   Multi-repo: pathA|pathB
-
-   A. UI testing (Cypress / Playwright)
-   B. API testing (Karate / Maven)
-   C. Performance testing (k6)
-
-3. Install tooling yang belum terpasang?
-   1 = Git
-   2 = k6
-   3 = Java
-   4 = Maven
-   5 = semua yang missing
-
-   Jawab: 1,2   atau  5   atau  skip
-```
+Prefer `node scripts/onboard-wizard.js --print-form`. Spaced numbered form. Never one crammed line.
 
 ### MCP path-aware (after onboard)
 

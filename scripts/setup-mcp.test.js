@@ -122,6 +122,13 @@ assert(learnActivationRows({ ui: 'x' }).some((r) => /catalog/i.test(r[1])), 'lea
   assert(links.length >= 2, 'extractLinks finds markdown + bare');
 }
 
+const { collect } = require('./onboard-progress');
+const prog = collect();
+assert(Array.isArray(prog.steps) && prog.steps.length > 3, 'onboard-progress has steps');
+assert(prog.resume && typeof prog.resume.needSquad === 'boolean', 'resume hints present');
+assert(Array.isArray(prog.tools), 'tools detect list');
+
+
 const {
   scanSecrets,
   redactSecrets,
