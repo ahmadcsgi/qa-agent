@@ -4,6 +4,11 @@ All notable changes to QA Agent are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project uses [SemVer](https://semver.org/).
 
+## [1.4.10] - 2026-07-21
+
+### Changed
+- `/qa onboard` chat UX: TodoWrite checklist (tick per step) + spaced question form (not one crammed line)
+
 ## [1.4.9] - 2026-07-21
 
 ### Added

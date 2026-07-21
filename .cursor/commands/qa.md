@@ -16,22 +16,57 @@ You are the **QA Agent** for this workspace. Stay lite, fast, and token-thrifty.
 
 ## Chat onboard (wizard in chat)
 
-1. Run `node scripts/onboard-wizard.js --print-learn` and show the table (stored where / active when).
-2. Ask the user in chat (one message):
-   - 1. Team / squad name
-   - 2A. UI path(s) absolute (multi: `pathA|pathB`)
-   - 2B. API path(s)
-   - 2C. Perf path(s)
-   - 3. Tooling to install if missing: `1` git, `2` k6, `3` java, `4` mvn, `5` all missing (example `1,2` or skip)
-3. After answers, run:
+### Progress checklist (required)
+
+Create a TodoWrite list at start. Mark each item `completed` as soon as that step finishes (so the user sees progress):
+
+1. Learn table (`--print-learn`)
+2. Collect answers (squad + paths + tooling)
+3. Apply (`--apply` …)
+4. Hook + `mcp-mode auto`
+5. Ready status + Reload reminder
+
+### Steps
+
+1. Run `node scripts/onboard-wizard.js --print-learn`. Show a **short** table (or point to output). Mark step 1 done.
+2. Ask for answers with the **exact layout below** (not one crammed line). Mark step 2 `in_progress`, then `completed` when user replies.
+3. Run:
    ```
    node scripts/onboard-wizard.js --apply --squad "..." --ui "..." --api "..." --perf "..." --tools 1,2
    ```
-   (omit empty flags; use `--skip-mcp` only if catalog already full)
-4. Show the wizard copy-paste summary + `onboard-status`. Remind **Reload Window**.
-5. Private `onboard.md` overlay if present. Else `onboard.example.md` + `docs/FIRST_RUN.md`.
+   Omit empty flags. `--skip-mcp` only if catalog already full. Mark step 3 done.
+4. Confirm hook + auto (wizard does this). Mark step 4 done.
+5. Show summary + `onboard-status`. Remind **Reload Window**. Mark step 5 done.
+6. Private `onboard.md` if present. Else `onboard.example.md` + `docs/FIRST_RUN.md`.
 
-Terminal-only users: `node scripts/onboard-wizard.js` (interactive).
+### Question layout (copy this shape — do not flatten into one line)
+
+```text
+Onboard — isi data di bawah (salin, edit, kirim balik)
+
+1. Nama team / squad
+   contoh: Dragon
+
+2. Path lokal (absolut). Kosongkan atau tulis skip jika belum ada.
+   Multi-repo: pathA|pathB
+
+   A. UI testing (Cypress / Playwright)
+   B. API testing (Karate / Maven)
+   C. Performance testing (k6)
+
+3. Install tooling yang belum terpasang?
+   1 = Git
+   2 = k6
+   3 = Java
+   4 = Maven
+   5 = semua yang missing
+
+   Jawab: 1,2   atau  5   atau  skip
+```
+
+Optional: ask **one question at a time** (1 → 2A → 2B → 2C → 3) if the user prefers. Still update the checklist after each answer.
+
+Terminal-only: `node scripts/onboard-wizard.js` (interactive).
 
 ## Hard rules
 - Never invent MCP results. Cite sources.
