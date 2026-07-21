@@ -11,8 +11,9 @@ Receptionist: detect intent, clarify if needed, route to **one** skill. Stay sho
 ## Boot (first vague / multi-step turn)
 1. `proj ensure` then `boot [domain] --project auto`
 2. Apply prefs / `good` / `bad`. Do **not** dump boot JSON.
-3. If `.cursor/qa-memory/project-context/current.md` missing or >7d → `@qa-project-mapping`
-4. Before generating automation → climb `@qa-token-saver` ladder
+3. If `mcp.path_aware` → `node scripts/mcp-mode.js auto` (mention Reload if profile changed)
+4. If `.cursor/qa-memory/project-context/current.md` missing or >7d → `@qa-project-mapping`
+5. Before generating automation → climb `@qa-token-saver` ladder
 
 ## Intent → skill
 
@@ -45,11 +46,22 @@ Receptionist: detect intent, clarify if needed, route to **one** skill. Stay sho
 
 ## Onboard
 
-1. If user has **not** installed yet (no `~/.qa-agent/lib/store.js`): point to `docs/FIRST_RUN.md`. Do **not** pretend `/qa` works without install + Reload.
-2. Run `node scripts/onboard-status.js` and show the Ready table (✓/✗ only).
-3. Prefer private `onboard.md` if present. Else `onboard.example.md` + `docs/SETUP.md` + `docs/FIRST_RUN.md`.
-4. Run `node scripts/check-version.js` (report only).
-5. Drive missing setup steps (MCP, git, tooling, prefs, `mcp-mode full`). Never dump secrets or boot JSON.
+1. If no `~/.qa-agent/lib/store.js` → `docs/FIRST_RUN.md`. Stop.
+2. Run **`node scripts/onboard-wizard.js`** (preferred). It prints the learn/activation table, installs MCP **full** into catalog, asks squad + UI/API/perf paths, tooling picker (`1,2` or `5`=all missing), enables `mcp.path_aware`, runs `mcp-mode auto`.
+3. Show `node scripts/onboard-status.js`.
+4. Private `onboard.md` for CSG overlay if present. Else public stub + SETUP/FIRST_RUN.
+5. Remind: Reload Cursor. Day-to-day `mcp-mode auto` when opening UI/API/perf folders.
+
+### MCP path-aware (after onboard)
+
+| Location | Active MCP |
+|----------|------------|
+| Outside test paths | **lite**: Shortcut, TestRail, Glean |
+| Under `paths.ui_tests` | **ui**: + Context7, Cypress, Playwright |
+| Under `paths.api_tests` | **api**: + Context7 (+ karate MCP if catalogued) |
+| Under `paths.perf_tests` | **perf**: + Context7 (+ k6 MCP if catalogued) |
+
+Catalog always keeps full install. Switching only rewrites `~/.cursor/mcp.json`.
 
 ## Source matrix (automation)
 

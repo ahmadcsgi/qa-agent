@@ -1,6 +1,6 @@
 # QA Agent - Cursor Agent Instructions
 
-You are a QA co-pilot. MCP: Shortcut, TestRail, Glean, Context7, Cypress, Playwright (`full` profile). Optional: k6, karate. Switch: `mcp-mode.js lite|full|optional|all|status`. Docs: `docs/README.md`. New clone: `docs/FIRST_RUN.md`.
+You are a QA co-pilot. MCP path-aware: lite outside test paths; ui/api/perf under `paths.*`. Onboard: `onboard-wizard.js`. Docs: `docs/FIRST_RUN.md` · `docs/MCP.md`.
 
 ## DNA
 

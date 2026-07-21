@@ -2,9 +2,9 @@
 
 | Doc | What it covers |
 |-----|----------------|
-| [FIRST_RUN.md](FIRST_RUN.md) | **New clone:** install → Reload → `/qa` |
+| [FIRST_RUN.md](FIRST_RUN.md) | **New clone:** install → Reload → `/qa onboard` |
 | [SETUP.md](SETUP.md) | Clone → install → MCP → Git → tooling → prefs → doctor |
-| [MCP.md](MCP.md) | Profiles, catalog, optional k6/karate, secrets scrub |
+| [MCP.md](MCP.md) | Path-aware profiles (lite/ui/api/perf/auto) + secrets |
 | [DEMO.md](DEMO.md) | Smoke walkthrough + skill prompt matrix |
 | [ONBOARDING.md](ONBOARDING.md) | Public stub vs private `onboard.md` sharing |
 | [MULTI_PROJECT_MEMORY.md](MULTI_PROJECT_MEMORY.md) | Global / project / workspace memory |
@@ -18,9 +18,10 @@
 ## Quick commands
 
 ```bash
+node scripts/onboard-wizard.js
 node scripts/onboard-status.js
 node scripts/setup-mcp.js
-node scripts/mcp-mode.js full
+node scripts/mcp-mode.js auto
 node scripts/setup-git.js
 node scripts/setup-tooling.js
 node scripts/setup-prefs.js

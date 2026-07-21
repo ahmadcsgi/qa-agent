@@ -18,6 +18,10 @@ const CATALOG_PATH = path.join(QA_MCP_DIR, 'catalog.json');
 const LITE = ['shortcut', 'testrail', 'glean'];
 const FULL = ['shortcut', 'testrail', 'glean', 'context7', 'cypress', 'playwright'];
 const OPTIONAL = ['k6', 'karate'];
+/** Path-scoped profiles (catalog keeps full; active mcp.json switches). */
+const UI = ['shortcut', 'testrail', 'glean', 'context7', 'cypress', 'playwright'];
+const API = ['shortcut', 'testrail', 'glean', 'context7'];
+const PERF = ['shortcut', 'testrail', 'glean', 'context7'];
 
 function isPlaceholder(v) {
   if (v == null || v === '') return true;
@@ -186,11 +190,75 @@ function resolveProfileKeys(profile, catalog) {
   if (profile === 'all') return all;
   if (profile === 'lite') return LITE.filter((k) => all.includes(k));
   if (profile === 'full') return FULL.filter((k) => all.includes(k));
+  if (profile === 'ui') return UI.filter((k) => all.includes(k));
+  if (profile === 'api') {
+    const keys = [...API];
+    if (all.includes('karate')) keys.push('karate');
+    return keys.filter((k) => all.includes(k));
+  }
+  if (profile === 'perf') {
+    const keys = [...PERF];
+    if (all.includes('k6')) keys.push('k6');
+    return keys.filter((k) => all.includes(k));
+  }
   if (profile === 'optional') {
     const keys = [...FULL, ...OPTIONAL];
     return keys.filter((k) => all.includes(k));
   }
   return [];
+}
+
+/** Normalize path for prefix compare (Windows-safe). */
+function normPath(p) {
+  if (!p) return '';
+  return path.resolve(String(p)).replace(/\\/g, '/').toLowerCase();
+}
+
+function pathIsUnder(cwd, root) {
+  const c = normPath(cwd);
+  const r = normPath(root);
+  if (!c || !r) return false;
+  return c === r || c.startsWith(r.endsWith('/') ? r : r + '/');
+}
+
+/**
+ * Pick profile from cwd vs paths.* prefs.
+ * UI path → ui (full UI MCP). API → api. Perf → perf. Else → lite.
+ * If multiple match, prefer ui > api > perf.
+ */
+function resolveAutoProfile(cwd, paths) {
+  const ui = paths && paths.ui;
+  const api = paths && paths.api;
+  const perf = paths && paths.perf;
+  if (ui && pathIsUnder(cwd, ui)) {
+    return { profile: 'ui', reason: `cwd under paths.ui_tests` };
+  }
+  if (api && pathIsUnder(cwd, api)) {
+    return { profile: 'api', reason: `cwd under paths.api_tests` };
+  }
+  if (perf && pathIsUnder(cwd, perf)) {
+    return { profile: 'perf', reason: `cwd under paths.perf_tests` };
+  }
+  return { profile: 'lite', reason: 'cwd outside UI/API/perf paths' };
+}
+
+/** Learn / activation matrix for onboard wizard output. */
+function learnActivationRows(paths) {
+  const ui = (paths && paths.ui) || '(set paths.ui_tests)';
+  const api = (paths && paths.api) || '(set paths.api_tests)';
+  const perf = (paths && paths.perf) || '(set paths.perf_tests)';
+  return [
+    ['Shortcut', '~/.qa-agent/mcp/catalog.json', 'Always (every workspace)'],
+    ['TestRail', '~/.qa-agent/mcp/catalog.json', 'Always'],
+    ['Glean', '~/.qa-agent/mcp/catalog.json', 'Always'],
+    ['Context7', '~/.qa-agent/mcp/catalog.json', `Auto on UI / API / perf paths`],
+    ['Cypress', '~/.qa-agent/mcp/catalog.json', `Auto when cwd under UI: ${ui}`],
+    ['Playwright', '~/.qa-agent/mcp/catalog.json', `Auto when cwd under UI: ${ui}`],
+    ['k6 CLI', 'PATH (setup-tooling)', `Skills when cwd under perf: ${perf}`],
+    ['Java / Maven', 'PATH (setup-tooling)', `Skills when cwd under API: ${api}`],
+    ['squad.name', '~/.qa-agent/projects/<id>/prefs', 'Agent boot (always)'],
+    ['paths.*', 'prefs + project-context', 'Drives mcp-mode auto'],
+  ];
 }
 
 /** Read pref via store.js if present. Returns string or ''. */
@@ -254,6 +322,9 @@ module.exports = {
   LITE,
   FULL,
   OPTIONAL,
+  UI,
+  API,
+  PERF,
   isPlaceholder,
   mergeServers,
   readJsonSafe,
@@ -261,6 +332,10 @@ module.exports = {
   seedCatalogFromExamples,
   ensureProfileServersInCatalog,
   resolveProfileKeys,
+  resolveAutoProfile,
+  pathIsUnder,
+  normPath,
+  learnActivationRows,
   readPref,
   applyPathPrefs,
   commandOnPath,

@@ -47,6 +47,7 @@ jobs:
           test -f scripts/setup-prefs.js
           test -f scripts/mcp-catalog-scrub.js
           test -f scripts/onboard-status.js
+          test -f scripts/onboard-wizard.js
           test -f scripts/check-version.js
           test -f .cursor/MCP_TOOLS.md
           test -f .cursor/agents/qa.md

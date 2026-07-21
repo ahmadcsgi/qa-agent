@@ -86,7 +86,21 @@ assert(resolveProfileKeys('lite', catalog).length === 3, 'profile lite = 3');
 assert(resolveProfileKeys('full', catalog).length === 6, 'profile full = 6');
 assert(resolveProfileKeys('optional', catalog).length === 8, 'profile optional = 8');
 assert(resolveProfileKeys('all', catalog).includes('github'), 'profile all keeps github');
-assert(OPTIONAL.length === 2, 'OPTIONAL has k6+karate');
+assert(resolveProfileKeys('ui', catalog).includes('cypress'), 'ui profile has cypress');
+assert(!resolveProfileKeys('lite', catalog).includes('cypress'), 'lite has no cypress');
+const { resolveAutoProfile } = require('./mcp-lib');
+const autoUi = resolveAutoProfile('/work/ui-tests/foo', {
+  ui: '/work/ui-tests',
+  api: '/work/api',
+  perf: '/work/perf',
+});
+assert(autoUi.profile === 'ui', 'auto under ui path');
+const autoLite = resolveAutoProfile('/work/other', {
+  ui: '/work/ui-tests',
+  api: '/work/api',
+  perf: '/work/perf',
+});
+assert(autoLite.profile === 'lite', 'auto outside paths is lite');
 
 const {
   scanSecrets,

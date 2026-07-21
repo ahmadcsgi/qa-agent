@@ -11,8 +11,9 @@
      Windows:  .\install.ps1
      macOS/Linux:  chmod +x install.sh && ./install.sh
 4. Cursor: Developer: Reload Window  (or restart Cursor)
-5. Chat:  /qa onboard
-   (or pick agent @qa, then type: onboard)
+5. Chat: `/qa onboard`  (runs onboard-wizard)
+   Or terminal: `node scripts/onboard-wizard.js`
+   Or `@qa` then type: onboard
 ```
 
 | Step | Why |

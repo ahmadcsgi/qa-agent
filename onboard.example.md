@@ -34,16 +34,14 @@ cd qa-agent
 ## After install + Reload
 
 ```bash
-node scripts/setup-mcp.js
-node scripts/mcp-mode.js full
-node scripts/setup-git.js
-node scripts/setup-tooling.js      # optional: k6, Java, Maven
-node scripts/setup-prefs.js
+node scripts/onboard-wizard.js
+# learn table → full MCP → squad + paths → tooling (1,2 or 5=all) → mcp auto
 node scripts/onboard-status.js
-node scripts/doctor.js
 ```
 
-Then in chat: `/qa onboard` (or `@qa` → `onboard`).
+Or step-by-step: `setup-mcp.js` / `setup-git.js` / `setup-prefs.js` / `mcp-mode.js auto`.
+
+Then in chat: `/qa onboard` (runs the same wizard).
 
 ## Private CSG overlay
 

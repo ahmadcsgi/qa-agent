@@ -4,6 +4,17 @@ All notable changes to QA Agent are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project uses [SemVer](https://semver.org/).
 
+## [1.4.8] - 2026-07-21
+
+### Added
+- Path-aware MCP: `mcp-mode.js auto|ui|api|perf` (lite outside test paths; Cypress only under UI path)
+- `scripts/onboard-wizard.js`: learn table → full MCP → squad/paths → tooling picker (`1,2` or `5`=all)
+- Pref `mcp.path_aware` set by wizard
+
+### Changed
+- `/qa onboard` prefers onboard-wizard
+- Docs MCP / FIRST_RUN / onboard.example updated for path-aware model
+
 ## [1.4.7] - 2026-07-21
 
 ### Fixed
