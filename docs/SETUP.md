@@ -2,6 +2,8 @@
 
 End-to-end install for QA Agent. Secrets stay on your machine. Never commit `~/.cursor/mcp.json` or `~/.qa-agent/mcp/catalog.json` if they contain tokens.
 
+**New clone?** Start with [FIRST_RUN.md](FIRST_RUN.md) (install → Reload → `/qa onboard`).
+
 ## 1. Prerequisites
 
 | Need | Notes |
@@ -93,9 +95,12 @@ Doctor soft-warns on missing full MCP servers, placeholders, optional CLIs, and 
 
 ## 8. Start working
 
-1. Reload Cursor window
-2. `/qa` or `@qa`
-3. Private CSG process: ask teammate for gitignored `onboard.md` (see [ONBOARDING.md](ONBOARDING.md))
+1. **Reload Cursor window** (required so `/qa` and `@qa` appear)
+2. Dry-run: `node scripts/onboard-status.js`
+3. Chat: `/qa onboard` (or `@qa` → `onboard`)
+4. Private CSG process: ask teammate for gitignored `onboard.md` (see [ONBOARDING.md](ONBOARDING.md))
+
+If `/qa` is missing after Reload, see [FIRST_RUN.md](FIRST_RUN.md).
 
 ## 9. Uninstall (global Cursor bits)
 
@@ -120,7 +125,8 @@ Does **not** delete project `.cursor/` or your `mcp.json` unless you remove them
 | `mcp-catalog-scrub.js` | Scan secrets, write redacted catalog copy |
 | `setup-git.js` | Git install + identity |
 | `setup-tooling.js` | k6 / Java / Maven |
-| `setup-prefs.js` | squad + paths wizard |
+| `setup-prefs.js` | squad + paths wizard (+ Cypress MCP sync) |
+| `onboard-status.js` | Ready table dry-run (✓/✗) |
 | `check-version.js` | local vs remote VERSION |
 | `doctor.js` | Health check |
 | `store.js` | Memory CLI (`boot`, `pref`, `cor`, …) |

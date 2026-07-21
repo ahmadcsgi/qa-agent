@@ -80,7 +80,6 @@ function updateProjectContext({ squad, ui, api, perf }) {
       `| Squad / team (Shortcut + TestRail + PR \`[Squad]\`) | ${squad} |`
     );
   }
-  // Best-effort path table lines — append note if blank cells remain
   const note = [
     '',
     '<!-- setup-prefs.js -->',
@@ -100,13 +99,49 @@ function updateProjectContext({ squad, ui, api, perf }) {
   store('proj', 'sync');
 }
 
+/** If mcp.json has cypress and paths.ui_tests set, offer to sync CYPRESS_PROJECT_PATH. */
+function syncCypressMcp(uiPath, rlAsk) {
+  if (!uiPath) return Promise.resolve();
+  const mcpPath = path.join(HOME, '.cursor', 'mcp.json');
+  if (!fs.existsSync(mcpPath)) return Promise.resolve();
+  let cfg;
+  try {
+    cfg = JSON.parse(fs.readFileSync(mcpPath, 'utf8'));
+  } catch {
+    return Promise.resolve();
+  }
+  if (!cfg.mcpServers || !cfg.mcpServers.cypress) {
+    console.log('Cypress MCP not in mcp.json (skip path sync). Use: node scripts/mcp-mode.js full');
+    return Promise.resolve();
+  }
+  cfg.mcpServers.cypress.env = cfg.mcpServers.cypress.env || {};
+  const cur = cfg.mcpServers.cypress.env.CYPRESS_PROJECT_PATH || '';
+  if (cur === uiPath) {
+    console.log('Cypress MCP CYPRESS_PROJECT_PATH already matches paths.ui_tests');
+    return Promise.resolve();
+  }
+  return rlAsk(
+    `Update Cypress MCP CYPRESS_PROJECT_PATH to paths.ui_tests?\n  ${uiPath} (y/n)`,
+    'y'
+  ).then((a) => {
+    if (!/^y/i.test(a)) return;
+    const bak = `${mcpPath}.bak.${Date.now()}`;
+    fs.copyFileSync(mcpPath, bak);
+    cfg.mcpServers.cypress.env.CYPRESS_PROJECT_PATH = uiPath;
+    fs.writeFileSync(mcpPath, JSON.stringify(cfg, null, 2) + '\n', 'utf8');
+    console.log('Updated Cypress MCP path. Backup:', bak);
+    console.log('Reload Cursor window for MCP to pick it up.');
+  });
+}
+
 async function main() {
   const nonInteractive = process.argv.includes('--non-interactive') || !process.stdin.isTTY;
   if (process.argv.includes('--help') || process.argv.includes('-h')) {
     console.log(`Usage: node scripts/setup-prefs.js [--non-interactive]
 
 Sets project prefs: squad.name, paths.ui_tests, paths.api_tests, paths.perf_tests.
-Also patches .cursor/qa-memory/project-context/current.md when present.`);
+Also patches .cursor/qa-memory/project-context/current.md when present.
+Offers to sync Cypress MCP CYPRESS_PROJECT_PATH from paths.ui_tests.`);
     return;
   }
 
@@ -133,12 +168,12 @@ Also patches .cursor/qa-memory/project-context/current.md when present.`);
   }
 
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  const askRl = (q, def) => ask(rl, q, def);
   console.log('\nEnter to keep current.\n');
-  const squad = await ask(rl, 'Squad / team name', cur.squad);
-  const ui = await ask(rl, 'UI tests absolute path', cur.ui);
-  const api = await ask(rl, 'API tests absolute path', cur.api);
-  const perf = await ask(rl, 'Perf tests absolute path', cur.perf);
-  rl.close();
+  const squad = await askRl('Squad / team name', cur.squad);
+  const ui = await askRl('UI tests absolute path', cur.ui);
+  const api = await askRl('API tests absolute path', cur.api);
+  const perf = await askRl('Perf tests absolute path', cur.perf);
 
   if (squad) prefSet('squad.name', squad);
   if (ui) prefSet('paths.ui_tests', ui);
@@ -146,7 +181,9 @@ Also patches .cursor/qa-memory/project-context/current.md when present.`);
   if (perf) prefSet('paths.perf_tests', perf);
 
   updateProjectContext({ squad, ui, api, perf });
-  console.log('\nSaved prefs (project scope). Next: node scripts/doctor.js');
+  await syncCypressMcp(ui || cur.ui, askRl);
+  rl.close();
+  console.log('\nSaved prefs (project scope). Next: node scripts/onboard-status.js');
 }
 
 main().catch((e) => {

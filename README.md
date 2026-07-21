@@ -14,6 +14,7 @@ QA Agent turns Cursor into a Quality Engineering assistant that stays **lite, fa
 
 | Doc | Topic |
 |-----|--------|
+| [docs/FIRST_RUN.md](docs/FIRST_RUN.md) | **New clone:** install → Reload → `/qa onboard` |
 | [docs/SETUP.md](docs/SETUP.md) | Full install |
 | [docs/MCP.md](docs/MCP.md) | MCP profiles + secrets |
 | [docs/DEMO.md](docs/DEMO.md) | Smoke + skill matrix |
@@ -22,14 +23,16 @@ QA Agent turns Cursor into a Quality Engineering assistant that stays **lite, fa
 
 ## Quick Start
 
-Choose your OS and run the installer:
+**New to this repo?** Read [docs/FIRST_RUN.md](docs/FIRST_RUN.md) first. `/qa` appears only after install + **Reload Window**.
+
+Choose your OS and run the installer (from a clone of this repo):
 
 | OS | Installer | Command |
 |----|-----------|---------|
 | **macOS / Linux** | `install.sh` | `chmod +x install.sh && ./install.sh` |
 | **Windows** | `install.ps1` | `.\install.ps1` (PowerShell) |
-| **macOS / Linux (remote)** | `install.sh` | `curl -fsSL https://raw.githubusercontent.com/ahmad-ubaidillah/qa-agent/main/install.sh \| bash` |
-| **Windows (remote)** | `install.ps1` | `iwr -Uri https://raw.githubusercontent.com/ahmad-ubaidillah/qa-agent/main/install.ps1 \| iex` |
+| **macOS / Linux (remote)** | `install.sh` | `curl -fsSL https://raw.githubusercontent.com/ahmadcsgi/qa-agent/main/install.sh \| bash` |
+| **Windows (remote)** | `install.ps1` | `iwr -Uri https://raw.githubusercontent.com/ahmadcsgi/qa-agent/main/install.ps1 \| iex` |
 
 The installer will:
 - Copy all 10 skills to `.cursor/skills/` (project) and `~/.cursor/skills/` (global)
@@ -70,9 +73,11 @@ node ~/.qa-agent/lib/store.js pref set output.verbosity min
 
 ### Start a session (`/qa` or `@qa`)
 
-After restarting Cursor, use either:
-- **`/qa`** — project slash command (`.cursor/commands/qa.md`) — recommended if you like `/` shortcuts
-- **`@qa`** — custom agent from the agent dropdown
+**After** install + **Reload Window**:
+- **`/qa`** — slash command (`.cursor/commands/qa.md`)
+- **`@qa`** — agent dropdown
+
+If `/qa` is missing: [docs/FIRST_RUN.md](docs/FIRST_RUN.md). Fallback: `@qa` then type `onboard`, or follow `onboard.example.md` in the terminal.
 
 Do **not** attach or open anything under `.cursor/plugins/` (e.g. `superpowers` / `.cache-complete`). That is IDE plugin cache noise; QA Agent ignores it.
 

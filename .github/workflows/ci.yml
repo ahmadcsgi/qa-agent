@@ -19,6 +19,8 @@ jobs:
         run: node scripts/setup-mcp.test.js
       - name: Run setup-git self-check
         run: node scripts/setup-git.test.js
+      - name: Onboard status dry-run
+        run: node scripts/onboard-status.js
       - name: Doctor (structure)
         run: node scripts/doctor.js
 
@@ -44,9 +46,11 @@ jobs:
           test -f scripts/setup-tooling.js
           test -f scripts/setup-prefs.js
           test -f scripts/mcp-catalog-scrub.js
+          test -f scripts/onboard-status.js
           test -f scripts/check-version.js
           test -f .cursor/MCP_TOOLS.md
           test -f .cursor/agents/qa.md
+          test -f .cursor/commands/qa.md
           test -d .cursor/references
           test -f .cursor/templates/project-context.current.md
           test -f mcp.json.example
@@ -58,6 +62,7 @@ jobs:
           test -f docs/SETUP.md
           test -f docs/MCP.md
           test -f docs/ONBOARDING.md
+          test -f docs/FIRST_RUN.md
           test -f docs/README.md
           grep -q 'AGENTS.md' .cursor/agents/qa.md
 

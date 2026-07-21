@@ -4,6 +4,20 @@ All notable changes to QA Agent are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project uses [SemVer](https://semver.org/).
 
+## [1.4.6] - 2026-07-21
+
+### Added
+- `docs/FIRST_RUN.md`: clone → install → **Reload** → `/qa onboard` (fixes chicken-egg for new clones)
+- `scripts/onboard-status.js`: Ready table dry-run (✓/✗)
+- Entry smart-detect: automate from TestRail `C…` **or** Shortcut story
+- `setup-prefs.js` offers Cypress MCP path sync from `paths.ui_tests`
+- Sample `/qa` prompts in project-context template
+
+### Changed
+- README remote install URLs → `ahmadcsgi/qa-agent`
+- Installer / DEMO / ONBOARDING stress Reload before `/qa`
+- `@qa-entry` + `/qa` command: onboard status + FIRST_RUN gate
+
 ## [1.4.5] - 2026-07-21
 
 ### Added

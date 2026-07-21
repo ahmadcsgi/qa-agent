@@ -2,6 +2,7 @@
 
 | Doc | What it covers |
 |-----|----------------|
+| [FIRST_RUN.md](FIRST_RUN.md) | **New clone:** install → Reload → `/qa` |
 | [SETUP.md](SETUP.md) | Clone → install → MCP → Git → tooling → prefs → doctor |
 | [MCP.md](MCP.md) | Profiles, catalog, optional k6/karate, secrets scrub |
 | [DEMO.md](DEMO.md) | Smoke walkthrough + skill prompt matrix |
@@ -17,6 +18,7 @@
 ## Quick commands
 
 ```bash
+node scripts/onboard-status.js
 node scripts/setup-mcp.js
 node scripts/mcp-mode.js full
 node scripts/setup-git.js

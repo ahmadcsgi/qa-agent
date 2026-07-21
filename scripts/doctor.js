@@ -72,6 +72,8 @@ console.log("\nRepository");
   ["onboard.example.md", path.join(REPO, "onboard.example.md")],
   ["docs/SETUP.md", path.join(REPO, "docs", "SETUP.md")],
   ["docs/MCP.md", path.join(REPO, "docs", "MCP.md")],
+  ["docs/FIRST_RUN.md", path.join(REPO, "docs", "FIRST_RUN.md")],
+  ["scripts/onboard-status.js", path.join(REPO, "scripts", "onboard-status.js")],
   ["agents/qa.md", path.join(REPO, ".cursor", "agents", "qa.md")],
   ["rules/qa-agent-rules.mdc", path.join(REPO, ".cursor", "rules", "qa-agent-rules.mdc")],
   ["rules/testrail-case-draft.mdc", path.join(REPO, ".cursor", "rules", "testrail-case-draft.mdc")],

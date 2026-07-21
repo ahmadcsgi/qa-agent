@@ -69,8 +69,19 @@ Optional prefs (same values): `paths.ui_tests` · `paths.api_tests` · `paths.pe
 - Selector priority:
 - Test file locations: see **Local test asset paths** above
 - Branch naming:
-- Auth pattern: (env vars / vault / cookies file — no secrets here)
+- Auth pattern: (env vars / vault / cookies file. No secrets here)
 - Chat language / TestRail language:
+
+## Sample /qa prompts (after paths filled)
+
+```text
+/qa create test cases for story <SHORTCUT_ID>
+/qa automate case C12345
+/qa automate story <SHORTCUT_ID>
+/qa search tickets about <error keyword>
+/qa triage <incident id or paste>
+/qa onboard
+```
 
 ## Test infrastructure map
 
