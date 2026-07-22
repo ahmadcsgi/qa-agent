@@ -288,15 +288,30 @@ function printResume(data) {
 }
 
 function printTools(data) {
-  console.log('Tooling detect');
+  console.log('Tooling detect (host)');
   for (const t of data.tools) {
     console.log(`  ${t.ok ? 'OK  ' : 'MISS'}  ${t.id}. ${t.label}`);
   }
-  if (!data.missingTools.length) console.log('All listed tools present.');
+  if (process.platform === 'win32') {
+    try {
+      const { wslAvailable, detectWslTools } = require('./setup-wsl-tooling');
+      console.log('');
+      console.log('Tooling detect (WSL — for k6 runs)');
+      if (!wslAvailable()) {
+        console.log('  WSL not available');
+      } else {
+        for (const t of detectWslTools()) {
+          console.log(`  ${t.ok ? 'OK  ' : 'MISS'}  ${t.label}`);
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+  if (!data.missingTools.length) console.log('All listed host tools present.');
   else {
     console.log('');
-    console.log('Ask user: 1=Git 2=k6 3=Java 4=Maven 5=all missing · or skip');
-    console.log(`Suggested if they want everything missing: 5`);
+    console.log('Ask user: 1=Git 2=k6-host 3=Java 4=Maven 5=all-host 6=k6-WSL · or skip');
   }
 }
 

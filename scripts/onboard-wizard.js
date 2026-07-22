@@ -95,17 +95,17 @@ function hasCmd(cmd, args) {
 }
 
 function detectTools() {
-  return [
+  const list = [
     {
       id: 1,
       key: 'git',
-      label: 'Git',
+      label: 'Git (host)',
       ok: hasCmd('git', ['--version']),
     },
     {
       id: 2,
       key: 'k6',
-      label: 'k6 (perf)',
+      label: 'k6 host (optional)',
       ok: hasCmd('k6', ['version']) || hasCmd('k6', ['--version']),
     },
     {
@@ -121,13 +121,36 @@ function detectTools() {
       ok: hasCmd('mvn', ['-v']) || hasCmd('mvn', ['--version']),
     },
   ];
+  if (process.platform === 'win32') {
+    let wslK6 = false;
+    let wslOk = false;
+    try {
+      const { wslAvailable, wslCmdOk } = require('./setup-wsl-tooling');
+      wslOk = wslAvailable();
+      wslK6 = wslOk && wslCmdOk('command -v k6 >/dev/null 2>&1 && (k6 version || k6 --version)');
+    } catch {
+      /* ignore */
+    }
+    list.push({
+      id: 6,
+      key: 'k6-wsl',
+      label: wslOk ? 'k6 in WSL (recommended for perf)' : 'k6 in WSL (install WSL first)',
+      ok: wslK6,
+      needsWsl: true,
+    });
+  }
+  return list;
 }
 
 function installSelectedTools(ids) {
   const tools = detectTools();
   const missing = tools.filter((t) => !t.ok);
   let wantIds = ids.slice();
-  if (wantIds.includes(5)) wantIds = missing.map((t) => t.id);
+  if (wantIds.includes(5)) {
+    wantIds = missing.filter((t) => t.id !== 6).map((t) => t.id);
+    // on Windows, 5 also implies WSL k6 if missing
+    if (process.platform === 'win32' && missing.some((t) => t.id === 6)) wantIds.push(6);
+  }
   const want = new Set(wantIds);
   const onlyKeys = [];
   for (const t of missing) {
@@ -137,12 +160,25 @@ function installSelectedTools(ids) {
       spawnSync(process.execPath, [path.join(REPO, 'scripts', 'setup-git.js'), '--install'], {
         stdio: 'inherit',
       });
+    } else if (t.key === 'k6-wsl') {
+      console.log(`\nInstalling k6 into WSL...`);
+      spawnSync(
+        process.execPath,
+        [
+          path.join(REPO, 'scripts', 'setup-wsl-tooling.js'),
+          '--install',
+          '--non-interactive',
+          '--only',
+          'k6,curl',
+        ],
+        { stdio: 'inherit' }
+      );
     } else {
-      onlyKeys.push(t.key);
+      onlyKeys.push(t.key === 'k6' ? 'k6' : t.key);
     }
   }
   if (onlyKeys.length) {
-    console.log(`\nInstalling ${onlyKeys.join(', ')}...`);
+    console.log(`\nInstalling host: ${onlyKeys.join(', ')}...`);
     spawnSync(
       process.execPath,
       [
@@ -184,8 +220,11 @@ async function toolingPicker(rl, toolsArg) {
   if (!ans && rl) {
     console.log('');
     console.log('Install missing? Enter numbers separated by comma.');
-    console.log('  1=Git  2=k6  3=Java  4=Maven  5=ALL missing');
-    console.log('  Example: 1,2   or   5');
+    console.log('  1=Git  2=k6 host  3=Java  4=Maven  5=ALL host missing');
+    if (process.platform === 'win32') {
+      console.log('  6=k6 in WSL (recommended for perf runs)');
+    }
+    console.log('  Example: 1,6   or   5');
     console.log('  Enter = skip');
     ans = await ask(rl, 'Choice', '');
   }
@@ -276,13 +315,14 @@ function formText(lang) {
    C. Performance testing (k6)
 
 3. Install tooling that is missing?
-   1 = Git
-   2 = k6
+   1 = Git (host)
+   2 = k6 host (optional)
    3 = Java
    4 = Maven
-   5 = all missing
+   5 = all host missing
+   6 = k6 in WSL (recommended for perf on Windows)
 
-   Answer: 1,2   or  5   or  skip`;
+   Answer: 1,6   or  5   or  skip`;
   }
   return `Onboard — isi data di bawah (salin, edit, kirim balik)
 
@@ -297,13 +337,14 @@ function formText(lang) {
    C. Performance testing (k6)
 
 3. Install tooling yang belum terpasang?
-   1 = Git
-   2 = k6
+   1 = Git (host)
+   2 = k6 host (optional)
    3 = Java
    4 = Maven
-   5 = semua yang missing
+   5 = semua host yang missing
+   6 = k6 di WSL (disarankan untuk perf di Windows)
 
-   Jawab: 1,2   atau  5   atau  skip`;
+   Jawab: 1,6   atau  5   atau  skip`;
 }
 
 function parseCli(argv) {

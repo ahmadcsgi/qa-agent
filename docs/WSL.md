@@ -1,61 +1,43 @@
-# WSL install (Cursor on Windows + Linux shell)
+# WSL for **k6 runs** (not for installing QA Agent)
 
-Cursor **can** work with WSL. Recommended pattern: Cursor app on Windows, project opened via **WSL remote** (or `\\wsl$\...`).
+QA Agent installs on the **host** (Windows / macOS). Use WSL to **execute** k6 performance tests — same pattern many teammates use.
 
-## What runs where
+## Recommended split
 
-| Piece | Typical location |
-|-------|------------------|
-| Cursor UI | Windows |
-| Agent terminal / `node` scripts | **WSL** (if folder opened as WSL) |
-| `~/.qa-agent/` memory | WSL home (`/home/<you>/.qa-agent`) when install runs in WSL |
-| `~/.cursor/mcp.json` | Often still **Windows** `%USERPROFILE%\.cursor\mcp.json` (Cursor host) |
-| UI/API/perf test repos | Prefer Linux paths inside WSL (`/home/...`) |
+| What | Where |
+|------|--------|
+| Cursor + QA Agent + MCP | Windows (or macOS) |
+| `k6 run …` | **WSL** Ubuntu |
 
-MCP servers started by Cursor usually inherit the **host** Node/`npx`. Paths in MCP env (e.g. `CYPRESS_PROJECT_PATH`) must be reachable from that process. If Cypress runs only in WSL, prefer WSL paths and a WSL Node on PATH, or keep the UI test repo on a path both can see.
+## Onboard installs k6 into WSL
 
-## Install in WSL
+During `/qa onboard` tooling step (Windows):
+
+- Choose **`6`** = install k6 into WSL (Grafana apt repo)
+- Or: `node scripts/setup-wsl-tooling.js --install --only k6`
 
 ```bash
-# Inside WSL
-git clone https://github.com/ahmadcsgi/qa-agent.git
-cd qa-agent
-chmod +x install.sh && ./install.sh
-node scripts/onboard-wizard.js   # or /qa onboard after Reload
+node scripts/setup-wsl-tooling.js --status
+node scripts/setup-wsl-tooling.js --install --only k6,curl
+# alias:
+node scripts/setup-tooling.js --wsl --install --only k6
 ```
 
-Open the same folder in Cursor: **Remote-WSL: Open Folder** → `/home/.../qa-agent`.
+Does **not** auto-install Docker (enable Docker Desktop → WSL integration if you need it).
 
-Then: **Reload Window**.
+## Run a test
 
-## Windows-only install (alternative)
-
-If you stay on Windows filesystem (`C:\...`) without Remote-WSL:
-
-```powershell
-.\install.ps1
+```bash
+wsl -d Ubuntu -- bash -lc "cd /path/to/perf-repo && k6 run script.js"
 ```
 
-Do **not** mix: install memory on Windows then expect WSL `~/.qa-agent` to match (different homes).
+Set `paths.perf_tests` to a path reachable from WSL (e.g. `/home/you/...` or `/mnt/c/...`).
 
-## Path prefs
+## Checklist for teammates
 
-Use absolute **WSL** paths when the agent shell is Linux:
+1. WSL2 + Ubuntu (`wsl --install -d Ubuntu` if needed)
+2. Onboard → tooling → pick **6** (k6 WSL)
+3. Verify: `wsl -- k6 version`
+4. Point `paths.perf_tests` at the perf repo
 
-```text
-/home/you/work/ui-tests
-/home/you/work/api-tests
-```
-
-Multi: `pathA|pathB` still works.
-
-## Checklist
-
-1. WSL2 + Node 18+ inside WSL (`node -v`)
-2. `install.sh` in WSL
-3. Open folder via Remote-WSL
-4. Reload
-5. `/qa onboard` → fill paths as WSL absolut paths
-6. If MCP TestRail fails: confirm tokens in the mcp.json Cursor actually loads (often Windows `~/.cursor/mcp.json`)
-
-Related: [FIRST_RUN.md](FIRST_RUN.md) · [MCP.md](MCP.md)
+Related: [FIRST_RUN.md](FIRST_RUN.md) · [MCP.md](MCP.md) · `@qa-perf-test`

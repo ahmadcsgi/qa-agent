@@ -4,6 +4,13 @@ All notable changes to QA Agent are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project uses [SemVer](https://semver.org/).
 
+## [1.5.3] - 2026-07-22
+
+### Added
+- `setup-wsl-tooling.js`: detect/install **k6 (and curl/git) inside WSL** for perf runs
+- Onboard tooling option **6 = k6 in WSL** (Windows). `setup-tooling.js --wsl`
+- `docs/WSL.md` clarified: WSL = k6 execution, not QA Agent install
+
 ## [1.5.2] - 2026-07-22
 
 ### Changed

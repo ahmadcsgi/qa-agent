@@ -128,6 +128,8 @@ if (exists(hookJs)) ok("sessionStart MCP auto hook installed");
 else soft("MCP auto hook missing. Run: node scripts/install-mcp-hook.js");
 if (exists(path.join(REPO, "scripts", "onboard-progress.js"))) ok("scripts/onboard-progress.js present");
 else soft("onboard-progress.js missing");
+if (exists(path.join(REPO, "scripts", "setup-wsl-tooling.js"))) ok("scripts/setup-wsl-tooling.js present");
+else soft("setup-wsl-tooling.js missing");
 if (exists(path.join(HOME, ".qa-agent", "projects"))) ok("~/.qa-agent/projects/ present");
 else soft("projects/ dir missing. Re-run installer");
 

@@ -6,8 +6,11 @@
  *   node scripts/setup-tooling.js
  *   node scripts/setup-tooling.js --non-interactive
  *   node scripts/setup-tooling.js --install
+ *   node scripts/setup-tooling.js --wsl              # status WSL tools (Windows)
+ *   node scripts/setup-tooling.js --wsl --install    # install k6 into WSL
  *
  * Checks: k6, java, mvn (Maven). Optional winget/brew install.
+ * On Windows, prefer k6 in WSL for perf runs: scripts/setup-wsl-tooling.js
  * Karate MCP needs a `karate` CLI binary. Most Maven API repos use
  * (`mvn test`) instead — that path does NOT need karate MCP.
  */
@@ -29,6 +32,7 @@ function parseArgs(argv) {
   return {
     nonInteractive: argv.includes('--non-interactive') || !process.stdin.isTTY,
     install: argv.includes('--install'),
+    wsl: argv.includes('--wsl'),
     only,
     help: argv.includes('--help') || argv.includes('-h'),
   };
@@ -105,16 +109,31 @@ async function ensure(name, check, installFn, opts, rl) {
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
   if (opts.help) {
-    console.log(`Usage: node scripts/setup-tooling.js [--install] [--non-interactive] [--only k6,java,mvn]
+    console.log(`Usage: node scripts/setup-tooling.js [--install] [--non-interactive] [--only k6,java,mvn] [--wsl]
 
-  Detects k6, Java, Maven. Optionally installs via winget (Windows) or brew (macOS).
+  Detects k6, Java, Maven on this host. Optionally installs via winget (Windows) or brew (macOS).
+  --wsl  delegate to setup-wsl-tooling.js (k6 inside WSL for perf runs on Windows).
   --only limits which tools to check/install (comma list).
 
 Notes:
-  - Perf skills use k6 CLI + paths.perf_tests (MCP optional: k6 x mcp).
+  - Perf skills: prefer k6 in WSL on Windows (setup-wsl-tooling.js). Host k6 optional.
   - API skills usually use Maven in paths.api_tests (not karate MCP).
   - Optional karate MCP needs a standalone karate CLI. Skip if you only use mvn.`);
     return;
+  }
+
+  if (opts.wsl) {
+    const path = require('path');
+    const args = [path.join(__dirname, 'setup-wsl-tooling.js')];
+    if (opts.install) args.push('--install');
+    if (opts.nonInteractive) args.push('--non-interactive');
+    if (opts.only && opts.only.length) {
+      args.push('--only', opts.only.join(','));
+    } else if (!opts.install) {
+      args.push('--status');
+    }
+    const r = spawnSync(process.execPath, args, { stdio: 'inherit' });
+    process.exit(r.status || 0);
   }
 
   function want(name) {
