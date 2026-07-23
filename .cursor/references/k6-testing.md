@@ -1,21 +1,26 @@
 # k6 Performance Testing Quick Reference
 
 ## Installation
+
+| Platform | Install |
+|----------|---------|
+| **Windows (corporate / CSG pattern)** | **WSL only**: `node scripts/setup-wsl-tooling.js --install --only k6` (onboard option **6**). Do not rely on winget host k6. |
+| macOS | `brew install k6` |
+| Linux / WSL Ubuntu | Grafana apt repo — see `docs/WSL.md` / setup-wsl-tooling |
+| Docker | `docker run --rm -i grafana/k6 run - <script.js` |
+
+## How to run
+
 ```bash
-# macOS
-brew install k6
+# Windows → WSL (preferred)
+wsl -- bash -lc "cd '/path/in/wsl/to/perf-repo' && k6 run script.js"
 
-# Linux (Debian/Ubuntu)
-sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
-echo "deb https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
-sudo apt-get update && sudo apt-get install k6
-
-# Docker
-docker run --rm -i grafana/k6 run - <script.js
-
-# Latest binary
-curl -LO https://github.com/grafana/k6/releases/latest/download/k6-linux-amd64.tar.gz
+# macOS / Linux host
+k6 run script.js
+k6 run --out json=results.json script.js
 ```
+
+Pref: `paths.perf_tests`. Secrets: team vault / EncryptSecret — never commit plaintext.
 
 ## Script Structure
 ```javascript

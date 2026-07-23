@@ -1,6 +1,6 @@
 ---
 name: qa-test-execution
-description: TestRail test plans, runs, and results (mark Passed/Failed). Preview then ACC. Use after cases exist or when user asks for plan/pass/centang.
+description: TestRail test plans, runs, results (mark Passed/Failed), and TC label groom. Preview then ACC. Use after cases exist or when user asks for plan/pass/centang/TC-ready.
 ---
 
 # QA Test Execution
@@ -21,6 +21,7 @@ description: TestRail test plans, runs, and results (mark Passed/Failed). Previe
 | "buat test plan", plan name + milestone | Preview plan then ACC then `addPlan` |
 | "centang / set passed / mark fail" + story or case IDs | Resolve cases then `addResultsForCases` |
 | Link `plans/view` or `runs/view` | Operate on that plan/run |
+| `TC-on-progress` / `TC-ready` / "label groom" | Shortcut label update (ACC) |
 
 ## Flow — Test plan
 
@@ -43,10 +44,24 @@ Naming pattern (if team uses it): `[TEST PLAN] <version> <Squad>` e.g. `[TEST PL
 
 Never invent results. Never mark cases the user did not name (or that are not on the story checklist they pointed to).
 
+## Flow — Label groom (Shortcut)
+
+| From | To | When |
+|------|-----|------|
+| (none) / draft | `TC-on-progress` | Cases being written / in review |
+| `TC-on-progress` | `TC-ready` | Cases ACC'd in TestRail + checklist links done |
+
+1. Resolve story id
+2. Preview: current labels → proposed change
+3. **ACC** then `stories-update` (labels)
+4. Cite story URL
+
+Do not remove unrelated labels. Ask if multiple TC labels conflict.
+
 ## MCP
 
-`getPlans` · `addPlan` · `addPlanEntry` · `getRuns` · `getTests` · `addResultsForCases` · `addResultForCase` · `stories-get-by-id`
+`getPlans` · `addPlan` · `addPlanEntry` · `getRuns` · `getTests` · `addResultsForCases` · `addResultForCase` · `stories-get-by-id` · `stories-update` · `labels-list`
 
 ## References
 
-`testrail-api.md` · `MCP_TOOLS.md` · project-context (milestone / suite IDs)
+`testrail-api.md` · `MCP_TOOLS.md` · `shortcut-api.md` · project-context (milestone / suite IDs)

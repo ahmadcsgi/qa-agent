@@ -4,6 +4,20 @@ All notable changes to QA Agent are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project uses [SemVer](https://semver.org/).
 
+## [1.5.4] - 2026-07-23
+
+### Added
+- `@qa-perf-test` / `k6-testing.md`: WSL-first run (`wsl -- k6 run`) + EncryptSecret/vault hints
+- `@qa-test-execution`: Shortcut label groom (`TC-on-progress` > `TC-ready`)
+- `suggestMcpDefaults` + `syncOnboardVersion` (private `onboard.md` URLs / Aligned-with)
+- Doctor soft-check for **k6 in WSL** on Windows
+- `mcp-mode` writes `~/.qa-agent/mcp/last-switch.json`; sessionStart hook shows `MCP: <profile> (auto)`
+
+### Changed
+- `setup-mcp.js` URL defaults from private onboard when present (still org-neutral public fallbacks)
+- DEMO: onboard tooling **6** + verify `wsl -- k6 version`
+- Entry / AGENTS: route label groom to test-execution; perf notes WSL on Windows
+
 ## [1.5.3] - 2026-07-22
 
 ### Added

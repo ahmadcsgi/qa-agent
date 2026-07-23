@@ -35,6 +35,7 @@ const {
 
 const backupDir = path.join(QA_MCP_DIR, 'backups');
 const statePath = path.join(QA_MCP_DIR, 'active-profile.txt');
+const lastSwitchPath = path.join(QA_MCP_DIR, 'last-switch.json');
 
 const argv = process.argv.slice(2);
 const quiet = argv.includes('--quiet');
@@ -160,6 +161,17 @@ function applyProfile(profile) {
   fs.mkdirSync(path.dirname(MCP_PATH), { recursive: true });
   writeJson(MCP_PATH, { mcpServers });
   fs.writeFileSync(statePath, profile, 'utf8');
+  try {
+    writeJson(lastSwitchPath, {
+      at: new Date().toISOString(),
+      prev: prev || null,
+      next: profile,
+      cwd: resolveCwd(),
+      changed: !!(prev && prev !== profile),
+    });
+  } catch {
+    /* ignore */
+  }
   log('MCP profile:', profile);
   log('Active servers:', keys.join(', '));
   if (prev && prev !== profile) {

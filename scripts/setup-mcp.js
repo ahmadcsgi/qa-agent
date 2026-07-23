@@ -42,6 +42,20 @@ const DEFAULTS = {
   CONTEXT7_URL: 'https://mcp.context7.com/mcp',
 };
 
+function resolveDefaults() {
+  const d = { ...DEFAULTS, source: null };
+  try {
+    const { suggestMcpDefaults } = require('./onboard-learn');
+    const s = suggestMcpDefaults(REPO);
+    if (s.TESTRAIL_URL) d.TESTRAIL_URL = s.TESTRAIL_URL;
+    if (s.GLEAN_URL) d.GLEAN_URL = s.GLEAN_URL;
+    if (s.source) d.source = s.source;
+  } catch {
+    /* ignore */
+  }
+  return d;
+}
+
 function parseArgs(argv) {
   const a = {
     lite: false,
@@ -82,29 +96,30 @@ function backupExisting() {
 }
 
 function buildServerDefs(opts) {
+  const D = resolveDefaults();
   const names = opts.full ? [...FULL] : [...LITE];
   const servers = {};
 
   if (names.includes('shortcut')) {
-    servers.shortcut = { url: DEFAULTS.SHORTCUT_URL };
+    servers.shortcut = { url: D.SHORTCUT_URL };
   }
   if (names.includes('testrail')) {
     servers.testrail = {
       command: 'npx',
       args: ['-y', '@bun913/mcp-testrail@latest'],
       env: {
-        TESTRAIL_URL: DEFAULTS.TESTRAIL_URL,
+        TESTRAIL_URL: D.TESTRAIL_URL,
         TESTRAIL_USERNAME: '',
         TESTRAIL_API_KEY: '',
       },
     };
   }
   if (names.includes('glean')) {
-    servers.glean = { url: DEFAULTS.GLEAN_URL };
+    servers.glean = { url: D.GLEAN_URL };
   }
   if (names.includes('context7')) {
     servers.context7 = {
-      url: DEFAULTS.CONTEXT7_URL,
+      url: D.CONTEXT7_URL,
       headers: { CONTEXT7_API_KEY: '' },
     };
   }
@@ -150,17 +165,19 @@ function ask(rl, q, def) {
 
 async function promptSecrets(config, opts) {
   if (opts.nonInteractive) return config;
+  const D = resolveDefaults();
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   const s = config.mcpServers;
 
   console.log('\nFill secrets (Enter = keep current / default). Never commit mcp.json.\n');
+  if (D.source) console.log(`  URL defaults from: ${D.source}\n`);
 
   if (s.testrail) {
     console.log('--- TestRail (required for cases / plans) ---');
     s.testrail.env.TESTRAIL_URL = await ask(
       rl,
       'TESTRAIL_URL',
-      s.testrail.env.TESTRAIL_URL || DEFAULTS.TESTRAIL_URL
+      s.testrail.env.TESTRAIL_URL || D.TESTRAIL_URL
     );
     s.testrail.env.TESTRAIL_USERNAME = await ask(
       rl,
@@ -180,13 +197,13 @@ async function promptSecrets(config, opts) {
 
   if (s.glean) {
     console.log('\n--- Glean (company knowledge) ---');
-    s.glean.url = await ask(rl, 'Glean MCP URL', s.glean.url || DEFAULTS.GLEAN_URL);
+    s.glean.url = await ask(rl, 'Glean MCP URL', s.glean.url || D.GLEAN_URL);
     console.log('  (Auth often via Cursor MCP login / SSO after reload)');
   }
 
   if (s.shortcut) {
     console.log('\n--- Shortcut ---');
-    s.shortcut.url = await ask(rl, 'Shortcut MCP URL', s.shortcut.url || DEFAULTS.SHORTCUT_URL);
+    s.shortcut.url = await ask(rl, 'Shortcut MCP URL', s.shortcut.url || D.SHORTCUT_URL);
     console.log('  (Auth often via Cursor MCP login / OAuth after reload)');
   }
 
@@ -287,6 +304,10 @@ Target: ~/.cursor/mcp.json (never commit)`);
   console.log('QA Agent MCP setup');
   console.log(`  Mode: ${mode}`);
   console.log(`  Target: ${MCP_PATH}`);
+  const defaults = resolveDefaults();
+  if (defaults.source) {
+    console.log(`  URL defaults: ${path.basename(defaults.source)}`);
+  }
   console.log('');
 
   if (!opts.nonInteractive) {

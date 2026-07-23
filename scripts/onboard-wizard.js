@@ -454,6 +454,14 @@ async function applyAnswers({ squad, ui, api, perf, tools, skipMcp, interactive,
     console.log(`Learned ${learned.links.length} onboard link(s). Saved ${n} pref(s).`);
   }
 
+  try {
+    const { syncOnboardVersion } = require('./onboard-learn');
+    const sync = syncOnboardVersion(REPO);
+    if (sync.updated) console.log(`Synced onboard.md Aligned with: v${sync.version}`);
+  } catch {
+    /* private onboard optional */
+  }
+
   if (squad) prefSet('squad.name', squad);
   if (ui) prefSet('paths.ui_tests', formatPathList(ui) || ui);
   if (api) prefSet('paths.api_tests', formatPathList(api) || api);

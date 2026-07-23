@@ -218,7 +218,19 @@ console.log("\nCLI tooling");
 const toolOk = (cmd, args) =>
   spawnSync(cmd, args, { encoding: "utf8", shell: true, windowsHide: true }).status === 0;
 if (toolOk("k6", ["version"]) || toolOk("k6", ["--version"])) ok("k6 on PATH");
-else soft("k6 missing (optional until @qa-perf-test). Run: node scripts/setup-tooling.js");
+else soft("k6 missing on host (optional). Prefer WSL on Windows: tooling option 6 / setup-wsl-tooling.js");
+
+if (process.platform === "win32") {
+  const wslK6 = spawnSync("wsl", ["--", "k6", "version"], {
+    encoding: "utf8",
+    windowsHide: true,
+    timeout: 15000,
+  });
+  const wslOut = ((wslK6.stdout || "") + (wslK6.stderr || "")).trim();
+  if (wslK6.status === 0 && /k6/i.test(wslOut)) ok("k6 in WSL (" + wslOut.split("\n")[0].slice(0, 60) + ")");
+  else soft("k6 not in WSL (optional for @qa-perf-test). Run: node scripts/setup-wsl-tooling.js --install --only k6");
+}
+
 if (toolOk("java", ["-version"]) || toolOk("java", ["--version"])) ok("java on PATH");
 else soft("java missing (optional until @qa-api-test). Run: node scripts/setup-tooling.js");
 if (toolOk("mvn", ["-v"]) || toolOk("mvn", ["--version"])) ok("mvn on PATH");

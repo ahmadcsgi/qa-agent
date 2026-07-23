@@ -156,6 +156,24 @@ assert(
 // seed catalog in temp dir without touching user home secrets: unit only above
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'qa-mcp-test-'));
 assert(fs.existsSync(tmp), 'tmpdir created');
+
+const { suggestMcpDefaults, syncOnboardVersion } = require('./onboard-learn');
+const onboardTmp = path.join(tmp, 'onboard.md');
+const verTmp = path.join(tmp, 'VERSION');
+fs.writeFileSync(
+  onboardTmp,
+  '# Onboard\n**Aligned with:** QA Agent **v1.0.0**\nhttps://testrails.example.com/index.php\nhttps://acme.glean.com/mcp/default\n',
+  'utf8'
+);
+fs.writeFileSync(verTmp, '9.9.9\n', 'utf8');
+const sug = suggestMcpDefaults(tmp);
+assert(sug.TESTRAIL_URL === 'https://testrails.example.com', 'suggestMcpDefaults TestRail host');
+assert(/glean/i.test(sug.GLEAN_URL || ''), 'suggestMcpDefaults Glean URL');
+const sync = syncOnboardVersion(tmp);
+assert(sync.updated === true && sync.version === '9.9.9', 'syncOnboardVersion bumps Aligned with');
+const after = fs.readFileSync(onboardTmp, 'utf8');
+assert(after.includes('v9.9.9'), 'onboard.md shows new version');
+
 fs.rmSync(tmp, { recursive: true, force: true });
 
 if (failed) {

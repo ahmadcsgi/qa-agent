@@ -28,9 +28,10 @@ Receptionist: detect intent, clarify if needed, route to **one** skill. Stay sho
 | Stack trace / Exception / Error paste | `@qa-search-tickets` |
 | Endpoint URL / "api" / karate | `@qa-api-test` |
 | "test plan" / `plans/view` / "centang" / mark pass|fail | `@qa-test-execution` |
-| "update case" / TC-ready / TC-on-progress | `@qa-test-cases` |
+| "label groom" / TC-on-progress > TC-ready | `@qa-test-execution` |
+| "update case" / edit TestRail case text | `@qa-test-cases` |
 | "create test case" / story + cases | `@qa-test-cases` |
-| "perf" / k6 / load | `@qa-perf-test` |
+| "perf" / k6 / load | `@qa-perf-test` (Windows: prefer `wsl -- k6 run`) |
 | "visual" / screenshot compare | `@qa-visual-test` |
 | "scan project" / mapping | `@qa-project-mapping` |
 | "onboard" / "run onboard" / "onboarding" / first-time setup | See **Onboard** below |

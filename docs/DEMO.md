@@ -13,8 +13,17 @@ Full setup: [SETUP.md](SETUP.md) · [FIRST_RUN.md](FIRST_RUN.md) · [MCP.md](MCP
 4. /qa onboard
    - see Ready / resume
    - fill spaced form (squad + paths + tooling)
+   - Windows + CSG-blocked host k6: pick tooling **6** (k6 in WSL)
 5. Reload once if MCP profile changed
-6. /qa   → ask anything (e.g. search a known story)
+6. /qa   > ask anything (e.g. search a known story)
+```
+
+Verify WSL k6 (Windows):
+
+```bash
+wsl -- k6 version
+# or
+node scripts/setup-wsl-tooling.js --status
 ```
 
 ```bash

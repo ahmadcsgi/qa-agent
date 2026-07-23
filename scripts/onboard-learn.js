@@ -186,12 +186,67 @@ Parse onboard.md (private) or onboard.example.md for hub links.
   }
 }
 
+/** Suggest MCP default URLs from onboard markdown (no secrets). */
+function suggestMcpDefaults(repoRoot = REPO) {
+  const result = learnFromOnboard(repoRoot);
+  const out = {
+    TESTRAIL_URL: '',
+    GLEAN_URL: '',
+    source: result.source,
+  };
+  const tr = (result.byKind && result.byKind.testrail) || [];
+  for (const link of tr) {
+    const u = link.url || '';
+    const m = u.match(/^(https?:\/\/[^/\s]+)/i);
+    if (m && /testrail/i.test(m[1])) {
+      out.TESTRAIL_URL = m[1].replace(/\/$/, '');
+      break;
+    }
+  }
+  if (result.source && fs.existsSync(result.source)) {
+    const text = fs.readFileSync(result.source, 'utf8');
+    const glean = text.match(/https?:\/\/[^\s)"']+glean[^\s)"']*/i);
+    if (glean) out.GLEAN_URL = glean[0].replace(/[.,]+$/, '');
+    if (!out.TESTRAIL_URL) {
+      const trHost = text.match(/https?:\/\/testrails?[^\s)"']*/i);
+      if (trHost) {
+        const m = trHost[0].match(/^(https?:\/\/[^/\s]+)/i);
+        if (m) out.TESTRAIL_URL = m[1].replace(/\/$/, '');
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * Keep private onboard.md "Aligned with: vX.Y.Z" in sync with repo VERSION.
+ */
+function syncOnboardVersion(repoRoot = REPO) {
+  const onboard = path.join(repoRoot, 'onboard.md');
+  const verFile = path.join(repoRoot, 'VERSION');
+  if (!fs.existsSync(onboard) || !fs.existsSync(verFile)) {
+    return { updated: false, reason: 'missing onboard.md or VERSION' };
+  }
+  const ver = fs.readFileSync(verFile, 'utf8').trim();
+  let text = fs.readFileSync(onboard, 'utf8');
+  const re = /(\*\*Aligned with:\*\* QA Agent \*\*)v[\d.]+(\*\*)/;
+  if (!re.test(text)) {
+    return { updated: false, version: ver, reason: 'pattern not found' };
+  }
+  const next = text.replace(re, `$1v${ver}$2`);
+  if (next === text) return { updated: false, version: ver, reason: 'already set' };
+  fs.writeFileSync(onboard, next, 'utf8');
+  return { updated: true, version: ver };
+}
+
 module.exports = {
   learnFromOnboard,
   saveLearned,
   classifyUrl,
   extractLinks,
   pickOnboardFile,
+  suggestMcpDefaults,
+  syncOnboardVersion,
 };
 
 if (require.main === module) main();

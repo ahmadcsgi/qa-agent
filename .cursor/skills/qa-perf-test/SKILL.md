@@ -1,147 +1,102 @@
 ---
 name: qa-perf-test
-description: Generate k6 performance tests from Shortcut stories or API specs. Interactive flow: ask for scenario type, VUs, duration, thresholds, generates k6 script, auto-runs, auto-heals. Use when user asks for "perf test", "generate k6", "load test", "performance test", or provides a story ID for performance testing.
+description: Generate k6 performance tests from Shortcut stories or API specs. Interactive flow: ask for scenario type, VUs, duration, thresholds, generates k6 script, auto-runs (WSL on Windows), auto-heals. Use when user asks for "perf test", "generate k6", "load test", "performance test", or provides a story ID for performance testing.
 ---
 
 # QA Performance Test (k6)
+
+## Run environment (mandatory)
+
+| Host OS | How to run k6 |
+|---------|----------------|
+| **Windows** | Prefer **WSL**: `wsl -- bash -lc "cd '<perf-dir>' && k6 run script.js"` |
+| macOS / Linux | `k6 run script.js` on host |
+
+- Pref `paths.perf_tests` = perf repo root (path reachable from WSL, e.g. `/home/...` or `/mnt/c/...`).
+- If WSL k6 missing: `node scripts/setup-wsl-tooling.js --install --only k6` (or onboard tooling **6**).
+- Do **not** assume host `k6` on corporate Windows.
+
+### Secrets / vault (before inventing credentials)
+
+1. Read `project-context` + private `onboard.md` Part A9 if present.
+2. Prefer team vault docs (e.g. EncryptSecret / Ansible Vault under `paths.perf_tests`).
+3. **Never** paste vault passwords, client secrets, or plaintext env JSON into chat or committed files.
+4. If secrets required and missing → list what is needed and ask user (or point to vault edit flow). Do not invent tokens.
 
 ## Interactive Flow
 
 ### Step 1: Gather Context
 Ask the user:
-1. **Source**: "Do you have a Shortcut story ID, API endpoint, or flow to load test?"
-   - Story → read via Shortcut MCP (`stories-get-by-id`)
-   - Endpoint → ask for details (method, payload, headers)
-   - Flow → ask for endpoint sequence
-2. **Scenario Type**: "What test scenario?"
-   - **Load** - normal traffic (baseline)
-   - **Stress** - gradual increase until breakpoint
-   - **Spike** - sudden surge
-   - **Soak** - long duration (stamina)
-   - **Smoke** - small validation (1-2 VUs)
-3. **Workload**: "How many VUs (virtual users) and duration?"
-   - Default: 10 VU, 30s for smoke
-   - Ask if user wants custom values
-4. **Thresholds**: "Is there any SLA / target response time?"
-   - Default: p95 < 2000ms, error rate < 1%
-   - Ask if there are custom thresholds
-5. **Environment**: "Base URL environment? (staging, production, or custom)"
+1. **Source**: Shortcut story ID, API endpoint, or flow
+   - Story → Shortcut MCP `stories-get-by-id`
+   - Endpoint → method, payload, headers
+   - Flow → endpoint sequence
+2. **Scenario Type**: Load / Stress / Spike / Soak / Smoke
+3. **Workload**: VUs + duration (default smoke: 10 VU, 30s — or 1–2 VU for true smoke)
+4. **Thresholds**: default p95 < 2000ms, error rate < 1%
+5. **Environment**: staging / production / custom base URL
 
 ### Step 2: Check Memory & Existing
-- Read `.cursor/qa-memory/project-context/current.md` - find base URL, auth pattern, existing k6 helpers
-- Check decision memory: `node ~/.qa-agent/lib/store.js cor list "perf-test" "1"` - proven patterns (score >= 1)
-- Avoid past mistakes: `node ~/.qa-agent/lib/store.js cor list "perf-test" "-999" "-1"`
-- Search for existing k6 files in the project - reuse helpers (getToken, getGlobal, defineSummary, thresholds, data generators)
+- `project-context/current.md` — base URL, auth, helpers
+- `cor list perf-test` (good / bad)
+- Existing k6 helpers in `paths.perf_tests` (getToken, getGlobal, defineSummary, thresholds)
 
 ### Step 3: Research (if needed)
-- `.cursor/references/k6-testing.md` - k6 syntax & patterns
-- Context7: `resolve-library-id("k6", "k6")` → `query-docs` for latest docs
-- Glean: internal API docs / Confluence
+- `.cursor/references/k6-testing.md`
+- Context7 for k6 docs
+- Glean / Confluence for internal APIs
+- Vault / EncryptSecret notes from onboard (no secrets in chat)
 
 ### Step 4: Plan
-Write a plan before coding:
-- **Risk Analysis**: which endpoint/flow is most critical
-- **Scenarios**: combination of load/stress/spike/soak needed
-- **Thresholds**: target metrics per endpoint
-- **Data variants**: whether different data is needed per VU
+Risk analysis, scenarios, thresholds, data variants. Risk Coverage > Endpoint Coverage.
 
-Risk Coverage > Endpoint Coverage. No risk = no test.
+### Step 4b: Decision ladder
+`@qa-token-saver`: YAGNI → Reuse → Stdlib → Native → Existing dep → One-liner → Minimum.
 
-### Step 4b: Climb Decision Ladder
-Call the decision ladder from `@qa-token-saver`:
-1. **YAGNI**: Is performance test needed? Low risk? Skip.
-2. **Reuse**: Any existing k6 helper (getToken, getGlobal)?
-3. **Stdlib**: `check()`, `sleep()`, built-in metrics sufficient?
-4. **Native**: Infrastructure metrics (CloudWatch, Prometheus) already exist?
-5. **Existing dep**: Existing k6 extension/library?
-6. **One-liner**: Can it be a single scenario? Parameterized?
-7. **Minimum**: Is load test alone enough? Skip stress/spike/soak if not justified.
-
-### Step 5b: Reflexion - Self-Review Before Preview
-BEFORE showing to the user, review the generated output:
-1. **Correctness**: Are endpoint, thresholds, and stages correct?
-2. **Minimality**: Is 1 scenario type enough? Is stress/soak really needed?
-3. **Reuse**: Any missed k6 helper (getToken, getGlobal)?
-4. **Safety**: Any threshold that could cause false positives?
-5. **If there is an issue → refine automatically**
-6. **Then show** to the user for APPROVE/EDIT/REJECT
+### Step 5b: Reflexion
+Correctness, minimality, reuse, safety — then preview.
 
 ### Step 6: Generate k6 Script
-Create k6 test file (`.js`) with the structure:
+Write under `paths.perf_tests` (or repo convention). Reuse helpers. Include checks + thresholds.
 
-```javascript
-import http from 'k6/http';
-import { check, sleep } from 'k6';
-import { Rate, Trend } from 'k6/metrics';
-
-export const options = {
-  stages: [
-    { duration: '30s', target: 10 },  // ramp up
-    { duration: '1m', target: 10 },   // steady
-    { duration: '10s', target: 0 },   // ramp down
-  ],
-  thresholds: {
-    http_req_duration: ['p(95)<2000'],
-    http_req_failed: ['rate<0.01'],
-  },
-};
-
-export default function () {
-  // reuse existing helpers if available (getToken, getGlobal)
-  const res = http.get('${BASE_URL}/api/v1/resource');
-  check(res, {
-    'status is 200': (r) => r.status === 200,
-    'response time < 500ms': (r) => r.timings.duration < 500,
-  });
-  sleep(1);
-}
-```
-
-**Coverage rules:**
-- Load: 10-50 VU, ramp up 30s, steady 1-2m
-- Stress: 10 → 100+ VU, find breakpoint
-- Spike: 0 → 100 VU instant, 30s
-- Soak: 10 VU, 10-30 minutes
-- Smoke: 1-2 VU, 30s
-
-Every test must have: checks, thresholds, assertions.
-
-### Step 6: Preview & User Loop
-Show the preview script + file path:
-
-Ask user (type number or custom):
-1. APPROVE - save file
-2. EDIT - ask for correction -> apply -> preview again
-3. REJECT - save rejection: `node ~/.qa-agent/lib/store.js cor add "perf-test" "<context>" "<issue>" "<reason>" "<lesson>" "-1"`
-or type your own answer
+### Step 7: Preview & User Loop
+APPROVE / EDIT / REJECT → `cor add` on reject.
 
 ### Step 8: Auto-Run (Optional)
-Ask the user: "Would you like to run it now?"
+Ask: "Run now?"
+
+**Windows (WSL):**
+```bash
+wsl -- bash -lc "cd '$(wslpath -a paths.perf_tests or unix path)' && k6 run path/to/test.js"
+```
+Or if cwd already inside WSL-mounted repo:
+```bash
+wsl -- bash -lc "cd '/mnt/c/...' && k6 run path/to/test.js"
+```
+
+**macOS / Linux:**
 ```bash
 k6 run path/to/test.js
-```
-Or with output:
-```bash
 k6 run --out json=results.json path/to/test.js
 ```
 
-### Step 9: Auto-Healing (if run fails)
-1. Read error log - identify the issue (endpoint typo, auth, threshold too strict)
-2. Fix the issue
-3. Re-run max 2x
-4. If still failing → show error + ask for guidance
+Verify first: `wsl -- k6 version` (Windows) or `k6 version`.
+
+### Step 9: Auto-Healing
+Fix and re-run max 2x. Then ask user.
 
 ### Step 10: Save to Memory
-- Update `.cursor/qa-memory/generated-tests/k6/` with new test reference
-- Update `project-context/current.md` if there's new info (base URL, auth pattern)
-- Save run results (metrics) to knowledge: `node ~/.qa-agent/lib/store.js know add "perf-test" "<topic>" "<content>" '["k6","metrics"]'`
+- `generated-tests/k6/` reference
+- Update project-context if needed
+- `know add perf-test …`
 
 ## MCP Tools
-- **Shortcut**: `stories-get-by-id` - read story for context
-- **Context7**: k6 documentation (only if needed)
-- **Glean**: `search` / `read_document` - internal API docs / Confluence
+- Shortcut: `stories-get-by-id`
+- Context7: k6 docs
+- Glean: internal docs
 
 ## References
-- `.cursor/references/k6-testing.md` - k6 syntax
-- `.cursor/references/git-workflow.md` - branching for perf test PR
-- `~/.qa-agent/` - global memory store
+- `.cursor/references/k6-testing.md`
+- `docs/WSL.md`
+- `scripts/setup-wsl-tooling.js`
+- Private `onboard.md` Part A9 (EncryptSecret) when present

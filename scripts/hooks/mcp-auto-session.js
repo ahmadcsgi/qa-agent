@@ -103,9 +103,27 @@ function main() {
   log(`auto cwd=${cwd} status=${r.status} ${out.slice(0, 200)}`);
 
   let ctx = `QA Agent MCP auto: cwd=${cwd}.`;
-  if (/changed|MCP profile:|switched/i.test(out)) {
-    ctx +=
-      ' Profile updated. Reload Cursor window once so MCP panel matches (lite vs ui/api/perf).';
+  const lastSwitch = path.join(HOME, '.qa-agent', 'mcp', 'last-switch.json');
+  let profileHint = '';
+  try {
+    if (fs.existsSync(lastSwitch)) {
+      const j = JSON.parse(fs.readFileSync(lastSwitch, 'utf8'));
+      if (j.next) profileHint = String(j.next);
+    }
+  } catch {
+    /* ignore */
+  }
+  const active = path.join(HOME, '.qa-agent', 'mcp', 'active-profile.txt');
+  if (!profileHint && fs.existsSync(active)) {
+    try {
+      profileHint = fs.readFileSync(active, 'utf8').trim();
+    } catch {
+      /* ignore */
+    }
+  }
+  if (profileHint) ctx += ` MCP: ${profileHint} (auto).`;
+  if (/changed|MCP profile:|switched/i.test(out) && !/unchanged|same profile/i.test(out)) {
+    ctx += ' Profile updated. Reload Cursor window once so MCP panel matches (lite vs ui/api/perf).';
   } else if (/unchanged|same profile/i.test(out)) {
     ctx += ' Profile already correct for this path.';
   } else if (out) {
