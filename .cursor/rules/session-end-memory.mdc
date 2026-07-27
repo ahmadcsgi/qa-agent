@@ -1,0 +1,48 @@
+---
+description: End of turn/chat: compact durable context and persist to QA memory (know/cor/pref/project-context). Always on.
+alwaysApply: true
+---
+
+# Session end: compact + save memory
+
+After a **meaningful** turn (task done, decision made, user wraps up, or you finish a multi-step skill), **compact** what mattered and **persist** it so the next session is smarter. Do not dump boot JSON.
+
+## When to run
+
+Run if this turn produced durable signal: path/squad decision, product fact, AC insight, APPROVE/EDIT/REJECT, mapping outcome, env/user default, "from now on", or a reusable pattern.
+
+Skip silently if the turn was only greeting, status check, or no new durable fact.
+
+## Compact (in your head, not a long essay)
+
+Max **3–8** short bullets of durable facts only. Drop chatter, tool noise, and one-off IDs unless the user will need them again.
+
+Ask: what should future-me already know?
+
+## Persist (pick what fits)
+
+Use `~/.qa-agent/lib/store.js` with `--project auto` when project-specific:
+
+| Kind | Command |
+|------|---------|
+| Reusable tip / convention | `know add <domain> <topic> "<content>" '["tag"]' chat auto` |
+| Correction / lesson | `cor add <domain> <ctx> <issue> <fix-or-fix> <lesson> 1\|-1 auto` |
+| Standing preference | `pref set <key> <value> --project auto` |
+| Repo map / conventions | update `.cursor/qa-memory/project-context/current.md` then `proj sync` |
+
+Domains examples: `ui-automation`, `api-test`, `perf-test`, `testcases`, `testrail`, `onboard`, `squad`.
+
+Optional housekeep: `node ~/.qa-agent/lib/store.js compact` (prunes stale cache). Not a substitute for `know`/`cor`.
+
+## Ack (one short line)
+
+Example: `Memory: saved 2 know + 1 cor (ui aliases, env staging).`
+
+Never paste full JSON. Never invent facts to "fill" memory.
+
+## Anti-patterns
+
+- Saving secrets, passwords, vault content, PCI/PHI
+- Re-saving the same tip every turn without new signal
+- Writing a long retrospective in chat instead of store commands
+- Skipping persist after EDIT/REJECT or explicit "from now on"

@@ -1,19 +1,24 @@
 ---
-description: Punctuation for QA outputs. No em dash, no semicolon, use > for arrows. Load when writing TestRail/Shortcut/chat QA text.
-alwaysApply: false
+description: Punctuation for all QA Agent outputs. No em dash, no -- as dash, no semicolon, use > for arrows. Always on.
+alwaysApply: true
 ---
 
 # Output punctuation
 
 ## Never use em dash
 
-- Do **not** use the em dash character `—` (U+2014) in chat, TestRail titles/steps/expected, preview markdown, commits, or PR text.
-- Prefer commas, periods, colons, parentheses, or hyphens `-` instead.
+- Do **not** use the em dash character `—` (U+2014).
+- Do **not** use ASCII `--` as a dash between clauses or titles (that is an em-dash substitute).
+- Prefer commas, periods, colons, parentheses, or a single hyphen `-`.
 
 | Avoid | Use |
 |-------|-----|
 | Save is blocked — record is not saved | Save is blocked. Record is not saved |
+| Save is blocked -- record is not saved | Save is blocked. Record is not saved |
 | Section A — Module | Section A: Module |
+| Section A -- Module | Section A: Module |
+
+**Allowed:** CLI / code flags such as `--project`, `--apply`, `--json`.
 
 ## Never use semicolon
 
@@ -23,8 +28,6 @@ alwaysApply: false
 | Avoid | Use |
 |-------|-----|
 | Transition completes; artefact is created | Transition completes. Artefact is created |
-| Role: Admin; User | Role: Admin or User |
-| AC #1: save; artefact created | AC #1: save. Artefact created |
 
 ## Arrow character
 
@@ -34,9 +37,7 @@ alwaysApply: false
 | Avoid | Use |
 |-------|-----|
 | Open Order → Documents tab | Open Order > Documents tab |
-| Zoom > Full screen > Undo | Zoom > Full screen > Undo |
-| `Module A → Screen B` | `Module A > Screen B` |
 
 ## Scope
 
-Applies to QA Agent outputs: chat, TestRail cases, Shortcut comments/checklists, preview files under `.cursor/qa-memory/`.
+Chat, TestRail, Shortcut, preview under `.cursor/qa-memory/`, commits, PR text. Code identifiers stay as in the repo.

@@ -16,8 +16,10 @@ Tiny QA co-pilot. Prefer less context, more signal. Intelligence = **memory + fe
 3. **Prefs:** "from now on…" → `pref set <key> <value>` (`--project auto` if repo-specific).
 4. **Small:** One skill. Cache before MCP. Tables over prose. After mapping → `proj sync`.
 5. **Adapt:** Mirror language. Honor prefs. Ask only when blocked.
-6. **Load domain rules on demand:** When generating TestRail cases, **must** follow `testrail-case-generate.mdc` (Learn > Plan > Draft > batch of 5 > ACC all > write). Also load draft/titles/section/checklist, punctuation, bug description as needed.
-7. **Automation + paths:** When generating UI/API/perf/visual automation and the matching `paths.*` pref is set, **must** follow `automation-memory-gate.mdc` (check `project-context` > map if missing/stale > then generate).
+6. **Punctuation:** Always follow `output-punctuation.mdc`. No `—`, no `--` as dash, no `;`, arrows as `>`.
+7. **Load domain rules on demand:** When generating TestRail cases, **must** follow `testrail-case-generate.mdc` (Learn > Plan > Draft > batch of 5 > ACC all > write). Also load draft/titles/section/checklist, bug description as needed.
+8. **Automation + paths:** When generating UI/API/perf/visual automation and the matching `paths.*` pref is set, **must** follow `automation-memory-gate.mdc` (check `project-context` > map if missing/stale > then generate).
+9. **End of turn:** If durable learning happened, follow `session-end-memory.mdc` (compact 3–8 facts > `know`/`cor`/`pref`/project-context). Ack in one short line.
 
 ## Anti-Hallucination
 

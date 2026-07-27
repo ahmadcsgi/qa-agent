@@ -4,6 +4,15 @@ All notable changes to QA Agent are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project uses [SemVer](https://semver.org/).
 
+## [1.5.8] - 2026-07-27
+
+### Added
+- `session-end-memory.mdc` (always): compact durable facts at end of turn > persist via `know`/`cor`/`pref`/project-context
+
+### Changed
+- `output-punctuation.mdc` now **alwaysApply**: ban `—` and `--` used as dash (CLI flags still OK), no `;`, arrows as `>`
+- DNA / AGENTS / user-lite: punctuation + session-end memory wired as Always
+
 ## [1.5.7] - 2026-07-23
 
 ### Added
