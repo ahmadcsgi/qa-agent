@@ -32,6 +32,8 @@ Understand: feature, workflow, acceptance criteria.
 
 ### Step 5: Research
 If unclear → Context7 or `.cursor/references/` for framework documentation.
+- Cypress patterns: `.cursor/references/cypress-testing.md` (selectors, intercept, `cy.session`, flake)
+- POM explore: `.cursor/references/playwright-browser.md`
 Glean for product documentation/Confluence.
 
 ### Step 6: POM Builder - Playwright Exploration
@@ -130,6 +132,7 @@ Prefer conventions from `project-context/current.md`. Defaults if unspecified:
 - **Glean**: product docs
 
 ## References
-- Offline docs: `.cursor/references/playwright-browser.md`
+- Offline: `.cursor/references/cypress-testing.md`, `.cursor/references/playwright-browser.md`
 - Page-agent pattern: https://github.com/alibaba/page-agent
+- Upstream patterns (do not install as skill): https://github.com/KahlilR23/cypress-agent-skill
 - Global memory: `~/.qa-agent/`

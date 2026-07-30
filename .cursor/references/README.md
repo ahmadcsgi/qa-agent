@@ -9,6 +9,7 @@
 | `qa-testcase-methodology.md` | Analysis, dedup, risk, preview, Phase 7 plan/results, maintenance, label groom | `@qa-test-cases`, `@qa-test-execution` |
 | `incident-email.md` | Incident email templates - duplicate, defect, user error, need help | `@qa-defect-triage` |
 | `playwright-browser.md` | Playwright browser actions - navigate, click, type, POM builder | `@qa-ui-automation` |
+| `cypress-testing.md` | Cypress selectors, intercept, cy.session, flake (cherry-pick) | `@qa-ui-automation` |
 | `karate-testing.md` | Karate API testing - feature syntax, assertions, data-driven | `@qa-api-test` |
 | `k6-testing.md` | k6 performance testing - script structure, scenarios, thresholds | `@qa-perf-test` |
 | `git-workflow.md` | Git workflow - branch naming, commit conventions, PR | All automation skills |

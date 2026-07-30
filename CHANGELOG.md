@@ -4,6 +4,14 @@ All notable changes to QA Agent are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project uses [SemVer](https://semver.org/).
 
+## [1.5.9] - 2026-07-30
+
+### Added
+- `.cursor/references/cypress-testing.md`: cherry-picked Cypress patterns (selectors, intercept, `cy.session`, flake) for `@qa-ui-automation`
+
+### Changed
+- `@qa-ui-automation` Step 5 / References point at `cypress-testing.md` (no second Cypress skill)
+
 ## [1.5.8] - 2026-07-27
 
 ### Added
