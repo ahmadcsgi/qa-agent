@@ -34,6 +34,8 @@ description: TestRail test plans, runs, results (mark Passed/Failed), and TC lab
 
 Naming pattern (if team uses it): `[TEST PLAN] <version> <Squad>` e.g. `[TEST PLAN] 26.3 MySquad`
 
+**Description (plan / entry / milestone):** feature under test only (e.g. `Checkout`, `Login`). Never story/case/plan/run IDs, format reminders, or AI post-create summaries. Prefer **empty** over robotic text. Pref: `testrail.plan_description=feature_only`.
+
 ## Flow — Mark results
 
 1. Resolve `runId` + case IDs (Shortcut checklist `cases/view/<id>` preferred)

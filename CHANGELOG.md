@@ -4,6 +4,19 @@ All notable changes to QA Agent are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project uses [SemVer](https://semver.org/).
 
+## [1.5.10] - 2026-08-04
+
+### Added
+- `docs/MIGRATION.md`: universal PC migration / backup restore checklist
+- `scripts/validate-paths.js`: warn when `paths.ui_tests` equals `paths.api_tests`, paths missing, stale project-context
+- `scripts/post-restore-check.js`: smoke check after backup restore
+
+### Changed
+- `install.ps1` / `install.sh`: copy `.cursor/references/` to `~/.cursor/references/` (works in any workspace)
+- `@qa-ui-automation`: reference global `~/.cursor/references/` paths
+- `@qa-test-execution`: universal plan description rule (no org-specific area names)
+- `doctor.js` / `onboard-status.js`: path validation + global references check
+
 ## [1.5.9] - 2026-07-30
 
 ### Added

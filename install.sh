@@ -241,6 +241,10 @@ if [ -d "$REFS_SRC" ]; then
   else
     info "Running in-place — references already present"
   fi
+  GLOBAL_REFS_DIR="$HOME/.cursor/references"
+  mkdir -p "$GLOBAL_REFS_DIR"
+  cp -r "$REFS_SRC"/* "$GLOBAL_REFS_DIR/"
+  ok "Global offline references (~/.cursor/references/)"
 fi
 
 # ─── Copy project-context template ────────────────────────────────────────

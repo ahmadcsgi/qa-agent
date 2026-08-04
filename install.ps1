@@ -283,6 +283,10 @@ if (Test-Path $RefsSrc) {
     else {
         Write-Info "Running in-place - references already present"
     }
+    $GlobalRefsDir = JPath $env:USERPROFILE ".cursor" "references"
+    New-Item -ItemType Directory -Force -Path $GlobalRefsDir | Out-Null
+    Copy-Item -Path (Join-Path $RefsSrc "*") -Destination $GlobalRefsDir -Recurse -Force:$Force
+    Write-Ok "Global offline references (~\.cursor\references\)"
 }
 
 # ─── Copy project-context template ─────────────────────────────────────────

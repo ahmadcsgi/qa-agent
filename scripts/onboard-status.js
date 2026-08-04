@@ -109,7 +109,21 @@ rows.push(['pref paths.ui_tests', soft(!!ui), ui || 'setup-prefs.js']);
 rows.push(['pref paths.api_tests', soft(!!api), api || 'setup-prefs.js']);
 rows.push(['pref paths.perf_tests', soft(!!perf), perf || 'setup-prefs.js']);
 
-rows.push(['k6 (optional)', soft(cmdOk('k6', ['version']) || cmdOk('k6', ['--version'])), 'setup-tooling.js']);
+try {
+  const { validate } = require('./validate-paths');
+  const v = validate();
+  if (v.errors.length) {
+    rows.push(['path validation', '✗', v.errors[0]]);
+  } else if (v.warnings.length) {
+    rows.push(['path validation', '!', v.warnings[0]]);
+  } else {
+    rows.push(['path validation', '✓', 'ui ≠ api, paths exist']);
+  }
+} catch {
+  rows.push(['path validation', '!', 'validate-paths.js']);
+}
+
+rows.push(['global references', soft(exists(path.join(HOME, '.cursor', 'references', 'cypress-testing.md'))), 'install.ps1']);
 rows.push(['java (optional)', soft(cmdOk('java', ['-version'])), 'setup-tooling.js']);
 rows.push(['mvn (optional)', soft(cmdOk('mvn', ['-v'])), 'setup-tooling.js']);
 
@@ -137,4 +151,4 @@ for (const [label, mark, note] of rows) {
 console.log('');
 console.log('Legend: ✓ ok · ! missing/optional · ✗ blocking');
 console.log('First-time: docs/FIRST_RUN.md  (install → Reload → /qa onboard)');
-console.log('Next: node scripts/doctor.js');
+console.log('Next: node scripts/doctor.js · node scripts/post-restore-check.js');

@@ -76,6 +76,9 @@ console.log("\nRepository");
   ["scripts/onboard-status.js", path.join(REPO, "scripts", "onboard-status.js")],
   ["scripts/onboard-progress.js", path.join(REPO, "scripts", "onboard-progress.js")],
   ["scripts/onboard-wizard.js", path.join(REPO, "scripts", "onboard-wizard.js")],
+  ["scripts/validate-paths.js", path.join(REPO, "scripts", "validate-paths.js")],
+  ["scripts/post-restore-check.js", path.join(REPO, "scripts", "post-restore-check.js")],
+  ["docs/MIGRATION.md", path.join(REPO, "docs", "MIGRATION.md")],
   ["agents/qa.md", path.join(REPO, ".cursor", "agents", "qa.md")],
   ["rules/qa-agent-rules.mdc", path.join(REPO, ".cursor", "rules", "qa-agent-rules.mdc")],
   ["rules/testrail-case-draft.mdc", path.join(REPO, ".cursor", "rules", "testrail-case-draft.mdc")],
@@ -255,12 +258,27 @@ else fail("visual package.json missing");
 if (exists(vMods)) ok("visual node_modules installed");
 else soft("visual node_modules missing. Optional until you use @qa-visual-test");
 
+// Path prefs + install sanity
+console.log("\nPath prefs");
+try {
+  const { validate } = require("./validate-paths");
+  const v = validate();
+  if (v.errors.length) v.errors.forEach((e) => fail(e));
+  else ok("paths.ui_tests / paths.api_tests / paths.perf_tests look consistent");
+  v.warnings.forEach((w) => soft(w));
+} catch (e) {
+  soft(`validate-paths failed: ${e.message}`);
+}
+
 // Global skills
 console.log("\nGlobal Cursor install");
 const gSkills = path.join(HOME, ".cursor", "skills");
 const gAgent = path.join(HOME, ".cursor", "agents", "qa.md");
 if (exists(gAgent)) ok("global agent ~/.cursor/agents/qa.md");
 else soft("global agent missing — run installer");
+const gRefs = path.join(HOME, ".cursor", "references", "cypress-testing.md");
+if (exists(gRefs)) ok("global references ~/.cursor/references/cypress-testing.md");
+else soft("global references missing — re-run install.ps1 / install.sh");
 let skillCount = 0;
 if (exists(gSkills)) {
   skillCount = fs.readdirSync(gSkills).filter((n) => exists(path.join(gSkills, n, "SKILL.md"))).length;

@@ -31,10 +31,10 @@ Read TestRail via MCP (`getCase` / `getCases`) or Shortcut (`stories-get-by-id`)
 Understand: feature, workflow, acceptance criteria.
 
 ### Step 5: Research
-If unclear → Context7 or `.cursor/references/` for framework documentation.
-- Cypress patterns: `.cursor/references/cypress-testing.md` (selectors, intercept, `cy.session`, flake)
-- POM explore: `.cursor/references/playwright-browser.md`
-Glean for product documentation/Confluence.
+If unclear → Context7 or offline references for framework documentation.
+- Cypress patterns: `~/.cursor/references/cypress-testing.md` (global) or `.cursor/references/cypress-testing.md` (workspace)
+- POM explore: `~/.cursor/references/playwright-browser.md` or `.cursor/references/playwright-browser.md`
+Glean for product documentation when available.
 
 ### Step 6: POM Builder - Playwright Exploration
 Use Playwright MCP for page exploration:
@@ -132,7 +132,8 @@ Prefer conventions from `project-context/current.md`. Defaults if unspecified:
 - **Glean**: product docs
 
 ## References
-- Offline: `.cursor/references/cypress-testing.md`, `.cursor/references/playwright-browser.md`
+- Offline (global): `~/.cursor/references/cypress-testing.md`, `~/.cursor/references/playwright-browser.md`
+- Offline (workspace): `.cursor/references/` same filenames when present in repo
 - Page-agent pattern: https://github.com/alibaba/page-agent
 - Upstream patterns (do not install as skill): https://github.com/KahlilR23/cypress-agent-skill
 - Global memory: `~/.qa-agent/`

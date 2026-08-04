@@ -6,6 +6,7 @@ onboard.md
 
 # Cursor plugin cache (noisy machine-local; never relevant to QA Agent)
 .cursor/plugins/
+.cursor/hooks/
 
 # OpenCode runtime state — machine-specific, do not commit
 .omo/

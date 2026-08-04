@@ -67,4 +67,4 @@ node scripts/onboard-status.js
 
 Prints ✓/✗ for install, MCP, git, prefs, doctor hints. Safe to run anytime.
 
-More: [SETUP.md](SETUP.md) · [ONBOARDING.md](ONBOARDING.md) · [onboard.example.md](../onboard.example.md)
+More: [SETUP.md](SETUP.md) · [ONBOARDING.md](ONBOARDING.md) · [MIGRATION.md](MIGRATION.md) · [onboard.example.md](../onboard.example.md)
