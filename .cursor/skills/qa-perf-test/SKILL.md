@@ -28,10 +28,22 @@ node scripts/resolve-k6.js
 
 ### Secrets / vault (before inventing credentials)
 
-1. Read `project-context` + private `onboard.md` Part A9 if present.
-2. Prefer team vault docs (e.g. EncryptSecret / Ansible Vault under `paths.perf_tests`).
+1. Read `project-context` + private **`onboard.md` Part A9c–A9e** if present (EncryptSecret, api-scenario.js, perf baseline).
+2. Prefer team vault docs (Ansible Vault under `{paths.perf_tests}/k6/loader/jsons/`).
 3. **Never** paste vault passwords, client secrets, or plaintext env JSON into chat or committed files.
 4. If secrets required and missing → list what is needed and ask user (or point to vault edit flow). Do not invent tokens.
+
+### k6 scenario config (mandatory)
+
+1. Resolve `{paths.perf_tests}/k6/loader/api-scenario.js` (onboard Part A9d).
+2. **Reuse** `testOptions` from that file. Do not duplicate executor config inline.
+3. Override via env vars only (`EXECUTOR`, `RATE`, `DURATION`, `VUS`, `STAGES`, …) per patterns in that file.
+
+### Thresholds baseline
+
+1. Ask: does squad have custom thresholds (project-context / squad Confluence)?
+2. If **no** → read [26.2 Performance Plan — Thresholds](https://csg-quote-order.atlassian.net/wiki/spaces/DPE/pages/4719869987/26.2+Performance+Plan#Thresholds) via Glean or user paste (onboard Part A9e). Do not invent numbers.
+3. If squad has own baseline → squad wins over org fallback.
 
 ## Interactive Flow
 
@@ -52,7 +64,7 @@ Ask the user:
    - Flow → endpoint sequence
 2. **Scenario Type**: Load / Stress / Spike / Soak / Smoke
 3. **Workload**: VUs + duration (default smoke: 10 VU, 30s — or 1–2 VU for true smoke)
-4. **Thresholds**: default p95 < 2000ms, error rate < 1%
+4. **Thresholds**: squad custom if documented, else org baseline (onboard A9e / 26.2 Performance Plan Thresholds via Glean). Default smoke only if no doc: p95 < 2000ms, error rate < 1%
 5. **Environment**: staging / production / custom base URL
 
 ### Step 2: Check Memory & Existing
@@ -77,7 +89,7 @@ Risk analysis, scenarios, thresholds, data variants. Risk Coverage > Endpoint Co
 Correctness, minimality, reuse, safety — then preview.
 
 ### Step 6: Generate k6 Script
-Write under `paths.perf_tests` (or repo convention). Reuse helpers. Include checks + thresholds.
+Write under `paths.perf_tests` (repo convention). **Import/reuse** `{paths.perf_tests}/k6/loader/api-scenario.js` for `testOptions`. Reuse other helpers. Include checks + thresholds from baseline step.
 
 ### Step 7: Preview & User Loop
 APPROVE / EDIT / REJECT → `cor add` on reject.
@@ -117,4 +129,4 @@ Fix and re-run max 2x. Then ask user.
 - `scripts/resolve-k6.js`
 - `docs/WSL.md` (Windows fallback only)
 - `scripts/setup-wsl-tooling.js`
-- Private `onboard.md` Part A9 (EncryptSecret) when present
+- Private `onboard.md` Part A9c–A9e (EncryptSecret, api-scenario.js, perf baseline) when present

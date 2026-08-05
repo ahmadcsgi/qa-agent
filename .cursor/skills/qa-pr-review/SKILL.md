@@ -11,7 +11,9 @@ Review pull requests for **test automation** repos (Cypress, Karate, k6). Inspir
 
 1. `proj ensure` then `boot testcases --project auto` (or matching domain)
 2. Read `project-context/current.md` if present
-3. `@qa-token-saver` lite: flag over-engineered tests
+3. **Private `onboard.md` Part A9** (if user attached or file exists in workspace): PR title, commit prefixes, squad list (**Dragon**, **RAD**, …), signing, amend rules. **Do not** hardcode machine paths.
+4. Else read target repo `CONTRIBUTING.md` + `PULL_REQUEST_TEMPLATE.md` from cwd
+5. `@qa-token-saver` lite: flag over-engineered tests
 
 ## Inputs
 
@@ -53,9 +55,11 @@ Severity: **P0** if live secret in diff. **P1** if test creds without vault patt
 ### 4. Architecture
 
 - Matches repo conventions (POM, step defs, feature layout)
-- PR title `[Squad][TaskId] …` when `squad.name` pref set
-- Commit prefix: `test:` · `fix:` · `chore:` per CONTRIBUTING
+- PR title `[Squad][TaskId] Short title` (`squad.name` pref or onboard Part A9a)
+- Commit prefix: `feat:` · `fix:` · `revert:` · `docs:` · `test:` · `chore:` · `refactor:` (onboard Part A9b)
+- PR body follows repo `PULL_REQUEST_TEMPLATE.md`
 - Signed commits expected for product test repos (soft check)
+- No force-push unless user explicitly asks (CONTRIBUTING amend note)
 
 ## Output format
 
