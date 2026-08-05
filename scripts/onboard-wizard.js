@@ -74,7 +74,9 @@ function prefGet(key) {
 }
 
 function prefSet(key, val) {
-  store('pref', 'set', key, val, '--project', 'auto');
+  const scope =
+    key.startsWith('paths.') || key === 'squad.name' || key === 'mcp.path_aware' ? '*' : 'auto';
+  store('pref', 'set', key, val, '--project', scope);
 }
 
 function printTable(title, rows) {

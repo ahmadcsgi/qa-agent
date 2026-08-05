@@ -366,16 +366,14 @@ function syncProjectEnvPaths({ ui, api, perf, targets } = {}) {
   return updated;
 }
 
-/** Read pref via store.js if present. Returns string or ''. */
-function readPref(key) {
-  const store = path.join(HOME, '.qa-agent', 'lib', 'store.js');
-  if (!fs.existsSync(store)) return '';
-  const r = spawnSync(process.execPath, [store, 'pref', 'get', key, '--project', 'auto'], {
-    encoding: 'utf8',
-    windowsHide: true,
-  });
-  if (r.status !== 0) return '';
-  const out = (r.stdout || '').trim();
+/** Cross-workspace prefs (stored on qa-agent project or global). */
+function isSharedPrefKey(key) {
+  if (!key) return false;
+  if (key === 'squad.name' || key === 'mcp.path_aware') return true;
+  return key.startsWith('paths.') || key.startsWith('links.') || key.startsWith('tooling.');
+}
+
+function parsePrefStdout(out) {
   if (!out || out === 'null' || out === 'undefined') return '';
   try {
     const j = JSON.parse(out);
@@ -385,6 +383,49 @@ function readPref(key) {
   } catch {
     return out.replace(/^"|"$/g, '');
   }
+}
+
+function storePrefGet(key, scope) {
+  const store = path.join(HOME, '.qa-agent', 'lib', 'store.js');
+  if (!fs.existsSync(store)) return '';
+  const r = spawnSync(process.execPath, [store, 'pref', 'get', key, '--project', scope], {
+    encoding: 'utf8',
+    windowsHide: true,
+  });
+  if (r.status !== 0) return '';
+  return parsePrefStdout((r.stdout || '').trim());
+}
+
+function readPrefFromAllProjects(key) {
+  const projectsDir = path.join(HOME, '.qa-agent', 'projects');
+  if (!fs.existsSync(projectsDir)) return '';
+  for (const id of fs.readdirSync(projectsDir)) {
+    const prefsFile = path.join(projectsDir, id, 'prefs.json');
+    if (!fs.existsSync(prefsFile)) continue;
+    try {
+      const data = JSON.parse(fs.readFileSync(prefsFile, 'utf8'));
+      const val = data.d && data.d[key];
+      if (val !== undefined && val !== null && String(val).trim() !== '') {
+        return typeof val === 'string' ? val : String(val);
+      }
+    } catch {
+      /* skip corrupt prefs */
+    }
+  }
+  return '';
+}
+
+/** Read pref via store.js if present. Returns string or ''. */
+function readPref(key) {
+  const scopes = isSharedPrefKey(key) ? ['auto', '*'] : ['auto'];
+  for (const scope of scopes) {
+    const v = storePrefGet(key, scope);
+    if (v) return v;
+  }
+  if (isSharedPrefKey(key)) {
+    return readPrefFromAllProjects(key);
+  }
+  return '';
 }
 
 function applyPathPrefs(config) {

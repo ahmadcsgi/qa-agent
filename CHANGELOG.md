@@ -4,6 +4,15 @@ All notable changes to QA Agent are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project uses [SemVer](https://semver.org/).
 
+## [1.5.12] - 2026-08-05
+
+### Added
+- `scripts/sync-rules-to-paths.js`: copy QA Agent `.cursor/rules` to `paths.ui_tests` / `paths.api_tests` / `paths.perf_tests` repos
+
+### Fixed
+- `scripts/mcp-lib.js`: `readPref` resolves shared keys (`paths.*`, `squad.name`, `mcp.path_aware`) from global scope and all registered projects so `mcp-mode auto` works outside the qa-agent cwd
+- `scripts/onboard-wizard.js`: store cross-workspace prefs on global scope (`*`) instead of qa-agent project only
+
 ## [1.5.11] - 2026-08-05
 
 ### Added
