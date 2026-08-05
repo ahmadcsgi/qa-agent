@@ -22,6 +22,7 @@ const SKILLS = [
   "qa-project-mapping",
   "qa-token-saver",
   "qa-visual-test",
+  "qa-pr-review",
 ];
 
 let failed = 0;
@@ -79,6 +80,8 @@ console.log("\nRepository");
   ["scripts/validate-paths.js", path.join(REPO, "scripts", "validate-paths.js")],
   ["scripts/post-restore-check.js", path.join(REPO, "scripts", "post-restore-check.js")],
   ["docs/MIGRATION.md", path.join(REPO, "docs", "MIGRATION.md")],
+  ["docs/OPTIONAL_INTEGRATIONS.md", path.join(REPO, "docs", "OPTIONAL_INTEGRATIONS.md")],
+  ["scripts/agent-shield-scan.js", path.join(REPO, "scripts", "agent-shield-scan.js")],
   ["agents/qa.md", path.join(REPO, ".cursor", "agents", "qa.md")],
   ["rules/qa-agent-rules.mdc", path.join(REPO, ".cursor", "rules", "qa-agent-rules.mdc")],
   ["rules/testrail-case-draft.mdc", path.join(REPO, ".cursor", "rules", "testrail-case-draft.mdc")],
@@ -285,6 +288,22 @@ if (exists(gSkills)) {
   ok(`${skillCount} global skill folder(s) with SKILL.md`);
 } else {
   soft("global skills dir missing — run installer");
+}
+
+// AgentShield-style harness scan
+console.log("\nAgentShield (harness)");
+try {
+  const { runAgentShieldScan } = require("./agent-shield-scan");
+  const shield = runAgentShieldScan({
+    repo: REPO,
+    home: HOME,
+    log: { ok, fail, soft },
+  });
+  if (shield.errors > 0) {
+    /* counts already applied via fail() */
+  }
+} catch (e) {
+  soft(`agent-shield-scan failed: ${e.message}`);
 }
 
 console.log("\n---");

@@ -7,6 +7,7 @@ description: Decision ladder for saving tokens - Ponytail adaptation (DietrichGe
 
 ## Philosophy
 Inspired by [Ponytail](https://github.com/DietrichGebert/ponytail) (81K★) - "The best code is the code you never wrote."
+Generic one-file variant: [ponytail-lite](https://github.com/ilindaniel/ponytail-lite) (same ladder idea, no plugin). QA Agent uses this skill instead of shipping ponytail-lite.
 For QA: **The best test is the test you never had to write.**
 
 This doesn't mean we are lazy about writing tests. Every test must be justified:
@@ -106,4 +107,6 @@ Default: **Lite**
 
 ## References
 - Ponytail original: https://github.com/DietrichGebert/ponytail
+- ponytail-lite (generic, 1 file): https://github.com/ilindaniel/ponytail-lite
+- Optional integrations: `docs/OPTIONAL_INTEGRATIONS.md`
 - Global memory: `~/.qa-agent/`

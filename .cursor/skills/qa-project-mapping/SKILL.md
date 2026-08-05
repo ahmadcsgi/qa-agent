@@ -29,6 +29,11 @@ Aider proved that LLMs work significantly better when they have a **compact map*
 ### Step 0: Resolve target root
 From prefs (`paths.ui_tests` / `paths.api_tests` / `paths.perf_tests`) or user-supplied path. Confirm path exists on disk. Record the absolute root(s) in the map header.
 
+**Optional GitNexus** (pref `tools.gitnexus=true`, see `docs/OPTIONAL_INTEGRATIONS.md`):
+- Count source files under root (exclude `node_modules`, `.git`, `dist`, `build`).
+- If **>500** files and map is first-time or stale: mention [GitNexus](https://github.com/abhigyanpatwari/GitNexus) MCP for call-chain exploration.
+- Still produce the **compact** `@qa-project-mapping` map. GitNexus supplements, does not replace the map.
+
 ### Step 1: Scan Project Structure
 Use glob/list files for mapping:
 
@@ -118,4 +123,5 @@ project/
 
 ## References
 - Aider's repo map: https://aider.chat/docs/repomap.html
+- GitNexus (optional): `docs/OPTIONAL_INTEGRATIONS.md`
 - Global memory: `~/.qa-agent/`

@@ -9,6 +9,7 @@
 | [DEMO.md](DEMO.md) | Smoke walkthrough + skill prompt matrix |
 | [ONBOARDING.md](ONBOARDING.md) | Public stub vs private `onboard.md` sharing |
 | [MULTI_PROJECT_MEMORY.md](MULTI_PROJECT_MEMORY.md) | Global / project / workspace memory |
+| [OPTIONAL_INTEGRATIONS.md](OPTIONAL_INTEGRATIONS.md) | GitNexus, ponytail-lite, ECC (optional) |
 | [../onboard.example.md](../onboard.example.md) | Public onboard stub |
 | [../AGENTS.md](../AGENTS.md) | Agent DNA (source of truth for Cursor) |
 | [../.cursor/MCP_TOOLS.md](../.cursor/MCP_TOOLS.md) | MCP tool → skill map |

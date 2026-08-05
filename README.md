@@ -21,6 +21,7 @@ QA Agent turns Cursor into a Quality Engineering assistant that stays **lite, fa
 | [docs/DEMO.md](docs/DEMO.md) | Smoke + skill matrix |
 | [docs/ONBOARDING.md](docs/ONBOARDING.md) | Private vs public onboard |
 | [docs/MULTI_PROJECT_MEMORY.md](docs/MULTI_PROJECT_MEMORY.md) | Memory layers |
+| [docs/OPTIONAL_INTEGRATIONS.md](docs/OPTIONAL_INTEGRATIONS.md) | ponytail-lite, GitNexus, ECC (optional, not bundled) |
 
 ## Quick Start
 
@@ -36,7 +37,7 @@ Choose your OS and run the installer (from a clone of this repo):
 | **Windows (remote)** | `install.ps1` | `iwr -Uri https://raw.githubusercontent.com/ahmadcsgi/qa-agent/main/install.ps1 \| iex` |
 
 The installer will:
-- Copy all 10 skills to `.cursor/skills/` (project) and `~/.cursor/skills/` (global)
+- Copy all 11 skills to `.cursor/skills/` (project) and `~/.cursor/skills/` (global)
 - Install subagent, rules, AGENTS.md, MCP_TOOLS.md, and `.cursor/references/`
 - Scaffold project memory from `.cursor/templates/project-context.current.md`
 - Create the memory directory structure
@@ -111,6 +112,7 @@ The agent saves every correction, preference, and pattern to its decision memory
 | Map project structure | `"scan project structure"` | `@qa-project-mapping` |
 | **Visual regression** | `"check UI visually"`, `"run visual test on login page"` | `@qa-visual-test` |
 | Optimize token usage | `"save tokens"`, decision ladder | `@qa-token-saver` |
+| Review test automation PR | `"review my PR"`, PR URL | `@qa-pr-review` |
 | Not sure where to start | `"@qa"`, vague request | `@qa-entry` |
 
 ## Architecture
@@ -121,7 +123,7 @@ The agent saves every correction, preference, and pattern to its decision memory
 │  @qa-search-tickets  @qa-defect-triage  @qa-ui-automation│
 │  @qa-perf-test       @qa-test-cases     @qa-api-test     │
 │  @qa-test-execution  @qa-project-mapping @qa-token-saver │
-│  @qa-entry           @qa-visual-test                       │
+│  @qa-entry           @qa-visual-test  @qa-pr-review      │
 ├──────────────────────────────────────────────────────────┤
 │  MEMORY SYSTEM (Layer 2)                                │
 │  ~/.qa-agent/ (global)  .cursor/qa-memory/ (project)   │
@@ -173,7 +175,7 @@ install.* · update.* · uninstall.*
 ├── references/                     ← Offline MCP/framework docs
 ├── templates/                      ← project-context template for install
 ├── qa-memory/                      ← Project-specific (gitignored)
-└── skills/                         ← 10 modular skills (+ qa-visual-test/scripts)
+└── skills/                         ← 11 modular skills (+ qa-visual-test/scripts)
 ```
 
 ## Visual Regression - Zero-Token Design

@@ -21,7 +21,7 @@ GLOBAL_STORE="${HOME}/.qa-agent"
 SKILLS=(
   qa-entry qa-search-tickets qa-defect-triage qa-ui-automation
   qa-perf-test qa-test-cases qa-test-execution qa-api-test qa-project-mapping
-  qa-token-saver qa-visual-test
+  qa-token-saver qa-visual-test qa-pr-review
 )
 
 echo -e "${YELLOW}QA Agent uninstall (global Cursor install)${NC}"

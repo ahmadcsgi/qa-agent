@@ -4,6 +4,20 @@ All notable changes to QA Agent are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project uses [SemVer](https://semver.org/).
 
+## [1.5.11] - 2026-08-05
+
+### Added
+- `scripts/agent-shield-scan.js`: AgentShield-style harness scan (MCP secrets, git hygiene, hook check)
+- `docs/OPTIONAL_INTEGRATIONS.md`: ponytail-lite, GitNexus, awesome-cursorrules, ECC (optional, not bundled)
+- `@qa-pr-review`: focused PR review for test automation repos (security, perf, tests, architecture)
+
+### Changed
+- `doctor.js`: AgentShield section + new skill/doc checks
+- `@qa-token-saver`: ponytail-lite reference link
+- `@qa-project-mapping`: optional GitNexus hint when `tools.gitnexus=true` and large repos
+- `docs/MCP.md`, README, AGENTS, `@qa-entry`: routing and docs for optional integrations
+- CI: `agent-shield-scan.js` + `qa-pr-review` skill verify
+
 ## [1.5.10] - 2026-08-04
 
 ### Added

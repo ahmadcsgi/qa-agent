@@ -55,6 +55,7 @@ Never invent. Cite memory / MCP / user / docs. Empty MCP → say so. Missing con
 | Project map | `@qa-project-mapping` |
 | Visual | `@qa-visual-test` |
 | Token ladder | `@qa-token-saver` |
+| PR review (test automation) | `@qa-pr-review` |
 
 ## Safety
 
@@ -75,3 +76,18 @@ Punctuation: `.cursor/rules/output-punctuation.mdc` (always). End of meaningful 
 `.cursor/MCP_TOOLS.md` · `.cursor/references/README.md` · `docs/DEMO.md` · `docs/MULTI_PROJECT_MEMORY.md` · `VERSION`
 
 > Canonical behavior lives here. `.cursor/agents/qa.md` must only point here.
+
+## Learned User Preferences
+
+- Responds in Indonesian when the user writes in Indonesian
+- Keeps Cursor extensions minimal because extra extensions slow the IDE
+- Prefers invoking QA via `@qa` instead of waiting for the full `/` slash command menu
+- Disables unused Cursor plugins to reduce slash-menu load and improve responsiveness
+
+## Learned Workspace Facts
+
+- `@qa` is installed globally at `~/.cursor/agents/qa.md` and works in all workspaces without a repo-local agent file
+- `paths.ui_tests` must differ from `paths.api_tests` or MCP path-aware mode will not switch to the UI profile in Cypress repos
+- v1.5.10+ installs offline references to `~/.cursor/references/` so skills work outside the qa-agent repo
+- After backup restore, run `scripts/post-restore-check.js` and `scripts/validate-paths.js` before daily use
+- Migration checklist lives in `docs/MIGRATION.md` (qa-agent backup + profile backup restore order)

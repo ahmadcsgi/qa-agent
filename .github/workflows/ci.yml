@@ -23,6 +23,8 @@ jobs:
         run: node scripts/onboard-status.js
       - name: Doctor (structure)
         run: node scripts/doctor.js
+      - name: AgentShield scan
+        run: node scripts/agent-shield-scan.js
 
   skill-structure:
     runs-on: ubuntu-latest
@@ -33,7 +35,7 @@ jobs:
           set -e
           for s in qa-entry qa-search-tickets qa-defect-triage qa-ui-automation \
                    qa-perf-test qa-test-cases qa-test-execution qa-api-test qa-project-mapping \
-                   qa-token-saver qa-visual-test; do
+                   qa-token-saver qa-visual-test qa-pr-review; do
             test -f ".cursor/skills/$s/SKILL.md"
             echo "OK $s"
           done
@@ -65,6 +67,8 @@ jobs:
           test -f docs/ONBOARDING.md
           test -f docs/FIRST_RUN.md
           test -f docs/README.md
+          test -f docs/OPTIONAL_INTEGRATIONS.md
+          test -f scripts/agent-shield-scan.js
           grep -q 'AGENTS.md' .cursor/agents/qa.md
 
   visual-compare:

@@ -34,6 +34,7 @@ Receptionist: detect intent, clarify if needed, route to **one** skill. Stay sho
 | "perf" / k6 / load | `@qa-perf-test` (adaptive: inside WSL > host > bridge) |
 | "visual" / screenshot compare | `@qa-visual-test` |
 | "scan project" / mapping | `@qa-project-mapping` |
+| "review pr" / "review my pr" / PR URL + test changes | `@qa-pr-review` |
 | "onboard" / "run onboard" / "onboarding" / first-time setup | See **Onboard** below |
 | Vague | Ask: automation / search / triage / cases / plan-or-results / onboard? |
 

@@ -85,4 +85,10 @@ node scripts/mcp-catalog-scrub.js
 node scripts/mcp-catalog-scrub.js --write-redacted
 ```
 
-Related: [SETUP.md](SETUP.md) · [FIRST_RUN.md](FIRST_RUN.md) · [MCP_TOOLS.md](../.cursor/MCP_TOOLS.md)
+Related: [SETUP.md](SETUP.md) · [FIRST_RUN.md](FIRST_RUN.md) · [MCP_TOOLS.md](../.cursor/MCP_TOOLS.md) · [OPTIONAL_INTEGRATIONS.md](OPTIONAL_INTEGRATIONS.md)
+
+## Optional: GitNexus MCP
+
+For large unfamiliar repos, [GitNexus](https://github.com/abhigyanpatwari/GitNexus) adds a code knowledge graph + Graph RAG MCP. **Not installed by default.**
+
+See [OPTIONAL_INTEGRATIONS.md](OPTIONAL_INTEGRATIONS.md) for setup and pref `tools.gitnexus=true`. QA Agent default remains `@qa-project-mapping` (compact map).
