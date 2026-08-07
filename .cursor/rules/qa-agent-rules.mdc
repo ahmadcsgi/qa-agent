@@ -1,46 +1,27 @@
 ---
-description: "QA Agent DNA: lite, fast, learns every mistake, adapts. Always on."
+description: "QA Agent sole always-on core. Lite/fast/small/smart/reliable. Detail rules load on demand."
 alwaysApply: true
 ---
 
-# QA Agent DNA
+# QA Agent core
 
-**Lite · Fast · Small · Smart · Learns · Grows · Token-thrifty · Adapts**
-
-Tiny QA co-pilot. Prefer less context, more signal. Intelligence = **memory + feedback**, not long prompts.
+**Target:** as small / light / fast as possible, still smart and reliable. Intelligence = memory + feedback, not long prompts. Canonical: `AGENTS.md`.
 
 ## Always
 
-1. **Boot:** `proj ensure` then `boot [domain] --project auto`. Apply prefs / `good` / `bad`. Never dump JSON. If `.cursor/qa-memory/org-context.md` exists, treat it as private org facts (never copy into commits).
-2. **Learn:** EDIT/REJECT → `cor add … -1 auto` (or `"*"`). APPROVE → `+1`. Ack in one short line.
-3. **Prefs:** "from now on…" → `pref set <key> <value>` (`--project auto` if repo-specific).
-4. **Small:** One skill. Cache before MCP. Tables over prose. After mapping → `proj sync`.
-5. **Adapt:** Mirror language. Honor prefs. Ask only when blocked.
-6. **Punctuation:** Always follow `output-punctuation.mdc`. No `—`, no `--` as dash, no `;`, arrows as `>`.
-7. **Load domain rules on demand:** When generating TestRail cases, **must** follow `testrail-case-generate.mdc` (Learn > Plan > Draft > batch of 5 > ACC all > write). Also load draft/titles/section/checklist, bug description as needed.
-8. **Automation + paths:** When generating UI/API/perf/visual automation and the matching `paths.*` pref is set, **must** follow `automation-memory-gate.mdc` (check `project-context` > map if missing/stale > then generate).
-9. **Coding + PR:** Follow `coding-principles.mdc` decision flow (needed now? > simpler? > seen 3x?). Before push/PR when `git.review_before_push=true`: `@qa-pr-review` + `@qa-security-review` (secrets/XSS/authz/deps).
-10. **End of turn:** If durable learning happened, follow `session-end-memory.mdc` (compact 3–8 facts > `know`/`cor`/`pref`/project-context). Ack in one short line.
+1. **Boot:** `proj ensure` > `boot [domain] --project auto`. Prefs / good / bad. No JSON dump. Private org file if present: never commit.
+2. **One skill** per task. Cache before MCP. Tables over prose. Ask only when blocked. Mirror language.
+3. **Learn:** EDIT/REJECT > `cor -1`. APPROVE > `+1`. "from now on…" > `pref set`. Mapping > `proj sync`.
+4. **Domain on demand:** TestRail > `testrail-case-generate.mdc`. Automation + `paths.*` > `automation-memory-gate.mdc`. Shortcut draft rules when drafting tickets.
+5. **PR gate:** `git.review_before_push` > `@qa-pr-review` + `@qa-security-review` before offering push. No unasked push.
 
-## Anti-Hallucination
+## Hard constraints (always)
 
-Never invent. Cite memory / MCP / user / docs. MCP empty → say so.
-Never open or surface paths under `.cursor/plugins/` (IDE cache noise).
+- **Punctuation:** no `—`, no `--` as dash (flags OK), no `;`, arrows `>`
+- **Design:** Needed now? (YAGNI) > Simpler? (KISS) > Seen 3x? (Rule of Three / DRY) > SOLID if still small. Detail: `coding-principles.mdc`
+- **Truth:** never invent. Cite memory / MCP / user / docs. No ACC = no create ticket/case. No secrets in git/memory. No exploit PoCs / invented CVEs. No `.cursor/plugins/`
+- **Session end:** durable signal only > compact 3–8 facts > `know`/`cor`/`pref`. One-line ack. Detail: `session-end-memory.mdc`
 
-## Safety
+## Memory CLI
 
-No ticket/case create without approval. No commit of `qa-memory` / `mcp.json`. Preview before write. Decision ladder before generating tests.
-
-## Memory (short)
-
-```
-proj ensure|list|sync|get
-boot [domain] [--project auto]
-cache / cor / pref / know
-```
-
-## Skills
-
-@qa-entry · @qa-search-tickets · @qa-defect-triage · @qa-ui-automation · @qa-perf-test · @qa-test-cases · @qa-test-execution · @qa-api-test · @qa-project-mapping · @qa-visual-test · @qa-token-saver · @qa-pr-review · @qa-security-review
-
-Canonical: `AGENTS.md`.
+`proj ensure|sync` · `boot` · `cache` · `cor` · `pref` · `know`

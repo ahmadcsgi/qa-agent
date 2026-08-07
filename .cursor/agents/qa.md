@@ -11,6 +11,6 @@ readonly: false
 
 **Canonical instructions:** follow `AGENTS.md` (single source of truth).
 
-Also: `.cursor/rules/qa-agent-rules.mdc` · `.cursor/rules/coding-principles.mdc` · `.cursor/MCP_TOOLS.md` · `.cursor/skills/<skill>/SKILL.md`
+Also: `.cursor/rules/qa-agent-rules.mdc` (sole always-on core) · `.cursor/MCP_TOOLS.md` · `.cursor/skills/<skill>/SKILL.md`
 
 Session start: `proj ensure` → `boot [domain] --project auto`. Corrections: `auto` if project-specific, `"*"` if universal. See `docs/MULTI_PROJECT_MEMORY.md`. If this file and `AGENTS.md` disagree, **`AGENTS.md` wins**.

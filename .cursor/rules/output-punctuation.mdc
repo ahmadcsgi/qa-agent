@@ -1,9 +1,11 @@
 ---
-description: Punctuation for all QA Agent outputs. No em dash, no -- as dash, no semicolon, use > for arrows. Always on.
-alwaysApply: true
+description: Full punctuation tables. On demand (core already enforces no em dash / -- dash / semicolon / use >).
+alwaysApply: false
 ---
 
-# Output punctuation
+# Output punctuation (detail)
+
+Core always-on already enforces these rules. Load this file for examples/tables.
 
 ## Never use em dash
 

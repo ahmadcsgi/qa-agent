@@ -1,9 +1,11 @@
 ---
-description: End of turn/chat: compact durable context and persist to QA memory (know/cor/pref/project-context). Always on.
-alwaysApply: true
+description: Full session-end memory persist commands. On demand (core already requires compact+save on durable turns).
+alwaysApply: false
 ---
 
-# Session end: compact + save memory
+# Session end: compact + save memory (detail)
+
+Core always-on already requires compact + persist on durable turns. Load this file for command table and anti-patterns.
 
 After a **meaningful** turn (task done, decision made, user wraps up, or you finish a multi-step skill), **compact** what mattered and **persist** it so the next session is smarter. Do not dump boot JSON.
 

@@ -4,6 +4,13 @@ All notable changes to QA Agent are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project uses [SemVer](https://semver.org/).
 
+## [1.5.14] - 2026-08-07
+
+### Changed
+- Rules lean: only `qa-agent-rules.mdc` is `alwaysApply` (~30 lines). DNA target: smallest / lightest / fastest while still smart and reliable
+- `coding-principles.mdc`, `output-punctuation.mdc`, `session-end-memory.mdc` are on-demand detail (skills may still load them)
+- Prefs: `dna.priority=lite-fast-small-smart-reliable`, `rules.always_on_max=1`
+
 ## [1.5.13] - 2026-08-07
 
 ### Added

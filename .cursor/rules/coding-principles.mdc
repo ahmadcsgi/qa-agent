@@ -1,11 +1,13 @@
 ---
-description: KISS YAGNI Rule of Three DRY SOLID when coding and reviewing PRs. Pre-push review gate.
-alwaysApply: true
+description: Full KISS/YAGNI/Rule of Three/DRY/SOLID. On demand (core already has short flow). Load for deep PR/codegen.
+alwaysApply: false
 ---
 
-# Coding principles (code + PR review)
+# Coding principles (detail)
 
-Apply on every codegen, refactor, and PR review (especially automation: Cypress, Karate, k6). Load `@qa-pr-review` for full PR format.
+Core always-on already applies the short decision flow. Load this file for full cheat sheet / PR checklist.
+
+Apply on codegen, refactor, and PR review (Cypress, Karate, k6). Pair with `@qa-pr-review`.
 
 ## Decision flow (run before writing or extracting)
 
