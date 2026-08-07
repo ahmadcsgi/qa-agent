@@ -4,6 +4,17 @@ All notable changes to QA Agent are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project uses [SemVer](https://semver.org/).
 
+## [1.5.15] - 2026-08-07
+
+### Changed
+- Bottleneck pass: slim `AGENTS.md` (prefs moved to private `qa-memory/user-prefs.md`)
+- Slim `@qa-ui-automation`, `@qa-perf-test`, `@qa-visual-test`, `@qa-entry` (detail > references)
+- Private `onboard.md`: lean DNA pointer, v1.5.15 align, load only for onboard/Part C
+- Core rule: enforce sole always-on + org-context/user-prefs daily path
+
+### Added
+- `.cursor/references/qa-ui-automation-flow.md`, `qa-perf-test-flow.md`
+
 ## [1.5.14] - 2026-08-07
 
 ### Changed

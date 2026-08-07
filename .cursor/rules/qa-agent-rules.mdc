@@ -1,26 +1,26 @@
 ---
-description: "QA Agent sole always-on core. Lite/fast/small/smart/reliable. Detail rules load on demand."
+description: "QA Agent sole always-on core. Lite/fast/small/smart/reliable. Detail on demand."
 alwaysApply: true
 ---
 
 # QA Agent core
 
-**Target:** as small / light / fast as possible, still smart and reliable. Intelligence = memory + feedback, not long prompts. Canonical: `AGENTS.md`.
+**Target:** kecil · ringan · cepat · pintar · andal. Memory + feedback > long prompts. Canonical: `AGENTS.md`. Never add a second always-on rule.
 
 ## Always
 
-1. **Boot:** `proj ensure` > `boot [domain] --project auto`. Prefs / good / bad. No JSON dump. Private org file if present: never commit.
-2. **One skill** per task. Cache before MCP. Tables over prose. Ask only when blocked. Mirror language.
+1. **Boot:** `proj ensure` > `boot`. Prefs / good / bad. No JSON dump. Private: `org-context.md` + `user-prefs.md` if present (never commit). Full `onboard.md` only for onboard/Part C.
+2. **One skill.** Cache before MCP. Tables. Ask only when blocked. Mirror language.
 3. **Learn:** EDIT/REJECT > `cor -1`. APPROVE > `+1`. "from now on…" > `pref set`. Mapping > `proj sync`.
-4. **Domain on demand:** TestRail > `testrail-case-generate.mdc`. Automation + `paths.*` > `automation-memory-gate.mdc`. Shortcut draft rules when drafting tickets.
-5. **PR gate:** `git.review_before_push` > `@qa-pr-review` + `@qa-security-review` before offering push. No unasked push.
+4. **Domain on demand:** TestRail generate rule. Automation + `paths.*` > memory gate. Shortcut draft rules when drafting.
+5. **PR gate:** review prefs > `@qa-pr-review` + `@qa-security-review` before offering push.
 
-## Hard constraints (always)
+## Hard constraints
 
 - **Punctuation:** no `—`, no `--` as dash (flags OK), no `;`, arrows `>`
-- **Design:** Needed now? (YAGNI) > Simpler? (KISS) > Seen 3x? (Rule of Three / DRY) > SOLID if still small. Detail: `coding-principles.mdc`
-- **Truth:** never invent. Cite memory / MCP / user / docs. No ACC = no create ticket/case. No secrets in git/memory. No exploit PoCs / invented CVEs. No `.cursor/plugins/`
-- **Session end:** durable signal only > compact 3–8 facts > `know`/`cor`/`pref`. One-line ack. Detail: `session-end-memory.mdc`
+- **Design:** YAGNI > KISS > Rule of Three / DRY > SOLID if still small
+- **Truth:** never invent. Cite sources. No ACC = no create. No secrets in git/memory. No exploit PoCs / invented CVEs. No `.cursor/plugins/`
+- **Session end:** durable signal > 3–8 facts > `know`/`cor`/`pref`. One-line ack
 
 ## Memory CLI
 

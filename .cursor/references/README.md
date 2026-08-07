@@ -14,6 +14,8 @@
 | `k6-testing.md` | k6 performance testing - script structure, scenarios, thresholds | `@qa-perf-test` |
 | `git-workflow.md` | Git workflow - branch naming, commit conventions, PR | All automation skills |
 | `qa-security-review.md` | Secrets, XSS/injection coverage, authz, CVE hygiene (defensive) | `@qa-security-review`, `@qa-pr-review` |
+| `qa-ui-automation-flow.md` | POM, heal, conventions (detail) | `@qa-ui-automation` |
+| `qa-perf-test-flow.md` | Runner matrix, vault, thresholds (detail) | `@qa-perf-test` |
 
 ## Skills (discoverability)
 

@@ -1,127 +1,19 @@
 ---
 name: qa-project-mapping
-description: Scan and map test repo structure into project-context (helpers, paths, conventions). Mandatory memory gate before Cypress/Karate/k6 when paths.* set. Use for map project, refresh map, scan repo, or stale project-context.
+description: Map test repo into project-context. Mandatory before UI/API/perf when paths.* set and context stale. Use for map project or refresh map.
 ---
 
 # QA Project Mapping
 
-## When (automation memory gate)
+## When
 
-Called **before** `@qa-ui-automation` / `@qa-api-test` / `@qa-perf-test` / `@qa-visual-test` when the matching `paths.*` is set and `project-context` is missing or stale. See `.cursor/rules/automation-memory-gate.mdc`.
+Before UI/API/perf/visual when matching `paths.*` set and `project-context` missing/stale (>7d or path mismatch). See `automation-memory-gate.mdc`.
 
-| Caller | Map this root |
-|--------|----------------|
-| UI / visual | `paths.ui_tests` |
-| API | `paths.api_tests` |
-| Perf | `paths.perf_tests` |
+## Flow (short)
 
-Multi-path `a|b`: map each segment you will use (or all for that pref). Do not map unset paths.
+1. Resolve root from `paths.*` or user path (must exist)
+2. Scan structure (glob). Optional GitNexus hint if >500 files and pref set
+3. Write compact map to `.cursor/qa-memory/project-context/current.md`
+4. `proj sync`. Do not dump full tree into chat
 
-## Why This Matters
-Aider proved that LLMs work significantly better when they have a **compact map** of the codebase. With a project map, the AI knows:
-- Where important files are located
-- Patterns and conventions being used
-- File relationships (test → page object → step def)
-- Without reading all files (saves tokens)
-
-## Flow
-
-### Step 0: Resolve target root
-From prefs (`paths.ui_tests` / `paths.api_tests` / `paths.perf_tests`) or user-supplied path. Confirm path exists on disk. Record the absolute root(s) in the map header.
-
-**Optional GitNexus** (pref `tools.gitnexus=true`, see `docs/OPTIONAL_INTEGRATIONS.md`):
-- Count source files under root (exclude `node_modules`, `.git`, `dist`, `build`).
-- If **>500** files and map is first-time or stale: mention [GitNexus](https://github.com/abhigyanpatwari/GitNexus) MCP for call-chain exploration.
-- Still produce the **compact** `@qa-project-mapping` map. GitNexus supplements, does not replace the map.
-
-### Step 1: Scan Project Structure
-Use glob/list files for mapping:
-
-```bash
-# Core structure
-ls <root>/
-ls <root>/src/
-ls <root>/cypress/
-ls <root>/test/
-ls <root>/features/
-```
-
-Goal: identify main directories, framework, and project layout.
-
-### Step 2: Identify Key Config Files
-Read config files to understand framework & setup:
-- `package.json` → dependencies, scripts, framework name
-- `cypress.config.js` / `cypress.config.ts` → Cypress config
-- `tsconfig.json` → TypeScript setup
-- `.env`, `.env.example` → environment variables
-- `karate-config.js` → Karate config
-- `pom.xml` / `build.gradle` → Java/Maven project
-
-### Step 3: Map Test Infrastructure
-Extract symbol definitions from test files (without reading full files):
-
-| Area | What to Find | Method |
-|------|-------------|--------|
-| **Page Objects** | class/export names, selector patterns | Grep `class | export | selector` |
-| **Step Definitions** | function names, regex patterns | Grep `Given|When|Then|cy.step` |
-| **Aliases/POM** | element mapping names | Grep `data-testid|getAlias|alias` |
-| **Feature files** | feature names, scenario count | Grep `Feature:|Scenario:|@test_id` |
-| **Test suites** | run configurations, tags | Grep `@daily|@smoke|@regression|@flex_quote` |
-| **API tests** | endpoint patterns, base URLs | Grep `Given path|url|baseUrl|karate-config` |
-| **k6 scripts** | scenario types, thresholds | Grep `export let options|stages|threshold` |
-| **Fixtures/data** | test data files | Glob `*.json|*.csv|*.yml` |
-
-### Step 4: Build Reference Graph
-Identify file relationships (like Aider's edges):
-```
-quote-page.js → uses → quote.aliases.js
-quote.feature → depends → quote-steps.js
-quote-steps.js → imports → quote-page.js
-```
-
-Save this graph as part of the map.
-
-### Step 5: Rank Files by Importance
-Priority (like Aider's PageRank):
-1. **High** - Config files, base page object, main step registry, feature files with @daily tags
-2. **Medium** - Page objects, step definitions, test data
-3. **Low** - Helper utilities, rarely-changed files
-
-### Step 6: Generate Compact Map
-Output format (token-efficient, like Aider). Example shape — replace with **actual** project paths/names:
-```
-project/
-  package.json: { scripts: {test, test:smoke}, deps: <frameworks> }
-  <test-config>: { baseUrl, supportFile, specPattern }
-  <ui-tests>/
-    support/
-      commands.js: { login(), <helpers...> }
-    aliases/ or page-objects/: { <element maps> }
-    step_definitions/ or steps/: { <step names> }
-    features/ or e2e/: { <feature files + tags> }
-  <api-tests>/
-    { <endpoint features / specs> }
-  <perf>/
-    { <k6 scenarios + thresholds> }
-```
-
-### Step 7: Save to Memory
-- Save map to `.cursor/qa-memory/project-context/current.md`
-- Header must include: **Last updated** (ISO date), **Mapped roots** (absolute `paths.*` values), file/test counts, framework
-- Also save graph: `.cursor/qa-memory/project-context/graph.md`
-- Then: `node ~/.qa-agent/lib/store.js proj sync` (or `proj sync`)
-
-### Step 8: Refresh Strategy
-- **First time** (or path pref new/changed) → full scan → save
-- **Subsequent** → reuse if <7d and roots still match prefs. If config mtime changed or user says refresh → re-scan
-- **Manual** → user calls `@qa refresh map`
-- Cache valid for 7 days (if no changes detected)
-
-## MCP Tools
-- `glob`, `grep`, `read` - for file scanning
-- Git: `git log --oneline -5` - recent changes context
-
-## References
-- Aider's repo map: https://aider.chat/docs/repomap.html
-- GitNexus (optional): `docs/OPTIONAL_INTEGRATIONS.md`
-- Global memory: `~/.qa-agent/`
+Capture: framework, helpers, aliases/steps, env patterns, conventions. Template: `.cursor/templates/project-context.current.md`. Detail optional: `docs/OPTIONAL_INTEGRATIONS.md` (GitNexus).

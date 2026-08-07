@@ -1,56 +1,18 @@
 ---
 name: qa-test-cases
-description: Generate TestRail test cases from Shortcut stories (learn/plan/draft batch of 5, ACC, then addCase). Use for "create test case", TestRail case, story ID, update case, or TC checklist.
+description: Generate TestRail cases from Shortcut (batch of 5, ACC, addCase). Use for create test case, update case, or TC checklist.
 ---
 
 # QA Test Cases
 
-**Generate flow (MANDATORY):** `.cursor/rules/testrail-case-generate.mdc`  
-**Also:** `testrail-case-draft.mdc` · `testrail-case-titles.mdc` · `testrail-shortcut-checklist.mdc` · `testrail-section-version.mdc` · `output-punctuation.mdc`  
-**Methodology:** `.cursor/references/qa-testcase-methodology.md`  
-**Execution:** `@qa-test-execution` (plan / pass / run)  
-**Unclear?** Ask or Glean. Never invent AC, copy, or behavior.
+**Mandatory:** `testrail-case-generate.mdc` (Learn > Plan > Draft batches of 5 > ACC all > addCase). Also titles/draft/section/checklist rules. Methodology: `qa-testcase-methodology.md`.
 
-## Boot
+## Flow
 
-`proj ensure` then `boot testcases --project auto` · `cor list testcases 1 auto`
+1. Boot `testcases` + `cor list`. Read story. Dedup. Resolve section
+2. Plan titles table > ACC plan
+3. Draft preview under `qa-memory/generated-tests/` > ACC all
+4. `addCase` + Shortcut checklist links. Delete preview when done
+5. Prefer one merged case when checks overlap (`testcases.merge_prefer_one`)
 
-## Flow (new cases)
-
-### 1. Learn
-- Shortcut: `stories-get-by-id` (full)
-- Version + section: `testrail-section-version.mdc`
-- Dedup: Phase 2b
-- Unclear → **ask user** or **Glean** (`search` / `read_document`). Stop if blocked.
-
-### 2. Plan
-- Table of proposed titles (no full steps yet)
-- Wait **ACC plan** / **EDIT plan**
-
-### 3. Draft
-Fields every case: **Title · Objective · Precondition · Test step · Expectation** (+ Test data if used)  
-Preview file: `.cursor/qa-memory/generated-tests/manual/sc-<id>-preview.md` (complete)
-
-### 4. Show ≤5 per turn
-If >5 cases: Part 1/N = first 5 only. Wait **ACC / EDIT / REJECT / DELETE** (or **ACC all** for batch). Then next 5. Never dump all at once.
-
-### 5. Write TestRail (only after all ACC)
-`addCase` for ACC'd only → checklist per case. No write for REJECT/DELETE.
-
-### 5b. Label groom (optional)
-`TC-on-progress` → propose **TC-ready** → ACC → `stories-update`
-
-### 6. Memory
-`cor add` on lessons · `proj sync` if mapping changed
-
-### 7. Plan / results / maintenance
-- Test plan or mark Passed: `@qa-test-execution`
-- Fix existing case: diff preview → ACC → `updateCase`
-
-## MCP
-
-`stories-get-by-id` · `stories-add-task` · `stories-update` · `getCases` · `getCase` · `getSections` · `addSection` · `addCase` · `updateCase` · `moveToSection` · Glean if domain unclear
-
-## References
-
-`testrail-case-generate.mdc` · `qa-testcase-methodology.md` · `testrail-api.md`
+Never invent AC. Fields English if pref. Execution/plans: `@qa-test-execution`.
