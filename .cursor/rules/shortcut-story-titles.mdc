@@ -1,0 +1,36 @@
+---
+description: Shortcut story titles. Include type and feature area tags. Load when drafting Shortcut tickets.
+alwaysApply: false
+---
+
+# Shortcut story titles
+
+When drafting or creating Shortcut stories (feature, bug, chore):
+
+## Format
+
+```text
+[<Type>] [<FeatureArea>] <short clear title>
+```
+
+| Part | Meaning | Examples |
+|------|---------|----------|
+| Type | Work kind | `FE`, `BE`, `QA` |
+| FeatureArea | Product / module area (from squad prefs / project-context) | `Orders`, `Catalog`, `Checkout` |
+| Title | Short outcome-focused phrase | Add filter to status dropdown |
+
+## Examples
+
+| Good | Bad |
+|------|-----|
+| `[FE] [Orders] Add search to status filter on list page` | `[FE] Add search to status filter on list page` |
+| `[BE] [Checkout] Emit event on successful payment capture` | `fix payment` |
+| `[QA] [Catalog] Cover negative path for empty brand list` | `test brands` |
+
+## Rules
+
+1. Always include **both** type and feature area tags when the area is known.
+2. Feature area matches the product module from project-context / prefs, not the epic name alone.
+3. Keep the rest of the title short and concrete.
+4. Do not invent a feature area. Ask if unclear.
+5. Org-specific area names and examples live in private memory (`.cursor/qa-memory/org-context.md`), not in this public rule.

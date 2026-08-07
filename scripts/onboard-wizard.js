@@ -11,7 +11,7 @@
  * Usage:
  *   node scripts/onboard-wizard.js
  *   node scripts/onboard-wizard.js --print-learn
- *   node scripts/onboard-wizard.js --apply --squad Dragon --ui "C:\\ui" --api "C:\\api" --perf "C:\\perf" --tools 1,2
+ *   node scripts/onboard-wizard.js --apply --squad MySquad --ui "C:\\ui" --api "C:\\api" --perf "C:\\perf" --tools 1,2
  *   node scripts/onboard-wizard.js --skip-mcp
  */
 'use strict';
@@ -133,12 +133,26 @@ function detectTools() {
     } catch {
       /* ignore */
     }
+    let wslCustom = false;
+    try {
+      const { k6CustomOk } = require('./setup-wsl-tooling');
+      wslCustom = wslOk && typeof k6CustomOk === 'function' && k6CustomOk();
+    } catch {
+      /* ignore */
+    }
     list.push({
       id: 6,
       key: 'k6-wsl',
       label: wslOk
-        ? 'k6 in WSL (fallback if host k6 blocked)'
-        : 'k6 in WSL (install WSL first, optional fallback)',
+        ? 'k6 in WSL (prefer custom xk6: vault+faker+exec)'
+        : 'k6 in WSL (install WSL first, then custom xk6)',
+      ok: wslCustom,
+      needsWsl: true,
+    });
+    list.push({
+      id: 7,
+      key: 'k6-wsl-stock',
+      label: 'k6 stock apt in WSL (no extensions)',
       ok: wslK6,
       needsWsl: true,
     });
@@ -151,8 +165,8 @@ function installSelectedTools(ids) {
   const missing = tools.filter((t) => !t.ok);
   let wantIds = ids.slice();
   if (wantIds.includes(5)) {
-    // 5 = all *host* tools only — do not auto-add WSL k6
-    wantIds = missing.filter((t) => t.id !== 6).map((t) => t.id);
+    // 5 = all *host* tools only. Do not auto-add WSL k6
+    wantIds = missing.filter((t) => t.id !== 6 && t.id !== 7).map((t) => t.id);
   }
   const want = new Set(wantIds);
   const onlyKeys = [];
@@ -164,7 +178,21 @@ function installSelectedTools(ids) {
         stdio: 'inherit',
       });
     } else if (t.key === 'k6-wsl') {
-      console.log(`\nInstalling k6 into WSL...`);
+      console.log(`\nInstalling custom xk6 k6 into WSL (vault+faker+exec)...`);
+      console.log('Recipe: .cursor/rules/wsl-xk6-install.mdc');
+      spawnSync(
+        process.execPath,
+        [
+          path.join(REPO, 'scripts', 'setup-wsl-tooling.js'),
+          '--install',
+          '--non-interactive',
+          '--only',
+          'k6-custom,curl',
+        ],
+        { stdio: 'inherit' }
+      );
+    } else if (t.key === 'k6-wsl-stock') {
+      console.log(`\nInstalling stock apt k6 into WSL...`);
       spawnSync(
         process.execPath,
         [
@@ -225,7 +253,8 @@ async function toolingPicker(rl, toolsArg) {
     console.log('Install missing? Enter numbers separated by comma.');
     console.log('  1=Git  2=k6 host  3=Java  4=Maven  5=ALL host missing');
     if (process.platform === 'win32') {
-      console.log('  6=k6 in WSL (fallback if host k6 blocked)');
+      console.log('  6=k6 custom xk6 in WSL (vault+faker+exec, recommended)');
+      console.log('  7=k6 stock apt in WSL (no extensions)');
     }
     console.log('  Example: 1,6   or   5');
     console.log('  Enter = skip');
@@ -305,10 +334,10 @@ function printChatSummary({ squad, ui, api, perf, tools, profileHint, prevProfil
 
 function formText(lang) {
   if (lang === 'en') {
-    return `Onboard — fill in below (copy, edit, send back)
+    return `Onboard: fill in below (copy, edit, send back)
 
 1. Team / squad name
-   example: Dragon
+   example: MySquad
 
 2. Local absolute paths. Leave blank or write skip if none yet.
    Multi-repo: pathA|pathB
@@ -323,14 +352,15 @@ function formText(lang) {
    3 = Java
    4 = Maven
    5 = all host missing
-   6 = k6 in WSL (Windows fallback if host blocked)
+   6 = k6 custom xk6 in WSL (vault+faker+exec, recommended)
+   7 = k6 stock apt in WSL (no extensions)
 
    Answer: 1,2   or  1,6   or  5   or  skip`;
   }
-  return `Onboard — isi data di bawah (salin, edit, kirim balik)
+  return `Onboard: isi data di bawah (salin, edit, kirim balik)
 
 1. Nama team / squad
-   contoh: Dragon
+   contoh: MySquad
 
 2. Path lokal (absolut). Kosongkan atau tulis skip jika belum ada.
    Multi-repo: pathA|pathB
@@ -345,7 +375,8 @@ function formText(lang) {
    3 = Java
    4 = Maven
    5 = semua host yang missing
-   6 = k6 di WSL (fallback Windows jika host diblok)
+   6 = k6 custom xk6 di WSL (vault+faker+exec, recommended)
+   7 = k6 stock apt di WSL (tanpa ekstensi)
 
    Jawab: 1,2   atau  1,6   atau  5   atau  skip`;
 }

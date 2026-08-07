@@ -1,6 +1,6 @@
 ---
 name: qa-test-cases
-description: Generate and maintain TestRail cases from Shortcut stories. Mandatory learn/plan/draft batch-5 ACC gate, checklist, case updates, TC label groom. Ask when unclear.
+description: Generate TestRail test cases from Shortcut stories (learn/plan/draft batch of 5, ACC, then addCase). Use for "create test case", TestRail case, story ID, update case, or TC checklist.
 ---
 
 # QA Test Cases

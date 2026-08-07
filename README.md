@@ -112,7 +112,8 @@ The agent saves every correction, preference, and pattern to its decision memory
 | Map project structure | `"scan project structure"` | `@qa-project-mapping` |
 | **Visual regression** | `"check UI visually"`, `"run visual test on login page"` | `@qa-visual-test` |
 | Optimize token usage | `"save tokens"`, decision ladder | `@qa-token-saver` |
-| Review test automation PR | `"review my PR"`, PR URL | `@qa-pr-review` |
+| Review test automation PR | `"review my PR"`, PR URL, before push | `@qa-pr-review` |
+| Security review (XSS / CVE / secrets) | `"security review"`, OWASP, harden | `@qa-security-review` |
 | Not sure where to start | `"@qa"`, vague request | `@qa-entry` |
 
 ## Architecture
@@ -124,6 +125,7 @@ The agent saves every correction, preference, and pattern to its decision memory
 │  @qa-perf-test       @qa-test-cases     @qa-api-test     │
 │  @qa-test-execution  @qa-project-mapping @qa-token-saver │
 │  @qa-entry           @qa-visual-test  @qa-pr-review      │
+│  @qa-token-saver     @qa-security-review                 │
 ├──────────────────────────────────────────────────────────┤
 │  MEMORY SYSTEM (Layer 2)                                │
 │  ~/.qa-agent/ (global)  .cursor/qa-memory/ (project)   │

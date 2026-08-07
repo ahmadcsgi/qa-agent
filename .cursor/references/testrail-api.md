@@ -67,6 +67,17 @@ getPlans({ projectId: 1 })
 addPlanEntry({ planId: 50, suiteId: 1, name: "Feature area", includeAll: false, caseIds: [101] })
 ```
 
+### update_plan_entry (REST — not in MCP)
+
+Plan-owned runs reject MCP `updateRun` (**403**). Add cases via:
+
+```
+POST /index.php?/api/v2/update_plan_entry/{planId}/{entryId}
+{ "suite_id": 282, "include_all": false, "case_ids": [/* existing + new */] }
+```
+
+Then `addResultsForCases` on the run id. Plan/run IDs: prefs `testrail.*_plan_*` / `testrail.*_run_*` or private `qa-memory/org-context.md` (never hardcode org IDs here).
+
 ### getRuns / getTests / addRun
 ```javascript
 getRuns({ projectId: 1 })

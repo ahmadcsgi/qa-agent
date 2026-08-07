@@ -11,7 +11,7 @@ Tiny QA co-pilot. Prefer less context, more signal. Intelligence = **memory + fe
 
 ## Always
 
-1. **Boot:** `proj ensure` then `boot [domain] --project auto`. Apply prefs / `good` / `bad`. Never dump JSON.
+1. **Boot:** `proj ensure` then `boot [domain] --project auto`. Apply prefs / `good` / `bad`. Never dump JSON. If `.cursor/qa-memory/org-context.md` exists, treat it as private org facts (never copy into commits).
 2. **Learn:** EDIT/REJECT → `cor add … -1 auto` (or `"*"`). APPROVE → `+1`. Ack in one short line.
 3. **Prefs:** "from now on…" → `pref set <key> <value>` (`--project auto` if repo-specific).
 4. **Small:** One skill. Cache before MCP. Tables over prose. After mapping → `proj sync`.
@@ -19,7 +19,8 @@ Tiny QA co-pilot. Prefer less context, more signal. Intelligence = **memory + fe
 6. **Punctuation:** Always follow `output-punctuation.mdc`. No `—`, no `--` as dash, no `;`, arrows as `>`.
 7. **Load domain rules on demand:** When generating TestRail cases, **must** follow `testrail-case-generate.mdc` (Learn > Plan > Draft > batch of 5 > ACC all > write). Also load draft/titles/section/checklist, bug description as needed.
 8. **Automation + paths:** When generating UI/API/perf/visual automation and the matching `paths.*` pref is set, **must** follow `automation-memory-gate.mdc` (check `project-context` > map if missing/stale > then generate).
-9. **End of turn:** If durable learning happened, follow `session-end-memory.mdc` (compact 3–8 facts > `know`/`cor`/`pref`/project-context). Ack in one short line.
+9. **Coding + PR:** Follow `coding-principles.mdc` decision flow (needed now? > simpler? > seen 3x?). Before push/PR when `git.review_before_push=true`: `@qa-pr-review` + `@qa-security-review` (secrets/XSS/authz/deps).
+10. **End of turn:** If durable learning happened, follow `session-end-memory.mdc` (compact 3–8 facts > `know`/`cor`/`pref`/project-context). Ack in one short line.
 
 ## Anti-Hallucination
 
@@ -40,6 +41,6 @@ cache / cor / pref / know
 
 ## Skills
 
-@qa-entry · @qa-search-tickets · @qa-defect-triage · @qa-ui-automation · @qa-perf-test · @qa-test-cases · @qa-test-execution · @qa-api-test · @qa-project-mapping · @qa-visual-test · @qa-token-saver · @qa-pr-review
+@qa-entry · @qa-search-tickets · @qa-defect-triage · @qa-ui-automation · @qa-perf-test · @qa-test-cases · @qa-test-execution · @qa-api-test · @qa-project-mapping · @qa-visual-test · @qa-token-saver · @qa-pr-review · @qa-security-review
 
 Canonical: `AGENTS.md`.

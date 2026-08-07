@@ -1,6 +1,6 @@
 ---
 name: qa-ui-automation
-description: Generate Cypress Cucumber UI automation from TestRail cases or Shortcut stories. Handles interactive flow: asks for env, user, does POM building via Playwright, auto-run, auto-heal. Use when user asks for UI automation or mentions TestRail/Shortcut story for testing.
+description: Generate Cypress Cucumber (Gherkin) UI automation from TestRail cases or Shortcut stories. POM via Playwright, auto-run, auto-heal. Use for Cypress, UI automation, E2E, feature file, or C12345 case ID.
 ---
 
 # QA UI Automation
@@ -61,7 +61,8 @@ Write an implementation plan:
 - .feature file structure
 
 ### Step 7b: Climb Decision Ladder
-Call the decision ladder from `@qa-token-saver`:
+Call `@qa-token-saver` and `coding-principles.mdc` flow:
+0. **Needed now?** No > YAGNI skip. **Simpler way?** > KISS. **Seen 3x?** No > do not abstract yet.
 1. **YAGNI**: Is this test necessary? Already covered?
 2. **Reuse**: Any existing alias/step def to reuse?
 3. **Stdlib**: Cypress built-in commands sufficient?
@@ -69,7 +70,7 @@ Call the decision ladder from `@qa-token-saver`:
 5. **Existing dep**: Existing plugin/library sufficient?
 6. **One-liner**: Can it be 1-3 lines parameterized?
 7. **Minimum**: Is this the minimum viable test?
-→ Record decision: "YAGNI skip" / "Reuse existing" / "Generate minimal"
+> Record decision: "YAGNI skip" / "Reuse existing" / "Generate minimal"
 
 ### Step 8: Generate
 1. **Aliases** (`.js`) - element selectors from POM builder results
@@ -78,13 +79,16 @@ Call the decision ladder from `@qa-token-saver`:
    - camelCase for feature file names
    - Sentence case for scenario names
 
+### Step 9a: Security lite (before preview)
+If flow touches auth, HTML render, uploads, or free-text input: run `@qa-security-review` lite (no secrets in fixtures, no unsafe `cy.exec`/eval).
+
 ### Step 9b: Reflexion - Self-Review Before Preview
 BEFORE showing to the user, review the generated output:
 1. **Correctness**: Does the test match AC/requirements? Are selectors correct?
 2. **Minimality**: Is every step necessary? Can they be combined?
 3. **Reuse**: Any missed step def / alias?
 4. **Consistency**: Does the format match project conventions? (camelCase feature, @test_id tag?)
-5. **If there is an issue → refine automatically** - no need to ask for permission first
+5. **If there is an issue > refine automatically** - no need to ask for permission first
 6. **Then show** to the user for APPROVE/EDIT/REJECT
 
 > Principle: "Think once, do correctly." Instead of the user seeing it, correcting it, us fixing it, the user correcting again - it's better to refine ourselves first before preview.

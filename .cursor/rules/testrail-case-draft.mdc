@@ -32,10 +32,11 @@ Until the user explicitly replies **ACC**, **APPROVE**, **ACC all** (per batch),
 
 1. Learn from Shortcut. Unclear → ask or Glean. Never invent.
 2. Show **plan** (titles only). Wait ACC plan / EDIT plan.
-3. Draft fields. Preview file complete under `generated-tests/manual/`.
-4. Chat: **max 5 cases** per turn. Wait ACC / EDIT / REJECT / DELETE before next batch.
-5. Only after **all** surviving cases ACC'd → `addCase` + checklist.
-6. Case **update** / plan / results: same ACC gate (methodology Phase 7 + case maintenance).
+3. **No overlap / no redundant cases.** If checks share flow and outcome, merge into **one** case. Split only when behavior truly differs. Prefer smallest set that covers AC.
+4. Draft fields. Preview file complete under `generated-tests/manual/`.
+5. Chat: **max 5 cases** per turn. Wait ACC / EDIT / REJECT / DELETE before next batch.
+6. Only after **all** surviving cases ACC'd → `addCase` + checklist.
+7. Case **update** / plan / results: same ACC gate (methodology Phase 7 + case maintenance).
 
 ## Titles / checklist after ACC
 

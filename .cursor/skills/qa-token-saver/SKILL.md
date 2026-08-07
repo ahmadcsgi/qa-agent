@@ -1,6 +1,6 @@
 ---
 name: qa-token-saver
-description: Decision ladder for saving tokens - Ponytail adaptation (DietrichGebert/ponytail) for QA context. Before generating any test, climb the ladder. Prevents over-engineering test scenarios, reuses existing patterns. Always-on for all automation skills.
+description: Token-saving decision ladder (YAGNI > Reuse > Stdlib > Minimum) before generating tests. Ponytail-style for QA. Use for save tokens, YAGNI, decision ladder, or before Cypress/Karate/k6 codegen.
 ---
 
 # QA Token Saver
@@ -14,6 +14,19 @@ This doesn't mean we are lazy about writing tests. Every test must be justified:
 - Does this test provide value?
 - Is the risk already covered?
 - Is there a simpler way?
+
+## Decision flow (with coding-principles)
+
+Before climbing the ladder, walk:
+
+```
+Needed now?  No -> YAGNI skip
+             Yes -> Simpler way? Yes -> KISS
+                                  No  -> Seen 3x? No -> do not abstract
+                                                  Yes -> refactor / shared helper
+```
+
+Then climb rungs below. Rule file: `.cursor/rules/coding-principles.mdc`.
 
 ## Decision Ladder (Ponytail for QA)
 BEFORE generating any test, climb this ladder from top to bottom:
@@ -106,6 +119,8 @@ Default: **Lite**
 - Every automation skill has a "Climb Decision Ladder" step before generating
 
 ## References
+- `.cursor/rules/coding-principles.mdc` (KISS / YAGNI / Rule of Three flow)
+- `@qa-security-review` when auth / XSS / injection surface is in scope
 - Ponytail original: https://github.com/DietrichGebert/ponytail
 - ponytail-lite (generic, 1 file): https://github.com/ilindaniel/ponytail-lite
 - Optional integrations: `docs/OPTIONAL_INTEGRATIONS.md`

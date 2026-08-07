@@ -4,6 +4,20 @@ All notable changes to QA Agent are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project uses [SemVer](https://semver.org/).
 
+## [1.5.13] - 2026-08-07
+
+### Added
+- `.cursor/rules/coding-principles.mdc`: decision flow Needed now (YAGNI) > Simpler (KISS) > Seen 3x (Rule of Three / DRY) > SOLID. Always apply. Pre-push review gate
+- `@qa-security-review` + `references/qa-security-review.md`: defensive security review (secrets, XSS/injection coverage, authz, CVE hygiene). No exploit PoCs
+- Prefs: `git.review_before_push`, `code.principles`
+
+### Changed
+- `AGENTS.md` DNA: Design + Security rows. Safety requires principles flow and security pass before push
+- Org-specific facts (squad names, Docflow/Workbench, TestRail plan IDs, CSG wiki): moved to private `.cursor/qa-memory/org-context.md` (gitignored). Public skills/rules stay org-neutral
+- `@qa-pr-review`: pairs with `@qa-security-review`, design checklist on diff
+- `@qa-entry`, `@qa-token-saver`, `@qa-ui-automation`, `@qa-api-test`: wire coding-principles + security lite
+- `doctor.js`, skills/README, references/README, README: new skill and rule checks
+
 ## [1.5.12] - 2026-08-05
 
 ### Added

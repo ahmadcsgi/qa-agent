@@ -1,6 +1,6 @@
 ---
 name: qa-project-mapping
-description: Scan, map, and maintain project structure for QA context. Like Aider's repo map but for test infra. Mandatory before UI/API/perf automation when paths.* set and project-context missing/stale. Use when entering a new project, path prefs change, or user asks refresh map.
+description: Scan and map test repo structure into project-context (helpers, paths, conventions). Mandatory memory gate before Cypress/Karate/k6 when paths.* set. Use for map project, refresh map, scan repo, or stale project-context.
 ---
 
 # QA Project Mapping

@@ -23,6 +23,7 @@ const SKILLS = [
   "qa-token-saver",
   "qa-visual-test",
   "qa-pr-review",
+  "qa-security-review",
 ];
 
 let failed = 0;
@@ -84,10 +85,12 @@ console.log("\nRepository");
   ["scripts/agent-shield-scan.js", path.join(REPO, "scripts", "agent-shield-scan.js")],
   ["agents/qa.md", path.join(REPO, ".cursor", "agents", "qa.md")],
   ["rules/qa-agent-rules.mdc", path.join(REPO, ".cursor", "rules", "qa-agent-rules.mdc")],
+  ["rules/coding-principles.mdc", path.join(REPO, ".cursor", "rules", "coding-principles.mdc")],
   ["rules/testrail-case-draft.mdc", path.join(REPO, ".cursor", "rules", "testrail-case-draft.mdc")],
   ["rules/testrail-case-generate.mdc", path.join(REPO, ".cursor", "rules", "testrail-case-generate.mdc")],
   ["rules/output-punctuation.mdc", path.join(REPO, ".cursor", "rules", "output-punctuation.mdc")],
   ["methodology", path.join(REPO, ".cursor", "references", "qa-testcase-methodology.md")],
+  ["security-ref", path.join(REPO, ".cursor", "references", "qa-security-review.md")],
   ["MCP_TOOLS.md", path.join(REPO, ".cursor", "MCP_TOOLS.md")],
   ["references/", path.join(REPO, ".cursor", "references")],
   ["templates/", path.join(REPO, ".cursor", "templates", "project-context.current.md")],

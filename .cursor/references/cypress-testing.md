@@ -101,7 +101,7 @@ API login is faster when the app allows it (`cy.request` + token/cookie inside `
 
 ## Cucumber / TestRail (this agent)
 
-When the UI repo uses Cucumber (common for CSG paths):
+When the UI repo uses Cucumber:
 
 - Generate/reuse `.feature` + step defs + aliases (skill flow)
 - Tag: `@test_id=C{number}` when from TestRail

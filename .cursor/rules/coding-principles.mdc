@@ -1,0 +1,63 @@
+---
+description: KISS YAGNI Rule of Three DRY SOLID when coding and reviewing PRs. Pre-push review gate.
+alwaysApply: true
+---
+
+# Coding principles (code + PR review)
+
+Apply on every codegen, refactor, and PR review (especially automation: Cypress, Karate, k6). Load `@qa-pr-review` for full PR format.
+
+## Decision flow (run before writing or extracting)
+
+```
+Apakah ini diperlukan sekarang?
+    |
+    No  -> YAGNI (jangan buat)
+    |
+    Yes
+    |
+Apakah ada cara lebih sederhana?
+    |
+    Yes -> KISS (pakai cara sederhana)
+    |
+    No
+    |
+Apakah pola ini sudah muncul minimal 3x?
+    |
+    No  -> Jangan abstraksi dulu (duplikasi 1-2x OK)
+    |
+    Yes -> Refactor (DRY / shared helper)
+```
+
+After that, apply **SOLID** only if the unit stays small and focused. Do not invent layers to "look SOLID".
+
+Conflict order: **KISS > YAGNI > Rule of Three > DRY > SOLID**.
+
+## Principles (cheat sheet)
+
+| Principle | Meaning | Fail signal |
+|-----------|---------|-------------|
+| **YAGNI** | Skip what is not needed now | Speculative helpers, unused options |
+| **KISS** | Prefer the simplest working design | Clever nesting, premature frameworks |
+| **Rule of Three** | Abstract on the **third** real copy | Shared util after one similar block |
+| **DRY** | One source of truth after Rule of Three | Same logic copied 3+ times unchecked |
+| **SOLID** | Small focused units, clear deps | God files, mixed unrelated concerns |
+
+## When coding
+
+1. Walk the decision flow above (required now? > simpler? > seen 3x?).
+2. Climb `@qa-token-saver` ladder (YAGNI > Reuse > …).
+3. Prefer repo patterns (POM, steps, fixtures) over new frameworks.
+
+## Before push / PR
+
+If user asks to push, open PR, or ship automation changes:
+
+1. Run `@qa-pr-review` on the branch/diff (or local `git diff` if no PR yet).
+2. Fix **P0/P1** before offering push commands.
+3. Honor `git.branch_pr_required=automation_only` and "user runs push". Review does not mean agent pushes unasked.
+
+## PR review checklist
+
+- [ ] Flow: needed now? (YAGNI) > simpler? (KISS) > seen 3x? (Rule of Three / DRY)
+- [ ] SOLID: one file doing too many jobs, or tight coupling that blocks reuse?

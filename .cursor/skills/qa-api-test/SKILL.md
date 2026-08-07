@@ -1,6 +1,6 @@
 ---
 name: qa-api-test
-description: Generate Karate API tests from Shortcut stories or OpenAPI specs. Interactive flow: ask for endpoint, method, request/response patterns, coverage type, generates Karate feature files. Use when asked for API testing, Karate tests, API automation, or endpoint testing.
+description: Generate Karate API tests from Shortcut stories, OpenAPI, or endpoint URL. Feature files, assertions, data-driven. Use for Karate, API test, API automation, REST endpoint, or Maven API repo.
 ---
 
 # QA API Test (Karate)
@@ -42,7 +42,7 @@ Load `.cursor/rules/automation-memory-gate.mdc`.
 - `.cursor/references/karate-testing.md` - offline quick reference
 
 ### Step 3b: Climb Decision Ladder
-Call the decision ladder from `@qa-token-saver`:
+Call `@qa-token-saver` and `coding-principles.mdc` flow (needed now? > simpler? > seen 3x?):
 1. **YAGNI**: Does this endpoint need testing? Already covered?
 2. **Reuse**: Any existing Karate helper/callonce/feature?
 3. **Stdlib**: `match response`, `status` sufficient?
@@ -50,6 +50,8 @@ Call the decision ladder from `@qa-token-saver`:
 5. **Existing dep**: Existing utils/library sufficient?
 6. **One-liner**: Can Scenario Outline save lines?
 7. **Minimum**: Is happy path enough or need error tests?
+
+If authz, free-text filter/search, or file upload: `@qa-security-review` lite (no secrets in feature files).
 
 ### Step 4: Generate Karate Feature
 

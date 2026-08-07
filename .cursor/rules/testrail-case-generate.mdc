@@ -46,15 +46,23 @@ Stop if blocked. Do not draft yet.
 
 ## Step 2 — Plan (before full drafts)
 
+### No overlap / no redundant cases (mandatory)
+
+- **Do not** propose cases that overlap (same entry point, same assertion, same path with only wording changed).
+- **Do not** split into N cases when **one** case with clear steps/expectations is enough.
+- Prefer **merge**: one scenario covers multiple related checks when they share precondition and flow (e.g. several entry points that assert the same outcome → one case with multi-step or multi-expectation, not one case per entry).
+- Split **only** when behavior truly differs (pos vs neg, different outcome, different role/data, or separate risk).
+- During Plan: self-check for overlap/redundancy. Drop or merge before showing the table. Note merges in the Notes column.
+
 Show a short **test plan** in chat:
 
 | # | Proposed title | Type (pos/neg) | Priority | Notes |
 |---|----------------|----------------|----------|-------|
 | 1 | When …, then … | pos | P1 | AC #1 |
 
-Include: total count, section path, open questions.
+Include: total count, section path, open questions. Prefer the **smallest** set that still covers AC.
 
-Wait for: **ACC plan** / **OK** / **EDIT plan** (add/remove/reorder scenarios).
+Wait for: **ACC plan** / **OK** / **EDIT plan** (add/remove/reorder/merge scenarios).
 
 Do **not** show full steps yet. Do **not** write TestRail.
 

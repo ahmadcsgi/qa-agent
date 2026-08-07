@@ -1,5 +1,5 @@
 ---
-description: Shortcut bug descriptions. Summary, steps, actual/expected. Load when drafting bugs.
+description: Shortcut bug descriptions. Natural summary covering what/where/impact, then steps, actual/expected. Load when drafting bugs.
 alwaysApply: false
 ---
 
@@ -7,17 +7,25 @@ alwaysApply: false
 
 When drafting or writing Shortcut **bug** tickets:
 
+**Titles:** follow `shortcut-story-titles.mdc` - `[Type] [FeatureArea] …` (example: `[FE] [Orders] …`). Org area names: private `qa-memory/org-context.md`.
+
 ## Required sections (order)
 
 Always include a **description**. Never submit a bug with an empty description.
 
-**1. Summary** (mandatory, before Steps to Reproduce). Cover all three:
+**1. Summary** (mandatory, before Steps to Reproduce).
 
-| Sub-section | Content |
-|-------------|---------|
-| **What** | One or two sentences. What is the bug about. |
-| **Where** | Screen, module, feature, or flow where it occurs. |
-| **Impact** | What breaks for the user or data. Why it matters. |
+Write a **normal prose summary**. Do **not** use explicit labels like `What:`, `Where:`, `Impact:`, or `Why:`.
+
+The reader must still clearly understand all of these from the prose:
+
+| Signal | Cover in the narrative |
+|--------|------------------------|
+| What | What is wrong or missing |
+| Where | Screen, module, feature, or flow |
+| Impact / why | What breaks for the user or data, and why it matters |
+
+Keep it short (a few sentences). Concrete UI labels. Human tone.
 
 **2. Steps to Reproduce** — numbered steps.
 
@@ -27,16 +35,22 @@ Always include a **description**. Never submit a bug with an empty description.
 
 Optional after Summary: Environment, Related story, Additional Notes.
 
-### Summary example
+### Summary example (good)
+
+```markdown
+## Summary
+
+Saving a form without a required Name on Admin settings > Configuration > Reasons clears the right configuration panel. The user cannot edit the record after that, and unsaved changes are lost when they Close and reopen.
+```
+
+### Summary example (avoid)
 
 ```markdown
 ## Summary
 
 **What:** Saving a form without a required Name clears the configuration panel.
-
 **Where:** Admin settings, Configuration panel, Reasons tab.
-
-**Impact:** The right panel goes blank. The user cannot edit the record. Unsaved changes are lost after Close and reopen.
+**Impact:** The right panel goes blank.
 ```
 
 ## Punctuation (human tone)
@@ -56,3 +70,16 @@ Optional after Summary: Environment, Related story, Additional Notes.
 - Concrete UI labels and observable results.
 - Numbered steps for reproduction.
 - Actual vs Expected must be clearly separated.
+- Summary signals (what / where / impact) are **content requirements**, not heading labels.
+
+## After create (same turn)
+
+Create + custom fields + attachments are **one unit** (`shortcut.create_fill_custom_fields=true`).
+
+After `stories-create` (bug or feature), in the **same turn**:
+
+1. Fill standard custom fields via `stories-update` / custom fields API: Technical Area, Priority, Version Scheduled Fix, and QA Effort when applicable.
+2. Upload screenshots or other evidence in the same turn when the user provided them.
+3. Do **not** leave those fields empty and ask follow-ups like "mau isi Priority?" or "isi Version?" after create.
+
+Resolve values from prefs, draft ACC, title/type cues (example: FE bug > Technical Area UI), or story context. If a required value is unknown, ask **once** in the draft ACC table **before** create, then apply on create with no second ask.

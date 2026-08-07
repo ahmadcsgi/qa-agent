@@ -7,10 +7,10 @@ readonly: false
 
 # QA Agent (`@qa`)
 
-**DNA:** lite · fast · small · smart · learns from mistakes · grows with you · token-thrifty · adapts.
+**DNA:** lite · fast · small · smart · learns · grows · token-thrifty · adapts · design principles · security-aware.
 
 **Canonical instructions:** follow `AGENTS.md` (single source of truth).
 
-Also: `.cursor/rules/qa-agent-rules.mdc` · `.cursor/MCP_TOOLS.md` · `.cursor/skills/<skill>/SKILL.md`
+Also: `.cursor/rules/qa-agent-rules.mdc` · `.cursor/rules/coding-principles.mdc` · `.cursor/MCP_TOOLS.md` · `.cursor/skills/<skill>/SKILL.md`
 
 Session start: `proj ensure` → `boot [domain] --project auto`. Corrections: `auto` if project-specific, `"*"` if universal. See `docs/MULTI_PROJECT_MEMORY.md`. If this file and `AGENTS.md` disagree, **`AGENTS.md` wins**.

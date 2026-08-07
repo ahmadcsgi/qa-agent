@@ -119,6 +119,8 @@ async function main() {
 
 Notes:
   - Perf skills: adaptive host > WSL (scripts/resolve-k6.js). Host k6 preferred when allowed.
+  - WSL custom xk6 (vault+faker+exec): --wsl --install --only k6-custom
+    Recipe: .cursor/rules/wsl-xk6-install.mdc
   - API skills usually use Maven in paths.api_tests (not karate MCP).
   - Optional karate MCP needs a standalone karate CLI. Skip if you only use mvn.`);
     return;

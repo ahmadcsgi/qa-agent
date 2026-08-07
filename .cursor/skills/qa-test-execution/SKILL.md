@@ -1,6 +1,6 @@
 ---
 name: qa-test-execution
-description: TestRail test plans, runs, results (mark Passed/Failed), and TC label groom. Preview then ACC. Use after cases exist or when user asks for plan/pass/centang/TC-ready.
+description: TestRail plans, runs, and results (mark Passed/Failed), plus TC label groom. Preview then ACC. Use for test plan, add to run, mark pass/fail, centang, or TC-ready.
 ---
 
 # QA Test Execution
@@ -36,6 +36,13 @@ Naming pattern (if team uses it): `[TEST PLAN] <version> <Squad>` e.g. `[TEST PL
 
 **Description (plan / entry / milestone):** feature under test only (e.g. `Checkout`, `Login`). Never story/case/plan/run IDs, format reminders, or AI post-create summaries. Prefer **empty** over robotic text. Pref: `testrail.plan_description=feature_only`.
 
+## Flow — Add cases to an existing plan
+
+1. Resolve plan from prefs / know / URL / private `.cursor/qa-memory/org-context.md` (never hardcode org plan IDs in this skill).
+2. Split entries by product area when the plan uses them. Never merge unrelated areas into one entry.
+3. **Plan runs:** MCP `updateRun` returns **403** on runs that belong to a plan. Use TestRail API `update_plan_entry/{planId}/{entryId}` with `suite_id`, `include_all: false`, and **full** `case_ids` (existing + new). Then `addResultsForCases` on the run id.
+4. If MCP has no `getPlan` / `update_plan_entry`, use REST with credentials from local MCP env (never print secrets). Prefer prefs/know for plan/run ids before listing all plans.
+
 ## Flow — Mark results
 
 1. Resolve `runId` + case IDs (Shortcut checklist `cases/view/<id>` preferred)
@@ -45,6 +52,8 @@ Naming pattern (if team uses it): `[TEST PLAN] <version> <Squad>` e.g. `[TEST PL
 5. Comment: story id + short note
 
 Never invent results. Never mark cases the user did not name (or that are not on the story checklist they pointed to).
+
+After cases are in plan + Passed (when user asked), optionally offer Shortcut label groom `TC-on-progress` > `TC-ready`.
 
 ## Flow — Label groom (Shortcut)
 
@@ -64,6 +73,8 @@ Do not remove unrelated labels. Ask if multiple TC labels conflict.
 
 `getPlans` · `addPlan` · `addPlanEntry` · `getRuns` · `getTests` · `addResultsForCases` · `addResultForCase` · `stories-get-by-id` · `stories-update` · `labels-list`
 
+**Missing in MCP (use REST):** `get_plan` · `update_plan_entry` (required to add cases to an existing plan run)
+
 ## References
 
-`testrail-api.md` · `MCP_TOOLS.md` · `shortcut-api.md` · project-context (milestone / suite IDs)
+`testrail-api.md` · `MCP_TOOLS.md` · `shortcut-api.md` · project-context · prefs `testrail.*_plan_*` / private `qa-memory/org-context.md`

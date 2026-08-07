@@ -1,6 +1,6 @@
 ---
 name: qa-visual-test
-description: Visual regression testing with token-efficient architecture. Takes Playwright screenshots, compares against baselines via pixelmatch (0 AI token cost), and only loads diff images into context on failure. Handles baseline creation, git-aware testing, batch runs, config files, masking, and HTML reports. Use when asked to check UI visually, run visual regression, compare screenshots, or verify layout changes.
+description: Visual regression with Playwright screenshots + pixelmatch (zero tokens on pass). Baselines, masking, batch, HTML diff report. Use for visual test, screenshot compare, layout check, or visual regression.
 ---
 
 # QA Visual Test

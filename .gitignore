@@ -16,3 +16,6 @@ onboard.md
 
 # Visual test npm dependencies
 .cursor/skills/qa-visual-test/scripts/node_modules/
+
+# Explicit: org overlay / private rules must stay under qa-memory (already ignored)
+# Do not add Docflow / Workbench / Dragon / CSG plan IDs to committed skills.

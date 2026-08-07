@@ -1,11 +1,11 @@
 ---
 name: qa-perf-test
-description: Generate k6 performance tests from Shortcut stories or API specs. Interactive flow: ask for scenario type, VUs, duration, thresholds, generates k6 script, auto-runs (adaptive host/WSL), auto-heals. Use when user asks for "perf test", "generate k6", "load test", "performance test", or provides a story ID for performance testing.
+description: Generate k6 performance/load tests from Shortcut stories or APIs. Adaptive host/WSL runner, xk6 custom (vault+faker+exec), thresholds, auto-heal. Use for perf test, k6, load test, stress test, or WSL k6 missing extensions.
 ---
 
 # QA Performance Test (k6)
 
-## Run environment (adaptive — mandatory)
+## Run environment (adaptive, mandatory)
 
 **Detect first** (do not assume WSL):
 
@@ -23,8 +23,17 @@ node scripts/resolve-k6.js
 
 - Pref override (optional): `tooling.k6_runner` = `auto` (default) | `host` | `wsl`
 - Pref `paths.perf_tests` = perf repo root
+- Pref `tooling.k6_custom_wsl=true` when custom xk6 (vault+faker+exec) is installed
 - macOS / Linux: never require WSL
-- Corporate Windows where host k6 is blocked → use WSL fallback (see `docs/WSL.md`)
+- Corporate Windows where host k6 is blocked > use WSL fallback (see `docs/WSL.md`)
+
+### Custom k6 missing / missing extensions (mandatory check)
+
+If `resolve-k6` fails, or vault scripts need extensions and `k6 version` lacks **ansible-vault** / **exec** / **faker**:
+
+1. Load `.cursor/rules/wsl-xk6-install.mdc` (recipe: xk6 build **v1.7.1** + three extensions > `~/bin/k6`)
+2. Prefer `node scripts/setup-wsl-tooling.js --install --only k6-custom` (REPO_ROOT = `paths.perf_tests`)
+3. Do not invent a different pin. Stock apt (`--only k6`) is OK only when vault/faker/exec are not required
 
 ### Secrets / vault (before inventing credentials)
 
@@ -42,7 +51,7 @@ node scripts/resolve-k6.js
 ### Thresholds baseline
 
 1. Ask: does squad have custom thresholds (project-context / squad Confluence)?
-2. If **no** → read [26.2 Performance Plan — Thresholds](https://csg-quote-order.atlassian.net/wiki/spaces/DPE/pages/4719869987/26.2+Performance+Plan#Thresholds) via Glean or user paste (onboard Part A9e). Do not invent numbers.
+2. If **no** → resolve org baseline from private `qa-memory/org-context.md`, onboard Part A9e, or Glean / user paste. Do not invent numbers. Do not hardcode org wiki URLs in this skill.
 3. If squad has own baseline → squad wins over org fallback.
 
 ## Interactive Flow
@@ -83,7 +92,7 @@ Ask the user:
 Risk analysis, scenarios, thresholds, data variants. Risk Coverage > Endpoint Coverage.
 
 ### Step 4b: Decision ladder
-`@qa-token-saver`: YAGNI → Reuse → Stdlib → Native → Existing dep → One-liner → Minimum.
+`@qa-token-saver` + `coding-principles.mdc`: needed now? > simpler? > seen 3x? Then YAGNI > Reuse > Stdlib > Native > Existing dep > One-liner > Minimum. Auth/vault paths: `@qa-security-review` lite.
 
 ### Step 5b: Reflexion
 Correctness, minimality, reuse, safety — then preview.
@@ -126,7 +135,8 @@ Fix and re-run max 2x. Then ask user.
 
 ## References
 - `.cursor/references/k6-testing.md`
+- `.cursor/rules/wsl-xk6-install.mdc` (custom WSL xk6: vault + faker + exec)
 - `scripts/resolve-k6.js`
-- `docs/WSL.md` (Windows fallback only)
-- `scripts/setup-wsl-tooling.js`
+- `docs/WSL.md` (Windows fallback + custom k6)
+- `scripts/setup-wsl-tooling.js` (`--only k6-custom`)
 - Private `onboard.md` Part A9c–A9e (EncryptSecret, api-scenario.js, perf baseline) when present

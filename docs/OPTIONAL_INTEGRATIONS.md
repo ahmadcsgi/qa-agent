@@ -55,7 +55,8 @@ Do **not** copy the whole catalog into QA Agent. Overlap with existing rules:
 | TestRail Test Case | `testrail-case-generate.mdc` |
 | Cypress E2E | `@qa-ui-automation` + `cypress-testing.md` |
 | QA Bug Report | `shortcut-bug-description.mdc` |
-| PR Review (security/tests) | `@qa-pr-review` |
+| PR Review (tests / design) | `@qa-pr-review` |
+| Security Review (secrets / XSS / CVE hygiene) | `@qa-security-review` |
 
 Review upstream rules for **gaps** only. Adapt patterns, do not vendor files.
 
@@ -88,5 +89,6 @@ Checks: no `mcp.json` in repo, `.gitignore` hygiene, untracked secrets patterns,
 
 - [MCP.md](MCP.md) — profiles and optional servers
 - [SETUP.md](SETUP.md) — install and doctor
-- `@qa-pr-review` — PR review for test automation repos
+- `@qa-pr-review` - PR review for test automation repos
+- `@qa-security-review` - defensive security review (no exploit PoCs)
 - `@qa-token-saver` — decision ladder

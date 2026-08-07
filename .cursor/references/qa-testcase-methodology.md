@@ -74,6 +74,16 @@ Before drafting new cases, search TestRail:
 
 Never silently create a near-duplicate of an active case.
 
+### Within the new plan (also mandatory)
+
+Before locking the plan table, check proposed cases **against each other**:
+
+- Same flow + same outcome → **merge into one** case (multi-step / multi-expectation OK)
+- Prefer the **smallest** set that still covers AC
+- Split only when behavior truly differs (pos vs neg, different outcome, role, or data)
+
+Pref: `testcases.merge_prefer_one` · `testcases.no_overlap`
+
 ---
 
 ## Phase 3 — UI component probes

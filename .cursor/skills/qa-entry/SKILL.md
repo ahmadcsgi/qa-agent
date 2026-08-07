@@ -1,6 +1,6 @@
 ---
 name: qa-entry
-description: Entry point for QA tasks. Detect intent, ask if unclear, route to one skill. Use for @qa, vague asks, or pasted links/IDs.
+description: QA entry/router. Detect intent and route to one @qa-* skill (TestRail, Shortcut, Cypress, k6, Karate, visual). Use for @qa, onboard, vague asks, or pasted story/case/Helix links.
 ---
 
 # QA Entry Point
@@ -34,7 +34,8 @@ Receptionist: detect intent, clarify if needed, route to **one** skill. Stay sho
 | "perf" / k6 / load | `@qa-perf-test` (adaptive: inside WSL > host > bridge) |
 | "visual" / screenshot compare | `@qa-visual-test` |
 | "scan project" / mapping | `@qa-project-mapping` |
-| "review pr" / "review my pr" / PR URL + test changes | `@qa-pr-review` |
+| "review pr" / "review my pr" / before push / PR URL + test changes | `@qa-pr-review` (+ `@qa-security-review` if secrets/XSS/CVE) |
+| "security review" / XSS / CVE / OWASP / harden / injection | `@qa-security-review` |
 | "onboard" / "run onboard" / "onboarding" / first-time setup | See **Onboard** below |
 | Vague | Ask: automation / search / triage / cases / plan-or-results / onboard? |
 

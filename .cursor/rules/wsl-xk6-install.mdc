@@ -1,0 +1,83 @@
+---
+description: WSL custom k6 via xk6 (v1.7.1 + ansible-vault + faker + exec). Load with @qa-perf-test when k6 missing or missing vault/faker/exec extensions.
+alwaysApply: false
+---
+
+# WSL custom k6 (xk6)
+
+Stock `apt` k6 has no Ansible Vault / faker / exec. Many perf repos need a custom binary.
+
+**Build root:** prefer `paths.perf_tests` (perf repo), not qa-agent. Recipe uses `REPO_ROOT` so paths work on any machine.
+
+## Prerequisites (inside WSL Ubuntu)
+
+| Need | Check |
+|------|--------|
+| Go | `go version` (for `go install` xk6) |
+| git | `git --version` |
+| PATH | `~/go/bin` and `~/bin` on PATH (login shell) |
+
+```bash
+# PATH (add to ~/.bashrc if missing)
+export PATH="$HOME/bin:$HOME/go/bin:$PATH"
+```
+
+## Recipe
+
+```bash
+# 0. Resolve repo root (path differs per user/machine)
+# Prefer paths.perf_tests (WSL path of the perf repo)
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+cd "$REPO_ROOT"
+
+# 1. Install xk6 CLI
+go install go.k6.io/xk6/cmd/xk6@latest
+
+# 2. Build custom k6 binary
+mkdir -p bin
+~/go/bin/xk6 build v1.7.1 \
+  --output "$REPO_ROOT/bin/k6-custom" \
+  --with github.com/szkiba/xk6-ansible-vault@latest \
+  --with github.com/grafana/xk6-faker@latest \
+  --with github.com/grafana/xk6-exec@latest
+
+# 3. Symlink to ~/bin/k6
+mkdir -p ~/bin
+[ -x ~/bin/k6 ] && mv ~/bin/k6 ~/bin/k6-old
+ln -sf "$REPO_ROOT/bin/k6-custom" ~/bin/k6
+
+# 4. Verify: must show exec + ansible-vault (and faker)
+export PATH="$HOME/bin:$HOME/go/bin:$PATH"
+k6 version
+```
+
+## Verify
+
+- `command -v k6` > `$HOME/bin/k6` (symlink)
+- `k6 version` output includes **exec** and **ansible-vault** (faker too)
+- Pref: `tooling.k6_runner=wsl` when host k6 is blocked or you always run in WSL
+- Pref: `tooling.k6_custom_wsl=true` after this build
+
+## Installer shortcut (from qa-agent on Windows host)
+
+```bash
+node scripts/setup-wsl-tooling.js --install --only k6-custom
+# optional: --repo "C:\path\to\your-perf-repo"
+# stock apt only: --only k6
+```
+
+Onboard tooling **6** prefers this custom build (not stock apt alone).
+
+## Do not
+
+- Pin workshop `v0.43.1` (broken in 2026)
+- Add `xk6-distributed-tracing` unless the team explicitly needs it
+- Build into a directory named `k6` without `--output` (fails if `./k6` is a folder)
+- Commit vault passwords or plaintext secrets
+
+## Related
+
+- `docs/WSL.md`
+- `scripts/setup-wsl-tooling.js` (`k6-custom`)
+- `scripts/resolve-k6.js`
+- `@qa-perf-test`

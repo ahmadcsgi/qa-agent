@@ -1,6 +1,6 @@
 ---
 name: qa-search-tickets
-description: Search Shortcut tickets using natural language with intelligent query expansion, relevance scoring, and interactive narrowing. Use when user says "search ticket about...", "search bug...", "find ticket...", paste error message, incident title, or asks about previous investigations.
+description: Search Shortcut tickets (stories/bugs) with NL query expansion and relevance ranking. Use for "search ticket", "find bug", "search Shortcut", paste error/stack, or prior investigation lookup.
 ---
 
 # QA Search Tickets

@@ -1,6 +1,6 @@
 ---
 name: qa-defect-triage
-description: Triage incidents end-to-end: understand issue, search duplicates, investigate knowledge, classify, generate draft ticket after approval. Use when user provides incident ID/link/description/bug report.
+description: Triage Helix/incident bugs end-to-end (duplicates, classify, draft Shortcut bug after ACC). Use for incident ID/link, bug report, defect triage, or "create bug ticket".
 ---
 
 # QA Defect Triage
