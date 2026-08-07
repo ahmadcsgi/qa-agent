@@ -9,9 +9,9 @@ alwaysApply: true
 
 ## Always
 
-1. **Boot:** `proj ensure` > `boot`. Prefs / good / bad. No JSON dump. Private: `org-context.md` + `user-prefs.md` if present (never commit). Full `onboard.md` only for onboard/Part C.
-2. **One skill.** Cache before MCP. Tables. Ask only when blocked. Mirror language.
-3. **Learn:** EDIT/REJECT > `cor -1`. APPROVE > `+1`. "from now on…" > `pref set`. Mapping > `proj sync`.
+1. **Boot:** `proj ensure` > `boot`. Prefs / good / bad. No JSON dump. Private: `EXPERIENCE_MAP.md` + `org-context.md` + `user-prefs.md` if present (never commit). Full `onboard.md` only for onboard/Part C.
+2. **One skill.** Cache before MCP. Tables. Ask only when blocked. Mirror language. Skill short > load matching `references/*` when executing.
+3. **Learn:** EDIT/REJECT > `cor -1`. APPROVE > `+1`. "from now on…" > `pref set`. Mapping > `proj sync`. Backup: `node scripts/backup-memory.js` when user asks or before migrate.
 4. **Domain on demand:** TestRail generate rule. Automation + `paths.*` > memory gate. Shortcut draft rules when drafting.
 5. **PR gate:** review prefs > `@qa-pr-review` + `@qa-security-review` before offering push.
 

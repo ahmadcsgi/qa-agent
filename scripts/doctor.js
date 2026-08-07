@@ -80,6 +80,7 @@ console.log("\nRepository");
   ["scripts/onboard-wizard.js", path.join(REPO, "scripts", "onboard-wizard.js")],
   ["scripts/validate-paths.js", path.join(REPO, "scripts", "validate-paths.js")],
   ["scripts/post-restore-check.js", path.join(REPO, "scripts", "post-restore-check.js")],
+  ["scripts/backup-memory.js", path.join(REPO, "scripts", "backup-memory.js")],
   ["docs/MIGRATION.md", path.join(REPO, "docs", "MIGRATION.md")],
   ["docs/OPTIONAL_INTEGRATIONS.md", path.join(REPO, "docs", "OPTIONAL_INTEGRATIONS.md")],
   ["scripts/agent-shield-scan.js", path.join(REPO, "scripts", "agent-shield-scan.js")],

@@ -4,6 +4,16 @@ All notable changes to QA Agent are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project uses [SemVer](https://semver.org/).
 
+## [1.5.16] - 2026-08-07
+
+### Added
+- `scripts/backup-memory.js`: zip `~/.qa-agent` (prefs/know/cor) + `.cursor/qa-memory` (optional `--include-mcp`)
+- References: `qa-pr-review-flow.md`, `qa-token-saver-ladder.md`
+- Private `EXPERIENCE_MAP.md` skill-detail index + MEMORY_PROTOCOL updates
+
+### Fixed
+- Gap pass: sync prefs (`testcases.language`, `shortcut.bug_summary_style`, preview delete), wire skill>reference map, doctor checks backup script
+
 ## [1.5.15] - 2026-08-07
 
 ### Changed

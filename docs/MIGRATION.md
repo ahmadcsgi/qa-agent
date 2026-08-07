@@ -44,9 +44,12 @@ Use this after moving to a new PC or reinstalling Cursor. **Do not commit backup
 
 | Script | Purpose |
 |--------|---------|
+| `node scripts/backup-memory.js` | Zip `~/.qa-agent` prefs/know/cor + workspace `.cursor/qa-memory` (optional `--include-mcp`) |
 | `node scripts/post-restore-check.js` | Quick smoke after restore |
 | `node scripts/validate-paths.js` | Path pref sanity (ui ≠ api, paths exist) |
 | `node scripts/doctor.js` | Full health check |
 | `node scripts/onboard-status.js` | Onboard checklist |
+
+Default backup out: `%USERPROFILE%\Documents\qa-agent-backups\`. Never commit zips.
 
 See also: [FIRST_RUN.md](FIRST_RUN.md) · [SETUP.md](SETUP.md)

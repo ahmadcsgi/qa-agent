@@ -23,4 +23,4 @@ Pre-push when `git.review_before_push=true`. Always pair `@qa-security-review`. 
 
 Verdict Approve | Request changes | Block. Sections P0–P3 + what looks good. Cite `path:line`.
 
-Hard rules: never approve P0 secrets. Punctuation core. Related: `coding-principles.mdc`, `@qa-security-review`.
+Hard rules: never approve P0 secrets. Punctuation core. Detail template: `.cursor/references/qa-pr-review-flow.md`. Related: `coding-principles.mdc`, `@qa-security-review`.

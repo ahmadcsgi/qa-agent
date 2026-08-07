@@ -13,4 +13,4 @@ description: YAGNI decision ladder before generating tests. Use for save tokens,
 2. Climb: YAGNI > Reuse > Stdlib > Native > Existing dep > One-liner > Minimum > Reflexion before preview
 3. Modes: Lite (default) | Full | Ultra
 
-Detail rungs + examples: `.cursor/rules/coding-principles.mdc` + optional `docs/OPTIONAL_INTEGRATIONS.md` (ponytail). Record decision before generate.
+Detail rungs + examples: `.cursor/references/qa-token-saver-ladder.md` + `coding-principles.mdc`. Record decision before generate.

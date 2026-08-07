@@ -16,6 +16,8 @@
 | `qa-security-review.md` | Secrets, XSS/injection coverage, authz, CVE hygiene (defensive) | `@qa-security-review`, `@qa-pr-review` |
 | `qa-ui-automation-flow.md` | POM, heal, conventions (detail) | `@qa-ui-automation` |
 | `qa-perf-test-flow.md` | Runner matrix, vault, thresholds (detail) | `@qa-perf-test` |
+| `qa-pr-review-flow.md` | PR review output template | `@qa-pr-review` |
+| `qa-token-saver-ladder.md` | Full YAGNI ladder rungs | `@qa-token-saver` |
 
 ## Skills (discoverability)
 
