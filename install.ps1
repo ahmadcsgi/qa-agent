@@ -85,8 +85,7 @@ Write-Info "Creating project directory structure..."
     ".cursor\qa-memory\generated-tests\manual",
     ".cursor\qa-memory\generated-tests\cypress",
     ".cursor\qa-memory\generated-tests\k6",
-    ".cursor\qa-memory\generated-tests\karate",
-    ".cursor\qa-memory\generated-tests\visual"
+    ".cursor\qa-memory\generated-tests\karate"
 ) | ForEach-Object {
     $FullPath = Join-Path $TargetDir $_
     New-Item -ItemType Directory -Force -Path $FullPath | Out-Null
@@ -301,36 +300,6 @@ if (-not (Test-Path $ProjectContextTarget)) {
         Copy-Item -Path $ContextTplSrc -Destination $ProjectContextTarget -Force
         Write-Ok "project-context/current.md installed from template"
     }
-}
-
-# ─── Visual test npm install (optional) ───────────────────────────────────
-$VisualScriptsDir = JPath $TargetDir ".cursor" "skills" "qa-visual-test" "scripts"
-$VisualPkg = Join-Path $VisualScriptsDir "package.json"
-$VisualMods = Join-Path $VisualScriptsDir "node_modules"
-if ((Test-Path $VisualPkg) -and -not (Test-Path $VisualMods)) {
-    Write-Host ""
-    Write-Info "Visual regression dependencies found. Install now? (y/N)"
-    $answer = Read-Host
-    if ($answer -eq "y" -or $answer -eq "Y") {
-        Push-Location $VisualScriptsDir
-        try {
-            npm install --silent
-            npx playwright install chromium 2>$null
-            Write-Ok "Visual regression dependencies installed"
-            Write-Info "  Run: node .cursor\skills\qa-visual-test\scripts\run.js init"
-        }
-        finally {
-            Pop-Location
-        }
-    }
-    else {
-        Write-Info "  Skip npm install. Run manually when needed:"
-        Write-Info "    cd $VisualScriptsDir"
-        Write-Info "    npm install && npx playwright install chromium"
-    }
-}
-elseif (Test-Path $VisualMods) {
-    Write-Ok "Visual regression dependencies already installed"
 }
 
 # ─── Done ──────────────────────────────────────────────────────────────────

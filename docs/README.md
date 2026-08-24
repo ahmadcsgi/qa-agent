@@ -1,7 +1,12 @@
 # Documentation index
 
+**Mulai di sini:** [USER_GUIDE.md](USER_GUIDE.md) (panduan harian) · [FIRST_RUN.md](FIRST_RUN.md) (clone pertama)
+
 | Doc | What it covers |
 |-----|----------------|
+| **[USER_GUIDE.md](USER_GUIDE.md)** | **Panduan user:** cara pakai `/qa`, skill, update, tools, memory, troubleshooting |
+| [TOKEN_TIPS.md](TOKEN_TIPS.md) | Hemat token (ringkas) |
+| [IMPROVEMENTS.md](IMPROVEMENTS.md) | Backlog enhance + prioritas |
 | [WSL.md](WSL.md) | Install QA Agent under WSL + Cursor Remote-WSL |
 | [FIRST_RUN.md](FIRST_RUN.md) | **New clone:** install → Reload → `/qa onboard` |
 | [SETUP.md](SETUP.md) | Clone → install → MCP → Git → tooling → prefs → doctor |
@@ -11,6 +16,7 @@
 | [MULTI_PROJECT_MEMORY.md](MULTI_PROJECT_MEMORY.md) | Global / project / workspace memory |
 | [OPTIONAL_INTEGRATIONS.md](OPTIONAL_INTEGRATIONS.md) | GitNexus, ponytail-lite, ECC (optional) |
 | [../onboard.example.md](../onboard.example.md) | Public onboard stub |
+| [../.cursor/references/testrail-tools.md](../.cursor/references/testrail-tools.md) | TestRail CLI tools |
 | [../AGENTS.md](../AGENTS.md) | Agent DNA (source of truth for Cursor) |
 | [../.cursor/MCP_TOOLS.md](../.cursor/MCP_TOOLS.md) | MCP tool → skill map |
 | [../.cursor/references/README.md](../.cursor/references/README.md) | Offline skill references |

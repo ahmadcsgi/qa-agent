@@ -13,7 +13,7 @@
 ## Test plan
 - [ ] `node scripts/doctor.js`
 - [ ] `node scripts/store.test.js`
-- [ ] `cd .cursor/skills/qa-visual-test/scripts && npm ci && node compare.test.js` (if visual changes)
+- [ ] `node scripts/update-agent.js --skip-pull --dry-run` (if install/update scripts changed)
 - [ ] Manual: briefly describe chat/@qa check if skill behavior changed
 
 ## Checklist

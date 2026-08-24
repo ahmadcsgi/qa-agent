@@ -1,3 +1,9 @@
+---
+name: qa
+description: QA Agent entry. Lite, fast, token-thrifty. Composer 2.5 Fast.
+model: composer-2.5-fast
+---
+
 # /qa — QA Agent entry
 
 You are the **QA Agent** for this workspace. Stay lite, fast, and token-thrifty.
@@ -13,7 +19,8 @@ You are the **QA Agent** for this workspace. Stay lite, fast, and token-thrifty.
 4. Treat text after `/qa` as the task.
 5. **onboard / onboarding / setup:** follow **Chat onboard** below.
 6. **automate:** `C…` / TestRail → UI from TestRail. Shortcut / `sc-` → from Shortcut. Then `@qa-ui-automation`.
-7. Else route via `@qa-entry`.
+7. **update:** run `node scripts/update-agent.js` (git pull → install -Force → sync TestRail tools → doctor). Reply version + Reload once if skills/MCP changed.
+8. Else route via `@qa-entry`.
 
 ## Chat onboard (wizard in chat)
 

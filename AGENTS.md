@@ -40,7 +40,7 @@ Detail: `docs/MULTI_PROJECT_MEMORY.md`. Prefs live in store (not duplicated here
 | Plans / results | `@qa-test-execution` |
 | Karate API | `@qa-api-test` |
 | Map repo | `@qa-project-mapping` |
-| Visual | `@qa-visual-test` |
+| Update agent | `/qa update` > `node scripts/update-agent.js` |
 | Ladder | `@qa-token-saver` |
 | PR review | `@qa-pr-review` |
 | Security | `@qa-security-review` |

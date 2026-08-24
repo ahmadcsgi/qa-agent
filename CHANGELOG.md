@@ -4,6 +4,23 @@ All notable changes to QA Agent are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project uses [SemVer](https://semver.org/).
 
+## [1.5.17] - 2026-08-24
+
+### Added
+- `scripts/update-agent.js`: `/qa update` flow (git pull → install → sync TestRail tools → doctor)
+- `scripts/testrail-tools/`: reusable TestRail CLI (`tr-get-cases`, `tr-update-fields`, `tr-update-plan-entry`, `tr-audit-automation`, `tr-export-xlsx`)
+- `.cursor/references/testrail-tools.md`
+- `docs/USER_GUIDE.md`, `docs/TOKEN_TIPS.md`, `docs/IMPROVEMENTS.md`
+
+### Changed
+- `update.ps1` / `update.sh`: delegate to `update-agent.js`
+- `/qa` command + `@qa` agent: default model **Composer 2.5 Fast** (`composer-2.5-fast`)
+- `testrail-api.md`: `update_plan_entry` + CLI tools tips
+- `@qa-entry`: `/qa update` route. Removed `@qa-visual-test` routing
+
+### Removed
+- `.cursor/skills/qa-visual-test/` and all routing/docs references (unused)
+
 ## [1.5.16] - 2026-08-07
 
 ### Added

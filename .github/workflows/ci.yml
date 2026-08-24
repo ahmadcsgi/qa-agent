@@ -35,7 +35,7 @@ jobs:
           set -e
           for s in qa-entry qa-search-tickets qa-defect-triage qa-ui-automation \
                    qa-perf-test qa-test-cases qa-test-execution qa-api-test qa-project-mapping \
-                   qa-token-saver qa-visual-test qa-pr-review; do
+                   qa-token-saver qa-pr-review; do
             test -f ".cursor/skills/$s/SKILL.md"
             echo "OK $s"
           done
@@ -69,17 +69,17 @@ jobs:
           test -f docs/README.md
           test -f docs/OPTIONAL_INTEGRATIONS.md
           test -f scripts/agent-shield-scan.js
+          test -f scripts/update-agent.js
+          test -f scripts/testrail-tools/TestRailApi.ps1
+          test -f .cursor/references/testrail-tools.md
           grep -q 'AGENTS.md' .cursor/agents/qa.md
 
-  visual-compare:
+  update-agent-dry-run:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - name: Install visual deps + compare smoke
-        working-directory: .cursor/skills/qa-visual-test/scripts
-        run: |
-          npm ci
-          node compare.test.js
+      - name: update-agent dry-run
+        run: node scripts/update-agent.js --skip-pull --dry-run

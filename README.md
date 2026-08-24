@@ -4,7 +4,7 @@
 
 > **Prompt for Cursor:** Read this README and execute the setup steps. Then ask me what I want to do.
 
-QA Agent turns Cursor into a Quality Engineering assistant that stays **lite, fast, and small** — then gets **smarter with every correction**. Search bugs, triage incidents, generate Cypress/k6/API tests, manage TestRail cases, and run visual regression from chat, while learning your prefs and never repeating scored mistakes.
+QA Agent turns Cursor into a Quality Engineering assistant that stays **lite, fast, and small** — then gets **smarter with every correction**. Search bugs, triage incidents, generate Cypress/k6/API tests, manage TestRail cases from chat, while learning your prefs and never repeating scored mistakes.
 
 **DNA:** hemat token · `boot` sekali per tugas · simpan setiap APPROVE/EDIT/REJECT · bertumbuh lewat `prefs` + `corrections`.
 
@@ -14,6 +14,8 @@ QA Agent turns Cursor into a Quality Engineering assistant that stays **lite, fa
 
 | Doc | Topic |
 |-----|--------|
+| **[docs/USER_GUIDE.md](docs/USER_GUIDE.md)** | **Panduan user (mulai di sini)** |
+| [docs/TOKEN_TIPS.md](docs/TOKEN_TIPS.md) | Hemat token |
 | [docs/FIRST_RUN.md](docs/FIRST_RUN.md) | **New clone:** install → Reload → `/qa onboard` |
 | [docs/WSL.md](docs/WSL.md) | Windows + WSL Remote install |
 | [docs/SETUP.md](docs/SETUP.md) | Full install |
@@ -37,11 +39,10 @@ Choose your OS and run the installer (from a clone of this repo):
 | **Windows (remote)** | `install.ps1` | `iwr -Uri https://raw.githubusercontent.com/ahmadcsgi/qa-agent/main/install.ps1 \| iex` |
 
 The installer will:
-- Copy all 11 skills to `.cursor/skills/` (project) and `~/.cursor/skills/` (global)
+- Copy all skills to `.cursor/skills/` (project) and `~/.cursor/skills/` (global)
 - Install subagent, rules, AGENTS.md, MCP_TOOLS.md, and `.cursor/references/`
 - Scaffold project memory from `.cursor/templates/project-context.current.md`
 - Create the memory directory structure
-- Optionally install visual regression dependencies (Playwright + pixelmatch) on Windows and Unix
 
 Then configure MCP:
 
@@ -110,7 +111,7 @@ The agent saves every correction, preference, and pattern to its decision memory
 | Test plan / mark Passed | `"buat test plan"`, `"centang di run …"` | `@qa-test-execution` |
 | API tests (Karate) | Endpoint URL, `"api test for /users"` | `@qa-api-test` |
 | Map project structure | `"scan project structure"` | `@qa-project-mapping` |
-| **Visual regression** | `"check UI visually"`, `"run visual test on login page"` | `@qa-visual-test` |
+| Update QA Agent | `/qa update` or `node scripts/update-agent.js` | install + sync tools |
 | Optimize token usage | `"save tokens"`, decision ladder | `@qa-token-saver` |
 | Review test automation PR | `"review my PR"`, PR URL, before push | `@qa-pr-review` |
 | Security review (XSS / CVE / secrets) | `"security review"`, OWASP, harden | `@qa-security-review` |
@@ -124,8 +125,7 @@ The agent saves every correction, preference, and pattern to its decision memory
 │  @qa-search-tickets  @qa-defect-triage  @qa-ui-automation│
 │  @qa-perf-test       @qa-test-cases     @qa-api-test     │
 │  @qa-test-execution  @qa-project-mapping @qa-token-saver │
-│  @qa-entry           @qa-visual-test  @qa-pr-review      │
-│  @qa-token-saver     @qa-security-review                 │
+│  @qa-entry           @qa-pr-review  @qa-security-review   │
 ├──────────────────────────────────────────────────────────┤
 │  MEMORY SYSTEM (Layer 2)                                │
 │  ~/.qa-agent/ (global)  .cursor/qa-memory/ (project)   │
@@ -177,25 +177,7 @@ install.* · update.* · uninstall.*
 ├── references/                     ← Offline MCP/framework docs
 ├── templates/                      ← project-context template for install
 ├── qa-memory/                      ← Project-specific (gitignored)
-└── skills/                         ← 11 modular skills (+ qa-visual-test/scripts)
-```
-
-## Visual Regression - Zero-Token Design
-
-Comparison runs in Node.js (pixelmatch), not in AI context. Illustrative chat cost (order-of-magnitude, not a benchmark):
-
-| Scenario | Chat payload | What Happens |
-|----------|--------------|-------------|
-| All PASS | Tiny text status | "✅ 3/3 passed" |
-| Has FAIL | Short summary + HTML path | Open report under OS temp (`qa-visual-report/`) |
-| User asks "what changed?" | Optional diff image | Only if explicitly requested |
-| HTML report itself | Outside the LLM | Self-contained file, user opens directly |
-
-**Quick start:**
-```bash
-node .cursor/skills/qa-visual-test/scripts/run.js init   # scaffold config
-node .cursor/skills/qa-visual-test/scripts/run.js          # run with config
-node .cursor/skills/qa-visual-test/scripts/run.js list     # list baselines
+└── skills/                         ← modular skills
 ```
 
 ## Memory System
@@ -234,7 +216,7 @@ These are **architecture choices**, not independently measured savings. Prefer s
 | Search cache (24h TTL) | Avoid repeat MCP calls for the same query |
 | `reference/` files | Keep `SKILL.md` short; pull detail on demand |
 | Memory protocol | Read corrections/knowledge before new research |
-| Visual regression | Run pixel math in Node (no image bytes in the LLM loop) |
+| TestRail CLI tools | Reuse `scripts/testrail-tools/` instead of ad-hoc PS1 |
 
 For a first successful path, see [`docs/DEMO.md`](docs/DEMO.md).
 
@@ -243,16 +225,16 @@ For a first successful path, see [`docs/DEMO.md`](docs/DEMO.md).
 ```bash
 node scripts/doctor.js
 node scripts/store.test.js
-cd .cursor/skills/qa-visual-test/scripts && npm install && node compare.test.js
+node scripts/update-agent.js --skip-pull --dry-run
 ```
 
-CI (GitHub Actions) runs store checks, skill structure, and the visual compare smoke test.
+CI (GitHub Actions) runs store checks and skill structure verify.
 
 ## Future Enhancements
 
 | Feature | Status |
 |---------|--------|
-| Visual regression (`@qa-visual-test`) | ✅ Done |
+| TestRail CLI tools (`scripts/testrail-tools/`) | ✅ Done |
 | Karate API test skill (`@qa-api-test`) | ✅ Done |
 | Multi-project memory (3-layer) | ✅ Done — see `docs/MULTI_PROJECT_MEMORY.md` |
 | Slack integration | 🔮 Research |

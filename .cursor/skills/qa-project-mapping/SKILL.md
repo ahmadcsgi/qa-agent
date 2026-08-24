@@ -7,7 +7,7 @@ description: Map test repo into project-context. Mandatory before UI/API/perf wh
 
 ## When
 
-Before UI/API/perf/visual when matching `paths.*` set and `project-context` missing/stale (>7d or path mismatch). See `automation-memory-gate.mdc`.
+Before UI/API/perf when matching `paths.*` set and `project-context` missing/stale (>7d or path mismatch). See `automation-memory-gate.mdc`.
 
 ## Flow (short)
 

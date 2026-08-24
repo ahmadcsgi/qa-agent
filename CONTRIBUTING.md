@@ -9,7 +9,8 @@ Thanks for improving QA Agent. This project is mostly Markdown skills + a small 
 3. Run tests:
    ```bash
    node scripts/store.test.js
-   cd .cursor/skills/qa-visual-test/scripts && npm install && node compare.test.js
+   node scripts/store.test.js
+   node scripts/update-agent.js --skip-pull --dry-run
    ```
 
 ## What to change where

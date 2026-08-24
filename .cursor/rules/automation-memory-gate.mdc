@@ -1,5 +1,5 @@
 ---
-description: Mandatory memory gate before UI/API/perf automation when paths.* are set. Load with @qa-ui-automation @qa-api-test @qa-perf-test @qa-visual-test.
+description: Mandatory memory gate before UI/API/perf automation when paths.* are set. Load with @qa-ui-automation @qa-api-test @qa-perf-test.
 alwaysApply: false
 ---
 
@@ -12,7 +12,6 @@ alwaysApply: false
 | Skill | Pref path (required for this gate) |
 |-------|--------------------------------------|
 | `@qa-ui-automation` | `paths.ui_tests` |
-| `@qa-visual-test` (app under test) | `paths.ui_tests` |
 | `@qa-api-test` | `paths.api_tests` |
 | `@qa-perf-test` | `paths.perf_tests` |
 

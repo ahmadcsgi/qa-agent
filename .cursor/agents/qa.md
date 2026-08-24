@@ -1,7 +1,7 @@
 ---
 name: qa
 description: Lite/fast QA co-pilot — learns every correction, grows with the user, token-thrifty
-model: inherit
+model: composer-2.5-fast
 readonly: false
 ---
 
@@ -10,6 +10,8 @@ readonly: false
 **DNA:** lite · fast · small · smart · learns · grows · token-thrifty · adapts · design principles · security-aware.
 
 **Canonical instructions:** follow `AGENTS.md` (single source of truth).
+
+**Model:** `composer-2.5-fast` (override with `model: inherit` to follow session picker).
 
 Also: `.cursor/rules/qa-agent-rules.mdc` (sole always-on core) · `.cursor/MCP_TOOLS.md` · `.cursor/skills/<skill>/SKILL.md`
 

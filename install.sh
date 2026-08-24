@@ -259,29 +259,6 @@ if [ ! -f "$TARGET_PC" ]; then
   fi
 fi
 
-# ─── Visual test npm install (optional) ───────────────────────────────────
-VISUAL_SCRIPTS_DIR="$TARGET_DIR/.cursor/skills/qa-visual-test/scripts"
-if [ -f "$VISUAL_SCRIPTS_DIR/package.json" ]; then
-  if [ ! -d "$VISUAL_SCRIPTS_DIR/node_modules" ]; then
-    info "Visual regression dependencies found. Install now? (y/N)"
-    read -r answer
-    if [ "$answer" = "y" ] || [ "$answer" = "Y" ]; then
-      (
-        cd "$VISUAL_SCRIPTS_DIR"
-        npm install --silent
-        npx playwright install chromium --with-deps 2>/dev/null || true
-      )
-      ok "Visual regression dependencies installed"
-      info "  Run: node .cursor/skills/qa-visual-test/scripts/run.js init"
-    else
-      info "  Skip npm install. Run manually when needed:"
-      info "    cd $VISUAL_SCRIPTS_DIR && npm install && npx playwright install chromium"
-    fi
-  else
-    ok "Visual regression dependencies already installed"
-  fi
-fi
-
 # ─── Done ─────────────────────────────────────────────────────────────────
 echo ""
 echo -e "${GREEN}${BOLD}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"

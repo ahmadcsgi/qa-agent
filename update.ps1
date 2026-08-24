@@ -13,7 +13,8 @@ $VersionFile = Join-Path $Here "VERSION"
 $Ver = if (Test-Path $VersionFile) { (Get-Content $VersionFile -Raw).Trim() } else { "unknown" }
 
 Write-Host "QA Agent update → v$Ver" -ForegroundColor Cyan
-& (Join-Path $Here "install.ps1") -Force
+$env:CI = "1"
+& node (Join-Path $Here "scripts\update-agent.js") @args
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 Write-Host ""
-Write-Host "Update complete. Run: node scripts\doctor.js" -ForegroundColor Green
 Write-Host "See CHANGELOG.md for what changed." -ForegroundColor Cyan

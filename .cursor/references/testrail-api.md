@@ -76,6 +76,8 @@ POST /index.php?/api/v2/update_plan_entry/{planId}/{entryId}
 { "suite_id": 282, "include_all": false, "case_ids": [/* existing + new */] }
 ```
 
+CLI: `scripts/testrail-tools/tr-update-plan-entry.ps1` (see `testrail-tools.md`).
+
 Then `addResultsForCases` on the run id. Plan/run IDs: prefs `testrail.*_plan_*` / `testrail.*_run_*` or private `qa-memory/org-context.md` (never hardcode org IDs here).
 
 ### getRuns / getTests / addRun
@@ -116,3 +118,5 @@ getMilestones({ projectId: 1 })
 - Always APPROVAL before write tools
 - Plan naming (if used): `[TEST PLAN] <version> <Squad>`
 - Real project/suite/section IDs: from `project-context/current.md`, not hardcoded here
+- Bulk custom fields: use `scripts/testrail-tools/tr-update-fields.ps1` (never `updateCases`, 403 on some instances)
+- Before ad-hoc PowerShell: read `testrail-tools.md`

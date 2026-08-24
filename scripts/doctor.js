@@ -21,7 +21,6 @@ const SKILLS = [
   "qa-api-test",
   "qa-project-mapping",
   "qa-token-saver",
-  "qa-visual-test",
   "qa-pr-review",
   "qa-security-review",
 ];
@@ -256,14 +255,11 @@ else soft("java missing (optional until @qa-api-test). Run: node scripts/setup-t
 if (toolOk("mvn", ["-v"]) || toolOk("mvn", ["--version"])) ok("mvn on PATH");
 else soft("mvn missing (optional until @qa-api-test). Run: node scripts/setup-tooling.js");
 
-// Visual deps
-console.log("\nVisual regression");
-const vPkg = path.join(REPO, ".cursor", "skills", "qa-visual-test", "scripts", "package.json");
-const vMods = path.join(REPO, ".cursor", "skills", "qa-visual-test", "scripts", "node_modules");
-if (exists(vPkg)) ok("visual package.json");
-else fail("visual package.json missing");
-if (exists(vMods)) ok("visual node_modules installed");
-else soft("visual node_modules missing. Optional until you use @qa-visual-test");
+// TestRail CLI tools
+console.log("\nTestRail CLI tools");
+const trTools = path.join(REPO, "scripts", "testrail-tools", "TestRailApi.ps1");
+if (exists(trTools)) ok("scripts/testrail-tools/ present");
+else fail("scripts/testrail-tools/ missing");
 
 // Path prefs + install sanity
 console.log("\nPath prefs");

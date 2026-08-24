@@ -14,7 +14,8 @@ Preview name/milestone/entries > ACC > `addPlan`. Name pattern if used: `[TEST P
 1. Resolve plan/run from prefs / know / URL / private `org-context.md` (never hardcode org IDs here)
 2. Split entries by product area. Never merge unrelated areas
 3. Plan runs: MCP `updateRun` often **403**. Use REST `update_plan_entry` with full `case_ids`
-4. Then `addResultsForCases` on the run id
+4. CLI: `scripts/testrail-tools/tr-update-plan-entry.ps1` (see `testrail-tools.md`)
+5. Then `addResultsForCases` on the run id
 
 ## Mark results
 
@@ -24,4 +25,4 @@ Resolve run + cases (checklist `cases/view/<id>` preferred). Status: 1 Pass · 2
 
 `TC-on-progress` while writing > `TC-ready` after ACC + checklist links. Preview labels first.
 
-Refs: `testrail-api.md` · prefs `testrail.*_plan_*` · `org-context.md`.
+Refs: `testrail-api.md` · `testrail-tools.md` · prefs `testrail.*_plan_*` · `org-context.md`.

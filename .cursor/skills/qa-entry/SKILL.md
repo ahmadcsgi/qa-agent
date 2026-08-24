@@ -27,7 +27,7 @@ Receptionist: detect intent, route to **one** skill. Stay short.
 | Plan / centang / label groom | `@qa-test-execution` |
 | Create/update cases | `@qa-test-cases` |
 | Perf / k6 | `@qa-perf-test` |
-| Visual | `@qa-visual-test` |
+| `update` / `git pull` agent | `node scripts/update-agent.js` |
 | Mapping | `@qa-project-mapping` |
 | Review PR / before push | `@qa-pr-review` (+ security) |
 | Security / XSS / CVE | `@qa-security-review` |
