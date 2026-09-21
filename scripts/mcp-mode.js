@@ -40,7 +40,9 @@ const lastSwitchPath = path.join(QA_MCP_DIR, 'last-switch.json');
 const argv = process.argv.slice(2);
 const quiet = argv.includes('--quiet');
 const ifChanged = argv.includes('--if-changed');
+const skipIfHooked = argv.includes('--skip-if-hooked');
 const modeArg = argv.find((a) => !a.startsWith('-')) || 'status';
+const sessionHookPath = path.join(QA_MCP_DIR, 'last-session-hook.json');
 
 function log(...args) {
   if (!quiet) console.log(...args);
@@ -191,11 +193,27 @@ function resolveCwd() {
   return process.env.QA_MCP_HOOK_CWD || process.cwd();
 }
 
+function hookRecentlyRanForCwd(cwd) {
+  if (!fs.existsSync(sessionHookPath)) return false;
+  try {
+    const j = JSON.parse(fs.readFileSync(sessionHookPath, 'utf8'));
+    const ageMs = Date.now() - new Date(j.at).getTime();
+    if (Number.isNaN(ageMs) || ageMs > 120000) return false;
+    return path.resolve(String(j.cwd || '')).toLowerCase() === path.resolve(String(cwd || '')).toLowerCase();
+  } catch {
+    return false;
+  }
+}
+
 function runAuto() {
+  const cwd = resolveCwd();
+  if (skipIfHooked && hookRecentlyRanForCwd(cwd)) {
+    log('skip mcp auto: sessionStart hook already ran for this cwd');
+    return { profile: currentProfile(), keys: [], changed: false, skippedHook: true };
+  }
   ensureCatalog();
   ensureProfileServersInCatalog(repoRoot(), { optional: false });
   const paths = pathsFromPrefs();
-  const cwd = resolveCwd();
   const { profile, reason } = resolveAutoProfile(cwd, paths);
   log('mcp-mode auto');
   log(`  cwd: ${cwd}`);
@@ -227,7 +245,7 @@ function status() {
   console.log(`paths.perf_tests: ${paths.perf || '(empty)'}`);
   console.log(`Auto would pick: ${auto.profile} (${auto.reason})`);
   console.log('Profiles: lite | ui | api | perf | full | optional | all | auto | status');
-  console.log('Flags: --quiet --if-changed');
+  console.log('Flags: --quiet --if-changed --skip-if-hooked');
 }
 
 const mode = normalizeMode(modeArg);
@@ -245,7 +263,7 @@ const PROFILES = {
 
 if (mode === 'status' || mode === 'help' || mode === '-h' || mode === '--help') {
   if (mode !== 'status') {
-    console.log(`Usage: node scripts/mcp-mode.js [lite|ui|api|perf|full|optional|all|auto|status] [--quiet] [--if-changed]
+    console.log(`Usage: node scripts/mcp-mode.js [lite|ui|api|perf|full|optional|all|auto|status] [--quiet] [--if-changed] [--skip-if-hooked]
 
   lite       Shortcut, TestRail, Glean (default outside test repos)
   ui         lite + Context7 + Cypress + Playwright (paths.ui_tests)
@@ -257,7 +275,8 @@ if (mode === 'status' || mode === 'help' || mode === '-h' || mode === '--help') 
   auto       pick ui/api/perf/lite from cwd vs paths.* (multi: pathA|pathB)
   status     show active / catalog / auto preview
   --quiet    less stdout (for hooks)
-  --if-changed  skip rewrite when profile already matches`);
+  --if-changed  skip rewrite when profile already matches
+  --skip-if-hooked  skip auto when sessionStart hook ran for same cwd within 120s`);
     process.exit(0);
   }
   status();

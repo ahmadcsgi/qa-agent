@@ -32,9 +32,35 @@ function log(msg) {
 
 function readStdin() {
   try {
-    return fs.readFileSync(0, 'utf8');
+    let raw = fs.readFileSync(0);
+    if (raw.length >= 2 && raw[0] === 0xff && raw[1] === 0xfe) {
+      raw = raw.slice(2);
+    } else if (raw.length >= 2 && raw[0] === 0xfe && raw[1] === 0xff) {
+      raw = raw.slice(2);
+    }
+    let text = raw.toString('utf8');
+    if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
+    return text;
   } catch {
     return '';
+  }
+}
+
+function writeSessionHookMarker(cwd, profileHint) {
+  const marker = path.join(HOME, '.qa-agent', 'mcp', 'last-session-hook.json');
+  try {
+    fs.mkdirSync(path.dirname(marker), { recursive: true });
+    fs.writeFileSync(
+      marker,
+      JSON.stringify({
+        at: new Date().toISOString(),
+        cwd: path.resolve(cwd),
+        profile: profileHint || '',
+      }),
+      'utf8'
+    );
+  } catch {
+    /* ignore */
   }
 }
 
@@ -122,6 +148,7 @@ function main() {
     }
   }
   if (profileHint) ctx += ` MCP: ${profileHint} (auto).`;
+  writeSessionHookMarker(cwd, profileHint);
   if (/changed|MCP profile:|switched/i.test(out) && !/unchanged|same profile/i.test(out)) {
     ctx += ' Profile updated. Reload Cursor window once so MCP panel matches (lite vs ui/api/perf).';
   } else if (/unchanged|same profile/i.test(out)) {

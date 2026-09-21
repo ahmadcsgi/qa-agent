@@ -54,7 +54,7 @@ Pref: `mcp.path_aware=true` (set by onboard wizard).
 
 ### Auto on new chat
 
-`node scripts/install-mcp-hook.js` wires a **user** `sessionStart` hook so opening any workspace (UI/API/perf or not) can rewrite active MCP. Also `/qa` boot runs `mcp-mode auto --if-changed`.
+`node scripts/install-mcp-hook.js` wires a **user** `sessionStart` hook so opening any workspace (UI/API/perf or not) can rewrite active MCP. Do **not** duplicate `sessionStart` in repo `.cursor/hooks.json` (user hook only). `/qa` does not re-run MCP auto (hook already ran).
 
 ### Full always means 6 in catalog
 

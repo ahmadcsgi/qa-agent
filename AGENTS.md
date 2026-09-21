@@ -8,7 +8,7 @@ You are a QA co-pilot. MCP path-aware: lite outside test paths; ui/api/perf unde
 
 | | |
 |--|--|
-| Boot | `proj ensure` > `boot [domain] --project auto`. Prefs / good / bad. No JSON dump |
+| Boot | `proj ensure` > `boot [domain] --project auto`. MCP via sessionStart hook (not again on `/qa`). Prefs / good / bad. No JSON dump |
 | Small | One skill. Cache before MCP. Tables. Ask only when blocked |
 | Learn | APPROVE/EDIT/REJECT > `cor`/`pref`. Durable turn > compact + `know`/`cor` |
 | Design | Needed now? (YAGNI) > Simpler? (KISS) > Seen 3x? (DRY) > SOLID |
@@ -35,6 +35,7 @@ Detail: `docs/MULTI_PROJECT_MEMORY.md`. Prefs live in store (not duplicated here
 | Shortcut search | `@qa-search-tickets` |
 | Incident triage | `@qa-defect-triage` |
 | Cypress UI | `@qa-ui-automation` |
+| Cucumber / Gherkin / BDD | `@cucumber-bdd-gherkin` (with UI skill when automating) |
 | k6 perf | `@qa-perf-test` |
 | TestRail cases | `@qa-test-cases` |
 | Plans / results | `@qa-test-execution` |
@@ -58,3 +59,33 @@ Concise. Tables. Match user language. Paths/MCP English. Punctuation in core rul
 `.cursor/MCP_TOOLS.md` · `.cursor/references/README.md` · `VERSION`
 
 > Canonical public behavior. Private org: `qa-memory/org-context.md` + `onboard.md` (gitignored). Agent file only points here.
+
+## Learned User Preferences
+
+- Never put agent rules, admonitions, scope notes, or secrets warnings into TestRail case fields
+- Prefer self-setup brand/template preconditions over hardcoded environment-specific names or IDs in TestRail cases
+- TestRail preconditions and expected: rewrite each in full (no "Same as Case X"); use plain page wording without URL paths; confirmation dialogs use exact UI title, message, and button labels
+- Process Designer Open and Download test cases must cover both locked and unlocked BPMN/DMN routes
+- Write TestRail API cases as text steps (steps + expected), not Gherkin/BDD; Bruno Free uses native `.bru` + `bruno.json` via Open Collection, not Postman Import
+- Match user language in chat; TestRail case fields in English; draft in `temp/sc-{storyId}-preview.md`, not chat only
+- No TC for UI changes not in story AC; clarifying questions are not corrections until explicit ACC or EDIT
+- When bulk-updating TestRail squad or feature fields, send only the requested custom fields and never modify steps, expected, preconditions, title, or refs; squad-only updates change custom_case_squadname only
+- When user removes deferred or TBD scope notes from a TestRail draft and approves, omit those notes from final cases
+- TestRail links use `cases/view/<caseId>`; Shortcut qa-test checklist uses `tests/view/<testId>`; merge onto run first; `refs` must be full Shortcut story URL
+- API TestRail drafts: endpoint URLs in notes and Test data, JSON bodies as Payload N, steps name payload and HTTP expectation; no dev names or preview line refs in fields
+- For ticket search, show Shortcut hits in the first reply (cache/boot after); on 409 checklist add check duplicate case link; push qa-agent to `mine` / `ahmadcsgi/qa-agent` only; prefers `/qa` on Composer 2.5 Fast
+
+## Learned Workspace Facts
+
+- TestRail REST API cases use text template with empty BDD; addCase needs custom_preconds, custom_steps, custom_expected and required customs; MCP 404 → `scripts/testrail-tools/` or TestRailApi.ps1; prefer reusable CLI over ad-hoc `tmp-*.ps1`
+- Plan-owned runs return 403 on updateRun; merge cases via update_plan_entry using case IDs from get_tests on the run (payload omits drop tests and wipe results)
+- update_cases bulk returns 403 here; per-case update_case for squad/feature with only custom_case_squadname and/or custom_case_feature_component
+- Dragon Feature Component: Process, Lifecycle, Docflow, Planner, Decompose (no Workflow label); suite 282 map by domain not section tree; Channel Portal vs Rest API by test method; Type Manual=13, Automated=3
+- Process Designer section 47436, Portal routes unlocked `/portal/processdesign/bpmn|dmn` and locked `bpmnlocked|dmnlocked`; new 26.3 cases to Q3 plan 849 run 905; Operate BPMN by process name, DMN via Decisions
+- Q3 plan 849 runs: 852 Lifecycle (section 33518), 853 Docflow (33515, doc brand 33533>33729>47618), 860 Regression, 896/901 doc brand, 905 Process, 907 Decompose/Planner, 944 Camunda regression (925 deleted)
+- Manage-order JW defect/missing cases: suite 282 section 32148 Service Task Manage-x (story child subsections OK); Q3 plan 857 Progression run 858; follow Confluence Missing Test Case for flagging/source/milestone (e.g. Defect Triage)
+- Inventory operational status SET in manage-order JW: Type and Name in same service task or JW0005; Portal Status shows `{Type} / {Name}`
+- Suite 282 automation audits scan GitHub `origin/master` in `dgitsystems/telflow-rest-api-test` and `dgitsystems/telflow-ui-automation-test` for `cases/view/<id>` and `@test_id=C<id>`
+- TestRail run suite must match case suite; Update-TestRailCaseFields uses raised MaxJsonLength for long steps and test data JSON
+- Canonical workspace `Documents\Test\qa-agent`; avoid opening `Documents\AI\qa-agent` together (same git remote and proj ensure id); user docs `docs/USER_GUIDE.md` and `docs/TOKEN_TIPS.md`
+- MCP path-aware boot uses user sessionStart hook only; do not duplicate sessionStart in repo `.cursor/hooks.json`; `/qa` does not re-run mcp-mode auto (repair: `mcp-mode auto --if-changed --skip-if-hooked`); run `scripts/mcp-mode.js` from repo root

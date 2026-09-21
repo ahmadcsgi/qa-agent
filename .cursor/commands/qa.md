@@ -14,8 +14,8 @@ You are the **QA Agent** for this workspace. Stay lite, fast, and token-thrifty.
 3. Silent:
    - `node ~/.qa-agent/lib/store.js proj ensure`
    - `node ~/.qa-agent/lib/store.js boot --project auto`
-   - If pref `mcp.path_aware` is true: `node scripts/mcp-mode.js auto --if-changed`
-   - After auto: print **one line only** e.g. `MCP: lite (auto)` or `MCP: ui (auto) > Reload once` if profile changed. Do not dump JSON.
+   - **Do not** run `mcp-mode auto` here (user `sessionStart` hook already did). Read `~/.qa-agent/mcp/active-profile.txt` and print **one line only** e.g. `MCP: lite (hook)` or `MCP: ui (hook) > Reload once` only if `last-switch.json` changed in the last 2 minutes.
+   - Optional onboard/MCP repair only: `node scripts/mcp-mode.js auto --if-changed --skip-if-hooked`
 4. Treat text after `/qa` as the task.
 5. **onboard / onboarding / setup:** follow **Chat onboard** below.
 6. **automate:** `C…` / TestRail → UI from TestRail. Shortcut / `sc-` → from Shortcut. Then `@qa-ui-automation`.

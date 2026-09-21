@@ -10,7 +10,7 @@ Receptionist: detect intent, route to **one** skill. Stay short.
 ## Boot (first multi-step turn)
 
 1. `proj ensure` > `boot` > prefs/good/bad. No JSON dump
-2. If `mcp.path_aware` > `mcp-mode auto` (Reload if profile changed)
+2. **Skip** `mcp-mode auto` on normal turns (sessionStart hook already ran). Run `mcp-mode auto --if-changed --skip-if-hooked` only for onboard or if user says MCP profile is wrong
 3. Automation + `paths.*` > memory gate / map if stale
 4. Daily private facts: `qa-memory/org-context.md` + `user-prefs.md`. **Do not** load full `onboard.md` unless onboard/Part C
 
@@ -24,6 +24,7 @@ Receptionist: detect intent, route to **one** skill. Stay short.
 | Incident / triage | `@qa-defect-triage` |
 | Stack/error paste | `@qa-search-tickets` |
 | API / karate | `@qa-api-test` |
+| Cucumber / Gherkin / BDD / `.feature` | `@cucumber-bdd-gherkin` (+ `@qa-ui-automation` if generating UI specs) |
 | Plan / centang / label groom | `@qa-test-execution` |
 | Create/update cases | `@qa-test-cases` |
 | Perf / k6 | `@qa-perf-test` |

@@ -1,0 +1,8 @@
+﻿scripts/tmp-*
+scripts/tmp-*.ps1
+scripts/tmp-*.json
+scripts/tmp-*.csv
+scripts/tmp-*.xlsx
+temp/
+*.xlsx
+docs/drafts/
