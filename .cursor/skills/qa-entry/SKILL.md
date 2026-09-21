@@ -9,10 +9,23 @@ Receptionist: detect intent, route to **one** skill. Stay short.
 
 ## Boot (first multi-step turn)
 
-1. `proj ensure` > `boot` > prefs/good/bad. No JSON dump
-2. **Skip** `mcp-mode auto` on normal turns (sessionStart hook already ran). Run `mcp-mode auto --if-changed --skip-if-hooked` only for onboard or if user says MCP profile is wrong
+1. `node scripts/boot-session.js plan` → run `proj ensure` / `boot` only if plan says true (see `/qa` command)
+2. **Skip** `mcp-mode auto` on normal turns. Repair: `mcp-mode auto --if-changed --skip-if-hooked`
 3. Automation + `paths.*` > memory gate / map if stale
-4. Daily private facts: `qa-memory/org-context.md` + `user-prefs.md`. **Do not** load full `onboard.md` unless onboard/Part C
+4. Private: `qa-memory/org-context.md` + `user-prefs.md`. **Do not** load full `onboard.md` unless onboard/Part C
+
+## Fast router (before asking)
+
+| Signal | Route |
+|--------|-------|
+| `sc-\d+` or story URL + automate/UI | `@qa-ui-automation` |
+| `C\d{5,}` or cases/test case/draft TC | `@qa-test-cases` |
+| plan/run/centang/groom/849/857 | `@qa-test-execution` |
+| stack trace / error paste / search ticket | `@qa-search-tickets` |
+| Helix / triage / incident | `@qa-defect-triage` |
+| k6 / perf / load test | `@qa-perf-test` |
+| karate / API test | `@qa-api-test` |
+| onboard / setup | onboard wizard below |
 
 ## Intent → skill
 

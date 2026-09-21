@@ -80,6 +80,9 @@ console.log("\nRepository");
   ["scripts/validate-paths.js", path.join(REPO, "scripts", "validate-paths.js")],
   ["scripts/post-restore-check.js", path.join(REPO, "scripts", "post-restore-check.js")],
   ["scripts/backup-memory.js", path.join(REPO, "scripts", "backup-memory.js")],
+  ["scripts/boot-session.js", path.join(REPO, "scripts", "boot-session.js")],
+  ["scripts/qa-health.js", path.join(REPO, "scripts", "qa-health.js")],
+  ["scripts/seed-workspace-know.js", path.join(REPO, "scripts", "seed-workspace-know.js")],
   ["docs/MIGRATION.md", path.join(REPO, "docs", "MIGRATION.md")],
   ["docs/OPTIONAL_INTEGRATIONS.md", path.join(REPO, "docs", "OPTIONAL_INTEGRATIONS.md")],
   ["scripts/agent-shield-scan.js", path.join(REPO, "scripts", "agent-shield-scan.js")],
@@ -305,6 +308,18 @@ try {
 } catch (e) {
   soft(`agent-shield-scan failed: ${e.message}`);
 }
+
+console.log("\nAgent health (qa-health.js)");
+const healthScript = path.join(__dirname, "qa-health.js");
+if (exists(healthScript)) {
+  const hr = spawnSync(process.execPath, [healthScript], {
+    encoding: "utf8",
+    cwd: REPO,
+    windowsHide: true,
+  });
+  if (hr.stdout) process.stdout.write(hr.stdout);
+  if (hr.status !== 0) soft("qa-health reported issues (see above)");
+} else soft("qa-health.js missing");
 
 console.log("\n---");
 if (failed === 0) {

@@ -583,6 +583,21 @@ function filterPrefsForBoot(prefs, domain) {
   return out;
 }
 
+function topKnow(entries, domain, n) {
+  let list = entries;
+  if (domain) {
+    list = list.filter(
+      (e) => e.dom === domain || e.dom === 'testrail' || e.dom === 'workspace' || e.dom === 'workspace-facts'
+    );
+  }
+  return list.slice(0, n).map((e) => ({
+    dom: e.dom,
+    top: e.top,
+    con: e.con && e.con.length > 220 ? e.con.slice(0, 220) + '…' : e.con,
+    proj: e.proj || '*',
+  }));
+}
+
 /**
  * boot [domain] [n] [--project auto|id|*]
  * Merges global + project prefs/lessons (tiny payload).
@@ -642,13 +657,41 @@ function boot(rawArgs) {
   const knowG = readJSON(KNOW_FILE).d || [];
   const knowP =
     projectId && projectId !== '*' ? readJSON(projectFiles(projectId).know).d || [] : [];
+  const knowMerged = [
+    ...(knowP || []).map((e) => ({ ...e, proj: e.proj || projectId })),
+    ...(knowG || []).map((e) => ({ ...e, proj: e.proj || '*' })),
+  ];
+  const know = topKnow(knowMerged, domain, 5);
   const cache = readJSON(CACHE_FILE, 'map').d || {};
+
+  try {
+    const candidates = [
+      path.join(__dirname, 'boot-session.js'),
+      path.join(__dirname, '..', 'scripts', 'boot-session.js'),
+    ];
+    let marked = false;
+    for (const p of candidates) {
+      if (!fs.existsSync(p)) continue;
+      require(p).mark({
+        cwd: process.env.QA_AGENT_CWD || process.cwd(),
+        projectId: projectId && projectId !== '*' ? projectId : null,
+      });
+      marked = true;
+      break;
+    }
+    if (!marked) {
+      /* boot-session.js not installed yet */
+    }
+  } catch {
+    /* optional */
+  }
 
   printJSON({
     project: projectId && projectId !== '*' ? projectId : null,
     prefs,
     good,
     bad,
+    know,
     context: contextExcerpt,
     n: {
       cor_g: globalCors.length,

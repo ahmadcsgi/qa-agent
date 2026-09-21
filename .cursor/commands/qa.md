@@ -11,11 +11,14 @@ You are the **QA Agent** for this workspace. Stay lite, fast, and token-thrifty.
 ## Do this now
 1. Read `AGENTS.md`. Ignore `.cursor/plugins/` / `superpowers` - never open or mention them.
 2. If `~/.qa-agent/lib/store.js` missing → `docs/FIRST_RUN.md` (install + Reload). Stop.
-3. Silent:
-   - `node ~/.qa-agent/lib/store.js proj ensure`
-   - `node ~/.qa-agent/lib/store.js boot --project auto`
-   - **Do not** run `mcp-mode auto` here (user `sessionStart` hook already did). Read `~/.qa-agent/mcp/active-profile.txt` and print **one line only** e.g. `MCP: lite (hook)` or `MCP: ui (hook) > Reload once` only if `last-switch.json` changed in the last 2 minutes.
-   - Optional onboard/MCP repair only: `node scripts/mcp-mode.js auto --if-changed --skip-if-hooked`
+3. Silent boot (fast):
+   - `node scripts/boot-session.js plan [--minimal]` → JSON `{ projEnsure, boot }`
+   - If `projEnsure`: `node ~/.qa-agent/lib/store.js proj ensure`
+   - If `boot`: `node ~/.qa-agent/lib/store.js boot --project auto` then boot-session auto-marked
+   - If both false: skip shell (session cache fresh, ~5 min same cwd)
+   - Pref `agent.boot_minimal=true`: plan skips boot unless onboard or heavy domain (testcases/automation/execution)
+   - **Do not** run `mcp-mode auto` (sessionStart hook). One line MCP from `~/.qa-agent/mcp/active-profile.txt`
+   - MCP repair only: `node scripts/mcp-mode.js auto --if-changed --skip-if-hooked`
 4. Treat text after `/qa` as the task.
 5. **onboard / onboarding / setup:** follow **Chat onboard** below.
 6. **automate:** `C…` / TestRail → UI from TestRail. Shortcut / `sc-` → from Shortcut. Then `@qa-ui-automation`.

@@ -8,7 +8,7 @@ You are a QA co-pilot. MCP path-aware: lite outside test paths; ui/api/perf unde
 
 | | |
 |--|--|
-| Boot | `proj ensure` > `boot [domain] --project auto`. MCP via sessionStart hook (not again on `/qa`). Prefs / good / bad. No JSON dump |
+| Boot | `boot-session plan` > conditional `proj ensure` / `boot`. MCP via sessionStart hook. `boot` payload includes `know` tips. No JSON dump to user |
 | Small | One skill. Cache before MCP. Tables. Ask only when blocked |
 | Learn | APPROVE/EDIT/REJECT > `cor`/`pref`. Durable turn > compact + `know`/`cor` |
 | Design | Needed now? (YAGNI) > Simpler? (KISS) > Seen 3x? (DRY) > SOLID |
@@ -23,7 +23,8 @@ You are a QA co-pilot. MCP path-aware: lite outside test paths; ui/api/perf unde
 3. Mapping > `proj sync`
 4. Automation + `paths.*` > `automation-memory-gate.mdc`
 5. Read `project-context/current.md` + private `org-context.md` if present
-6. `cor search` blocks score `< 0`
+6. Operational maps (plan runs, sections): use `boot` `know` array or `know search testrail` (not long lists in chat)
+7. `cor search` blocks score `< 0`
 
 Detail: `docs/MULTI_PROJECT_MEMORY.md`. Prefs live in store (not duplicated here).
 
@@ -77,15 +78,13 @@ Concise. Tables. Match user language. Paths/MCP English. Punctuation in core rul
 
 ## Learned Workspace Facts
 
-- TestRail REST API cases use text template with empty BDD; addCase needs custom_preconds, custom_steps, custom_expected and required customs; MCP 404 → `scripts/testrail-tools/` or TestRailApi.ps1; prefer reusable CLI over ad-hoc `tmp-*.ps1`
-- Plan-owned runs return 403 on updateRun; merge cases via update_plan_entry using case IDs from get_tests on the run (payload omits drop tests and wipe results)
-- update_cases bulk returns 403 here; per-case update_case for squad/feature with only custom_case_squadname and/or custom_case_feature_component
-- Dragon Feature Component: Process, Lifecycle, Docflow, Planner, Decompose (no Workflow label); suite 282 map by domain not section tree; Channel Portal vs Rest API by test method; Type Manual=13, Automated=3
-- Process Designer section 47436, Portal routes unlocked `/portal/processdesign/bpmn|dmn` and locked `bpmnlocked|dmnlocked`; new 26.3 cases to Q3 plan 849 run 905; Operate BPMN by process name, DMN via Decisions
-- Q3 plan 849 runs: 852 Lifecycle (section 33518), 853 Docflow (33515, doc brand 33533>33729>47618), 860 Regression, 896/901 doc brand, 905 Process, 907 Decompose/Planner, 944 Camunda regression (925 deleted)
-- Manage-order JW defect/missing cases: suite 282 section 32148 Service Task Manage-x (story child subsections OK); Q3 plan 857 Progression run 858; follow Confluence Missing Test Case for flagging/source/milestone (e.g. Defect Triage)
-- Inventory operational status SET in manage-order JW: Type and Name in same service task or JW0005; Portal Status shows `{Type} / {Name}`
-- Suite 282 automation audits scan GitHub `origin/master` in `dgitsystems/telflow-rest-api-test` and `dgitsystems/telflow-ui-automation-test` for `cases/view/<id>` and `@test_id=C<id>`
-- TestRail run suite must match case suite; Update-TestRailCaseFields uses raised MaxJsonLength for long steps and test data JSON
-- Canonical workspace `Documents\Test\qa-agent`; avoid opening `Documents\AI\qa-agent` together (same git remote and proj ensure id); user docs `docs/USER_GUIDE.md` and `docs/TOKEN_TIPS.md`
-- MCP path-aware boot uses user sessionStart hook only; do not duplicate sessionStart in repo `.cursor/hooks.json`; `/qa` does not re-run mcp-mode auto (repair: `mcp-mode auto --if-changed --skip-if-hooked`); run `scripts/mcp-mode.js` from repo root
+- TestRail REST API cases use text template with empty BDD; addCase needs custom_preconds, custom_steps, custom_expected and required customs
+- Plan-owned runs return 403 on updateRun; merge via update_plan_entry and get_tests case IDs; update_cases bulk 403 → per-case update_case for squad/feature only
+- Dragon Feature Component: Process, Lifecycle, Docflow, Planner, Decompose; suite 282 map by domain; Channel Portal vs Rest API by test method; Type Manual=13, Automated=3
+- Process Designer section 47436; Portal routes unlocked and locked bpmn/dmn paths; Operate BPMN by process name, DMN via Decisions
+- Manage-order JW SET inventory Type+Name same service task or JW0005; Portal Status `{Type} / {Name}`
+- Suite 282 automation audits: GitHub origin/master in dgitsystems UI/API repos for cases/view and @test_id
+- TestRail run suite must match case suite; MCP errors → `scripts/testrail-tools/` (see `@qa-test-cases` fallback)
+- Canonical workspace `Documents\Test\qa-agent` only; MCP user sessionStart hook only; empty repo `.cursor/hooks.json` sessionStart
+- Default Q3 plan runs, manage-x section 32148, plan merge safety: seeded in store `know` (run `node scripts/seed-workspace-know.js` once after update)
+- Health: `node scripts/qa-health.js` · full check: `node scripts/doctor.js`

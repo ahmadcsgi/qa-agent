@@ -97,6 +97,11 @@ mkdir -p "$GLOBAL_STORE_DIR/projects"
 if [ -f "$STORE_SRC" ]; then
   cp "$STORE_SRC" "$GLOBAL_STORE_DIR/lib/store.js"
   ok "  Storage engine installed (~/.qa-agent/lib/store.js)"
+  BOOT_SESSION_SRC="$REPO_DIR/scripts/boot-session.js"
+  if [[ -f "$BOOT_SESSION_SRC" ]]; then
+    cp "$BOOT_SESSION_SRC" "$GLOBAL_STORE_DIR/lib/boot-session.js"
+    ok "  boot-session.js installed"
+  fi
 else
   err "  store.js not found at $STORE_SRC"
 fi

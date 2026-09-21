@@ -77,6 +77,17 @@ function findMcpMode() {
 }
 
 function pathAwareEnabled() {
+  const prefFile = path.join(HOME, '.qa-agent', 'prefs.json');
+  try {
+    if (fs.existsSync(prefFile)) {
+      const g = JSON.parse(fs.readFileSync(prefFile, 'utf8'));
+      const v = (g.d && g.d['mcp.path_aware']) ?? g['mcp.path_aware'];
+      if (/^(true|1|yes)$/i.test(String(v))) return true;
+      if (/^(false|0|no)$/i.test(String(v))) return false;
+    }
+  } catch {
+    /* fall through */
+  }
   const store = path.join(HOME, '.qa-agent', 'lib', 'store.js');
   if (!fs.existsSync(store)) return false;
   const r = spawnSync(process.execPath, [store, 'pref', 'get', 'mcp.path_aware', '--project', 'auto'], {

@@ -11,6 +11,10 @@ onboard.md
 # OpenCode runtime state — machine-specific, do not commit
 .omo/
 
+# Local scratch (gitignored; also in .cursorignore)
+temp/
+scripts/tmp-*
+
 # Visual test baselines (auto-generated reference screenshots)
 .cursor/skills/qa-visual-test/baselines/
 

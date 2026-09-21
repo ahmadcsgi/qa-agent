@@ -56,6 +56,7 @@ $McpToolsSrc   = JPath $RepoDir ".cursor" "MCP_TOOLS.md"
 $AgentsMdSrc   = JPath $RepoDir "AGENTS.md"
 $ReadmeSrc     = JPath $RepoDir "README.md"
 $StoreSrc      = JPath $RepoDir "scripts" "store.js"
+$BootSessionSrc = JPath $RepoDir "scripts" "boot-session.js"
 $McpLibSrc     = JPath $RepoDir "scripts" "mcp-lib.js"
 $McpModeSrc    = JPath $RepoDir "scripts" "mcp-mode.js"
 $ContextTplSrc = JPath $RepoDir ".cursor" "templates" "project-context.current.md"
@@ -104,6 +105,10 @@ if (Test-Path $StoreSrc) {
 }
 else {
     Write-Err "  store.js not found at $StoreSrc"
+}
+if (Test-Path $BootSessionSrc) {
+    Copy-Item -Path $BootSessionSrc -Destination (JPath $GlobalStoreDir "lib" "boot-session.js") -Force
+    Write-Ok "  boot-session.js installed"
 }
 if (Test-Path $McpLibSrc) {
     Copy-Item -Path $McpLibSrc -Destination (JPath $GlobalStoreDir "lib" "mcp-lib.js") -Force

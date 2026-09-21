@@ -4,6 +4,26 @@ All notable changes to QA Agent are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project uses [SemVer](https://semver.org/).
 
+## [1.5.18] - 2026-09-21
+
+### Added
+- `scripts/boot-session.js`: 5-minute session cache to skip redundant `proj ensure` / `boot`
+- `scripts/qa-health.js`: runtime checks (hooks, canonical path, boot cache, `.cursorignore`)
+- `scripts/seed-workspace-know.js`: idempotent TestRail/workspace `know` seeds
+- `docs/MEMORY_SYNC.md`: continual learning → store + boot speed guide
+- Pref `agent.boot_minimal` for lite `/qa` boot (optional; seed script can enable)
+
+### Changed
+- `store.js` `boot`: includes `know[]` excerpt; marks boot-session after boot
+- `/qa`, `@qa-entry`, core rule: `boot-session plan` before shell boot
+- `@qa-search-tickets`: hard rule — no boot before first Shortcut reply
+- `@qa-test-cases`: automatic TestRail MCP → CLI fallback section
+- `@qa-entry`: fast router table before generic intent table
+- `AGENTS.md`: slimmer workspace facts (operational maps → store `know`)
+- `doctor.js`: runs `qa-health.js`
+- `mcp-auto-session.js`: read `mcp.path_aware` from prefs file before spawning store
+- `install.ps1` / `install.sh`: copy `boot-session.js` to `~/.qa-agent/lib/`
+
 ## [1.5.17] - 2026-08-24
 
 ### Added
