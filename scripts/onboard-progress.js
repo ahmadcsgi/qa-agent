@@ -107,7 +107,7 @@ function pathOk(raw) {
 }
 
 function collect() {
-  const fullNeed = ['shortcut', 'testrail', 'glean', 'context7', 'cypress', 'playwright'];
+  const fullNeed = ['shortcut', 'testrail', 'atlassian', 'context7', 'cypress', 'playwright'];
   const cat = catalogKeys();
   const act = activeKeys();
   const catalogFull = fullNeed.every((k) => cat.includes(k));

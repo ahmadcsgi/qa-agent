@@ -14,5 +14,6 @@ description: Generate Cypress Cucumber UI automation from TestRail or Shortcut. 
 5. Plan > decision ladder (`@qa-token-saver` + coding flow) > generate alias/steps/feature
 6. Security lite if auth/HTML/upload/free-text (`@qa-security-review`)
 7. Reflexion > preview ACC > Cypress run > heal max 2x > memory/`cor`
+8. **Before commit:** `automation-bugbot-commit-gate.mdc` (Bugbot local + `node scripts/bugbot-stamp.js`)
 
 Detail (POM selectors, heal, conventions, MCP list): `.cursor/references/qa-ui-automation-flow.md` (or `~/.cursor/references/`).

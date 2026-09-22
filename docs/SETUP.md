@@ -45,8 +45,12 @@ node scripts/setup-mcp.js
 
 | Profile | Servers |
 |---------|---------|
-| **full** (recommended) | Shortcut, TestRail, Glean, Context7, Cypress, Playwright |
-| **lite** | Shortcut, TestRail, Glean |
+| **full** (recommended) | Shortcut, TestRail, Atlassian, Context7, Cypress, Playwright |
+| **lite** | Shortcut, TestRail, Atlassian |
+
+TestRail: prefer `tools.testrail_via=api` + `scripts/testrail-tools/` (see [testrail-workflow.md](testrail-workflow.md)). After `setup-mcp.js`, run `node scripts/sync-testrail-mcp-env.js` when using MCP TestRail.
+
+Automation repos: `node scripts/install-automation-git-hooks.js` (Bugbot before commit).
 | **optional** | full + k6 + karate MCP |
 
 Switch without re-typing tokens (catalog-backed):

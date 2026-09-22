@@ -1,3 +1,6 @@
+# Scratch drafts / write scripts / TestRail dumps — local only
+temp/
+
 # QA Agent memory — personal learning, do not commit
 .cursor/qa-memory/
 

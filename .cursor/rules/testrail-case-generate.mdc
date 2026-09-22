@@ -36,9 +36,10 @@ User replies per case or per batch: **ACC** · **EDIT** · **REJECT** · **DELET
 3. Dedup (`getCases` section + refs). Methodology Phase 2b.
 4. **If anything is unclear** (AC, copy, UX, domain meaning, missing screenshot):
    - Ask the user **or**
-   - Search Glean (`search` / `read_document`) for product docs / runbooks
+   - Search Confluence via Atlassian MCP (`search` / `searchConfluence` / `getConfluenceContent`) for product docs / runbooks
    - Do **not** invent behavior
-5. Cite sources: Shortcut · Glean · user · memory.
+5. Cite sources: Shortcut · Confluence · user · memory.
+6. **TestRail `refs`:** use full clickable Shortcut URL, e.g. `https://app.shortcut.com/dgit/story/283367`. Never `sc-283367` alone.
 
 Stop if blocked. Do not draft yet.
 
@@ -84,7 +85,7 @@ Also fill **Test data** when values are used. Else `N/A`.
 
 Titles: `testrail-case-titles.mdc`. Punctuation: `output-punctuation.mdc`.
 
-Write full set to: `.cursor/qa-memory/generated-tests/manual/sc-<id>-preview.md`
+Write full set to: `temp/sc-<id>-preview.md` (user review file). Do not leave the draft only in chat.
 
 ---
 
@@ -113,8 +114,9 @@ When **every** surviving case across **all** batches is ACC'd:
 1. Confirm count in one line (e.g. `8 ACC · 1 REJECT · write 8`).
 2. `addSection` only if needed and previously ACC'd in plan.
 3. `addCase` for ACC'd cases only (`templateId: 1`).
-4. Per case: Shortcut checklist (`testrail-shortcut-checklist.mdc`).
-5. Optional: TC label groom (separate ACC).
+4. Merge new IDs onto the progression or named test run (`get_tests` merge, never replace).
+5. Per case: Shortcut checklist with `tests/view/<testId>` from that run (`testrail-shortcut-checklist.mdc`).
+6. Optional: TC label groom (separate ACC).
 
 **Never** create TestRail cases for REJECT/DELETE or for batches not yet reviewed.
 

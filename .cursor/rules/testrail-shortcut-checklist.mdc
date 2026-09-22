@@ -1,5 +1,5 @@
 ---
-description: After addCase, add Shortcut checklist qa test: cases/view/<caseId>. Load with @qa-test-cases.
+description: After addCase and plan/run merge, add Shortcut checklist qa test: tests/view/<testId>. Load with @qa-test-cases.
 alwaysApply: false
 ---
 
@@ -9,28 +9,40 @@ Whenever you **create** (or ACC-write) TestRail case(s) for a Shortcut story:
 
 ## Required
 
-1. **Immediately** add a Shortcut checklist task on that story (`stories-add-task`).
-2. **One checklist item per case** (do not batch multiple case IDs into one task).
-3. **Format:**
+1. `addCase` first. Then add the new cases to the **progression or named test run** (merge only).
+2. Resolve each new case to its **run test instance** via `get_tests` on that run (`case_id` > `id`).
+3. **Immediately** add a Shortcut checklist task on that story (`stories-add-task`).
+4. **One checklist item per case** (do not batch multiple IDs into one task).
+5. **Format (permanent):**
 
 ```text
-qa test: <TESTRAIL_BASE_URL>/index.php?/cases/view/<caseId>
+qa test: <TESTRAIL_BASE_URL>/index.php?/tests/view/<testId>
 ```
+
+Use the **test** in the progression/test run, not the suite case. That URL is the result page (Passed / Failed / Retest).
 
 Resolve `<TESTRAIL_BASE_URL>` from project-context, prefs, or MCP config (never hardcode a company host in this rule).
 
 Example shape:
 
 ```text
-qa test: https://your-org.testrail.io/index.php?/cases/view/12345
+qa test: https://your-org.testrail.io/index.php?/tests/view/12345
 ```
+
+## Plan / run merge (do not rewrite)
+
+- Load existing case IDs from `get_tests` on the run, never from `get_plan` (runs lack `case_ids`).
+- `update_plan_entry` **replaces** the run set. IDs omitted from the payload are dropped and **their results are wiped**.
+- Always merge: existing run case IDs + new case IDs. Never send only the new IDs. Never use `-NoMerge` unless the user explicitly asks to replace the run.
+- After merge, verify `get_tests` count (before + new, unless the user asked to remove cases).
 
 ## Never
 
+- Suite case links (`cases/view/<caseId>`) on the QA execution checklist
 - Suite/section links (`suites/view/...&group_id=...`)
 - Run section group links (`runs/view/...&group_id=...`)
-- `tests/view/<id>` unless the user explicitly asks for a **run** instance (those IDs are run-specific)
+- Checklist before the case is on the run (no test instance yet)
 
 ## Flow
 
-`addCase` (get `caseId`) then `stories-add-task` with the format above, in the same turn as the TestRail write.
+`addCase` (get `caseId`) > merge onto the progression/test run > `get_tests` (get `testId`) > `stories-add-task` with `tests/view/<testId>` in the same turn as the TestRail write.

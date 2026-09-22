@@ -158,13 +158,21 @@ if (!exists(mcpPath)) {
     const servers = Object.keys(mcpCfg.mcpServers || {});
     if (servers.length) ok(`servers: ${servers.join(", ")}`);
     else soft("mcp.json has no mcpServers entries");
-    for (const need of ["shortcut", "testrail", "glean", "context7", "cypress", "playwright"]) {
-      if (!servers.includes(need)) soft(`missing recommended server: ${need} (full MCP set)`);
+    const { testrailViaApiPref } = require("./mcp-lib");
+    const trApi = testrailViaApiPref();
+    if (trApi) ok("TestRail: tools.testrail_via=api (MCP server optional)");
+    const recommended = ["shortcut", "atlassian", "context7", "cypress", "playwright"];
+    if (!trApi) recommended.unshift("testrail");
+    for (const need of recommended) {
+      if (!servers.includes(need)) soft(`missing recommended server: ${need} (profile/catalog)`);
     }
     const te = mcpCfg.mcpServers?.testrail?.env || {};
-    const ph = (v) => !v || /YOUR_|your\.email|PLACEHOLDER|PATH_TO_/i.test(String(v));
-    if (ph(te.TESTRAIL_API_KEY) || ph(te.TESTRAIL_USERNAME)) {
-      soft("TestRail username/API key still placeholder. Re-run: node scripts/setup-mcp.js");
+    const ph = (v) =>
+      !v || /YOUR_|your\.email|your-org\.testrail\.io|PLACEHOLDER|PATH_TO_/i.test(String(v));
+    if (!trApi && servers.includes("testrail") && (ph(te.TESTRAIL_API_KEY) || ph(te.TESTRAIL_USERNAME))) {
+      soft(
+        "TestRail MCP env placeholder. Run: node scripts/sync-testrail-mcp-env.js (or pref set tools.testrail_via api)"
+      );
     }
     // Optional MCP: warn if configured but CLI missing
     const cmdOk = (cmd) => {
@@ -263,6 +271,44 @@ console.log("\nTestRail CLI tools");
 const trTools = path.join(REPO, "scripts", "testrail-tools", "TestRailApi.ps1");
 if (exists(trTools)) ok("scripts/testrail-tools/ present");
 else fail("scripts/testrail-tools/ missing");
+try {
+  const { resolveEnvLocal } = require("./sync-testrail-mcp-env");
+  const envLocal = resolveEnvLocal();
+  if (envLocal) ok("testrail-mcp config/env.local found");
+  else soft("testrail-mcp env.local missing. TestRail CLI needs TESTRAIL_MCP_ROOT or AI/MCP/testrail-mcp");
+} catch {
+  soft("sync-testrail-mcp-env.js unavailable");
+}
+
+// Automation Bugbot hooks
+console.log("\nAutomation git hooks");
+try {
+  const { readPref, parsePathList } = require("./mcp-lib");
+  const roots = new Set();
+  for (const key of ["paths.ui_tests", "paths.api_tests", "paths.perf_tests"]) {
+    for (const p of parsePathList(readPref(key))) roots.add(p);
+  }
+  if (!roots.size) {
+    soft("no paths.* prefs (skip Bugbot hook check)");
+  } else {
+    for (const root of roots) {
+      const hook = path.join(root, ".git", "hooks", "pre-commit");
+      const label = path.basename(root);
+      if (!exists(path.join(root, ".git"))) soft(`${label}: not a git repo`);
+      else if (!exists(hook)) soft(`${label}: Bugbot pre-commit missing. Run: node scripts/install-automation-git-hooks.js`);
+      else {
+        const body = fs.readFileSync(hook, "utf8");
+        if (body.includes("git-pre-commit-bugbot")) ok(`${label}: Bugbot pre-commit installed`);
+        else soft(`${label}: pre-commit exists but not QA Agent Bugbot hook`);
+      }
+    }
+  }
+  const bugbotPref = readPref("git.bugbot_before_commit");
+  if (bugbotPref === false || bugbotPref === "false") soft("git.bugbot_before_commit=false (commit gate off)");
+  else ok("git.bugbot_before_commit enabled (default)");
+} catch (e) {
+  soft(`Bugbot hook check failed: ${e.message}`);
+}
 
 // Path prefs + install sanity
 console.log("\nPath prefs");

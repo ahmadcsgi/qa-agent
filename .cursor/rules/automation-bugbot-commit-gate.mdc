@@ -1,0 +1,30 @@
+---
+description: Mandatory local Bugbot review before git commit in automation path repos. Load with @qa-ui-automation @qa-api-test @qa-perf-test.
+alwaysApply: false
+---
+
+# Automation Bugbot commit gate
+
+**Before `git commit`** (and before offering commit) when writing code under `paths.ui_tests`, `paths.api_tests`, or `paths.perf_tests`.
+
+## Agent flow (mandatory)
+
+1. User has **staged** automation changes (or stage first, then review).
+2. Run **local Bugbot**: `/review-bugbot` or launch `bugbot` subagent with `Diff: uncommitted changes` or staged scope. Summarize findings. Fix or user accepts P2+ risk.
+3. **Stamp:** `node scripts/bugbot-stamp.js --repo <git-root> [--findings N]`
+4. Only then `git commit`. Never commit automation path code without steps 2–3 when `git.bugbot_before_commit` is true (default).
+
+## Enforcement
+
+- Git **pre-commit** hook: `node scripts/install-automation-git-hooks.js` on each automation repo.
+- Hook calls `scripts/git-pre-commit-bugbot.js` (matches stamp to `git diff --cached`).
+
+## Escape hatches (rare)
+
+- `pref set git.bugbot_before_commit false` disables gate.
+- `QA_AGENT_SKIP_BUGBOT=1` for one commit only (user must ask explicitly).
+
+## Not a substitute for
+
+- `@qa-security-review` on auth/secrets surfaces
+- `@qa-pr-review` before push when `git.review_before_push=true`

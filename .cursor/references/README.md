@@ -7,6 +7,7 @@
 | `shortcut-api.md` | Shortcut MCP API - search, get, create, update, tasks, labels | `@qa-search-tickets`, `@qa-defect-triage`, `@qa-test-cases` |
 | `testrail-api.md` | Cases, sections, plans, runs, results | `@qa-test-cases`, `@qa-test-execution`, `@qa-ui-automation` |
 | `testrail-tools.md` | TestRail CLI tools (bulk fields, plan entry, audit) | `@qa-test-cases`, `@qa-test-execution` |
+| `docs/testrail-workflow.md` | TestRail API-first cheat sheet | `@qa-test-cases`, `@qa-test-execution` |
 | `qa-testcase-methodology.md` | Analysis, dedup, risk, preview, Phase 7 plan/results, maintenance, label groom | `@qa-test-cases`, `@qa-test-execution` |
 | `incident-email.md` | Incident email templates - duplicate, defect, user error, need help | `@qa-defect-triage` |
 | `playwright-browser.md` | Playwright browser actions - navigate, click, type, POM builder | `@qa-ui-automation` |
@@ -14,6 +15,7 @@
 | `karate-testing.md` | Karate API testing - feature syntax, assertions, data-driven | `@qa-api-test` |
 | `k6-testing.md` | k6 performance testing - script structure, scenarios, thresholds | `@qa-perf-test` |
 | `git-workflow.md` | Git workflow - branch naming, commit conventions, PR | All automation skills |
+| `confluence-search.md` | Atlassian MCP / Confluence primary search | All skills needing internal docs |
 | `qa-security-review.md` | Secrets, XSS/injection coverage, authz, CVE hygiene (defensive) | `@qa-security-review`, `@qa-pr-review` |
 | `qa-ui-automation-flow.md` | POM, heal, conventions (detail) | `@qa-ui-automation` |
 | `qa-perf-test-flow.md` | Runner matrix, vault, thresholds (detail) | `@qa-perf-test` |

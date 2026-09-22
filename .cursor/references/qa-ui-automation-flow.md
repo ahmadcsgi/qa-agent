@@ -35,6 +35,6 @@ Framework Cypress+Cucumber when present. Auth via env/vault. Never hardcode secr
 
 ## MCP
 
-TestRail `getCase(s)` · Shortcut `stories-get-by-id` · Playwright browser_* · Cypress run/heal · Context7 · Glean
+TestRail `getCase(s)` · Shortcut `stories-get-by-id` · Playwright browser_* · Cypress run/heal · Context7 · Confluence (Atlassian MCP)
 
 Offline: `cypress-testing.md`, `playwright-browser.md` (workspace or `~/.cursor/references/`).

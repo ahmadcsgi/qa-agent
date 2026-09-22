@@ -156,7 +156,10 @@ function Update-TestRailCaseFields {
         [Parameter(Mandatory)][hashtable]$Fields
     )
 
-    $body = ($Fields | ConvertTo-Json -Compress)
+    Add-Type -AssemblyName System.Web.Extensions
+    $serializer = New-Object System.Web.Script.Serialization.JavaScriptSerializer
+    $serializer.MaxJsonLength = 67108864
+    $body = $serializer.Serialize($Fields)
     return Invoke-TestRailApi -Method Post -Path "update_case/$CaseId" -Body $body
 }
 
@@ -176,9 +179,16 @@ function Update-TestRailPlanEntryCases {
         foreach ($entry in @($plan.entries)) {
             if ([string]$entry.id -ne [string]$EntryId) { continue }
             foreach ($run in @($entry.runs)) {
-                if ($run.case_ids) {
-                    $finalIds += @($run.case_ids | ForEach-Object { [int]$_ })
-                }
+                $runId = [int]$run.id
+                if ($runId -le 0) { continue }
+                $offset = 0
+                do {
+                    $page = Invoke-TestRailApi -Path "get_tests/$runId&limit=250&offset=$offset"
+                    if ($page.tests) {
+                        $finalIds += @($page.tests | ForEach-Object { [int]$_.case_id })
+                    }
+                    $offset += 250
+                } while ($page._links.next)
             }
         }
         $finalIds = @($finalIds | Select-Object -Unique | Sort-Object)

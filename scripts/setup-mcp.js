@@ -31,13 +31,15 @@ const {
   applyPathPrefs,
   readPref,
   scanSecrets,
+  testrailViaApiPref,
+  readJsonSafe,
 } = require('./mcp-lib');
 
 const REPO = path.resolve(__dirname, '..');
 
 const DEFAULTS = {
   TESTRAIL_URL: 'https://your-org.testrail.io',
-  GLEAN_URL: 'https://your-company.glean.com/mcp/default',
+  ATLASSIAN_MCP_URL: 'https://mcp.atlassian.com/v2/mcp',
   SHORTCUT_URL: 'https://mcp.shortcut.com/mcp',
   CONTEXT7_URL: 'https://mcp.context7.com/mcp',
 };
@@ -48,7 +50,7 @@ function resolveDefaults() {
     const { suggestMcpDefaults } = require('./onboard-learn');
     const s = suggestMcpDefaults(REPO);
     if (s.TESTRAIL_URL) d.TESTRAIL_URL = s.TESTRAIL_URL;
-    if (s.GLEAN_URL) d.GLEAN_URL = s.GLEAN_URL;
+    if (s.ATLASSIAN_MCP_URL) d.ATLASSIAN_MCP_URL = s.ATLASSIAN_MCP_URL;
     if (s.source) d.source = s.source;
   } catch {
     /* ignore */
@@ -114,8 +116,8 @@ function buildServerDefs(opts) {
       },
     };
   }
-  if (names.includes('glean')) {
-    servers.glean = { url: D.GLEAN_URL };
+  if (names.includes('atlassian')) {
+    servers.atlassian = { url: D.ATLASSIAN_MCP_URL };
   }
   if (names.includes('context7')) {
     servers.context7 = {
@@ -195,10 +197,10 @@ async function promptSecrets(config, opts) {
     }
   }
 
-  if (s.glean) {
-    console.log('\n--- Glean (company knowledge) ---');
-    s.glean.url = await ask(rl, 'Glean MCP URL', s.glean.url || D.GLEAN_URL);
-    console.log('  (Auth often via Cursor MCP login / SSO after reload)');
+  if (s.atlassian) {
+    console.log('\n--- Atlassian MCP (Confluence + Jira search) ---');
+    s.atlassian.url = await ask(rl, 'Atlassian MCP URL', s.atlassian.url || D.ATLASSIAN_MCP_URL);
+    console.log('  (Auth via Cursor MCP login / Atlassian SSO after reload)');
   }
 
   if (s.shortcut) {
@@ -266,14 +268,16 @@ async function promptSecrets(config, opts) {
 
 function missingRequired(config) {
   const miss = [];
-  const t = config.mcpServers?.testrail?.env;
-  if (t) {
-    if (isPlaceholder(t.TESTRAIL_USERNAME) || !t.TESTRAIL_USERNAME) miss.push('TESTRAIL_USERNAME');
-    if (isPlaceholder(t.TESTRAIL_API_KEY) || !t.TESTRAIL_API_KEY) miss.push('TESTRAIL_API_KEY');
-  }
   if (!config.mcpServers?.shortcut) miss.push('shortcut server');
-  if (!config.mcpServers?.glean) miss.push('glean server');
-  if (!config.mcpServers?.testrail) miss.push('testrail server');
+  if (!config.mcpServers?.atlassian) miss.push('atlassian server');
+  if (!testrailViaApiPref()) {
+    if (!config.mcpServers?.testrail) miss.push('testrail server');
+    const te = config.mcpServers?.testrail?.env;
+    if (te) {
+      if (isPlaceholder(te.TESTRAIL_USERNAME) || !te.TESTRAIL_USERNAME) miss.push('TESTRAIL_USERNAME');
+      if (isPlaceholder(te.TESTRAIL_API_KEY) || !te.TESTRAIL_API_KEY) miss.push('TESTRAIL_API_KEY');
+    }
+  }
   return miss;
 }
 
@@ -282,8 +286,8 @@ async function main() {
   if (opts.help) {
     console.log(`Usage: node scripts/setup-mcp.js [--full|--lite] [--with-optional] [--non-interactive] [--force]
 
-  --full             MCP: Shortcut, TestRail, Glean, Context7, Cypress, Playwright (default)
-  --lite             Shortcut + TestRail + Glean only
+  --full             MCP: Shortcut, TestRail, Atlassian, Context7, Cypress, Playwright (default)
+  --lite             Shortcut + TestRail + Atlassian only
   --normal           Alias of --full
   --with-optional    Also add k6 + karate MCP (see mcp.json.optional.example)
   --non-interactive  Write/merge without prompts
@@ -350,6 +354,21 @@ Target: ~/.cursor/mcp.json (never commit)`);
 
   const catPath = syncCatalog(config.mcpServers);
   console.log(`Synced catalog: ${catPath}`);
+
+  try {
+    const { syncTestrailEnvFromLocal } = require('./sync-testrail-mcp-env');
+    const trSync = syncTestrailEnvFromLocal();
+    if (trSync.ok && trSync.updated.length) {
+      console.log(`Synced TestRail env from env.local (${trSync.updated.length} file(s))`);
+      if (fs.existsSync(MCP_PATH)) {
+        config = readJsonSafe(MCP_PATH, config);
+      }
+    } else if (trSync.envFile && !trSync.ok) {
+      console.log(`Note: TestRail env.local not synced (${trSync.error || 'skipped'})`);
+    }
+  } catch {
+    /* optional */
+  }
   const secretHits = scanSecrets(config);
   if (secretHits.length) {
     console.log(
@@ -368,12 +387,13 @@ Target: ~/.cursor/mcp.json (never commit)`);
 
   console.log('\nNext:');
   console.log('  1. Reload Cursor window (MCP reload)');
-  console.log('  2. Complete Shortcut / Glean MCP auth in Cursor if prompted');
+  console.log('  2. Complete Shortcut / Atlassian MCP auth in Cursor if prompted');
   console.log('  3. node scripts/setup-git.js');
   console.log('  4. node scripts/setup-tooling.js   (k6 / Java / Maven)');
   console.log('  5. node scripts/setup-prefs.js     (squad + paths)');
   console.log('  6. node scripts/doctor.js');
-  console.log('  7. Switch profile later: node scripts/mcp-mode.js full|lite|status');
+  console.log('  7. TestRail API mode: pref set tools.testrail_via api + node scripts/sync-testrail-mcp-env.js');
+  console.log('  8. Switch profile later: node scripts/mcp-mode.js full|lite|status');
   console.log('');
   console.log('Do NOT commit ~/.cursor/mcp.json');
   console.log('Never log or paste API keys into chat/PRs.');

@@ -35,6 +35,7 @@ alwaysApply: false
 
 - Update `project-context` / `generated-tests/` when new patterns appear.
 - APPROVE / EDIT / REJECT → `cor add` as usual.
+- Before **commit**: load `automation-bugbot-commit-gate.mdc` (local Bugbot + `bugbot-stamp.js`).
 
 ## Anti-patterns
 

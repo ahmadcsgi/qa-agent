@@ -29,4 +29,14 @@ if ($DryRun) {
 $result = Update-TestRailPlanEntryCases -PlanId $PlanId -EntryId $EntryId -SuiteId $SuiteId -CaseIds $CaseIds @mergeArgs
 $runId = if ($result.runs -and $result.runs.Count -gt 0) { $result.runs[0].id } else { '(unknown)' }
 Write-Host "Plan entry updated. Run id: $runId"
-Write-Host "Case count: $($CaseIds.Count) (merge=$([bool](-not $NoMerge)))"
+Write-Host "New case ids submitted: $($CaseIds.Count) (merge=$([bool](-not $NoMerge)))"
+if ($runId -ne '(unknown)') {
+    $tests = @()
+    $offset = 0
+    do {
+        $page = Invoke-TestRailApi -Path "get_tests/$runId&limit=250&offset=$offset"
+        if ($page.tests) { $tests += @($page.tests) }
+        $offset += 250
+    } while ($page._links.next)
+    Write-Host "Run tests after update: $($tests.Count) (verify via get_tests)"
+}

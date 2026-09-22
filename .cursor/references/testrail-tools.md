@@ -34,8 +34,8 @@ cd scripts/testrail-tools
 .\tr-update-fields.ps1 -ProjectId 3 -SuiteId 282 -SectionIds 32209 `
   -FieldsJson '{"custom_case_squadname":9,"custom_case_feature_component":5}' -DryRun
 
-# Add case to plan run
-.\tr-update-plan-entry.ps1 -PlanId 849 -EntryId '<uuid>' -SuiteId 282 -CaseIds 386293
+# Add case to plan run (merge uses get_tests on the run, not get_plan)
+.\tr-update-plan-entry.ps1 -PlanId 849 -EntryId '<uuid>' -SuiteId 282 -CaseIds @(386293)
 
 # Automation audit (uses paths.ui_tests / paths.api_tests or pass -UiRepo -ApiRepo)
 .\tr-audit-automation.ps1 -ProjectId 3 -SuiteId 282 `
@@ -50,5 +50,6 @@ cd scripts/testrail-tools
 - Never modify steps, expected, preconditions, title, or refs unless user explicitly asks
 - Plan-owned runs: never `updateRun` (403). Use `tr-update-plan-entry.ps1`
 - Bulk field updates: never `updateCases` (403). Use `tr-update-fields.ps1`
+- **Plan entry merge:** `Update-TestRailPlanEntryCases` merges existing IDs via **`get_tests/{runId}`**, not `get_plan` (`case_ids` is empty there). Sending only new IDs without merge **replaces** the run and **deletes prior test results**. After merge, verify count with `get_tests`. Restored cases return as new test rows (usually Untested)
 
 Refs: `testrail-api.md` · `@qa-test-execution` · `@qa-test-cases`

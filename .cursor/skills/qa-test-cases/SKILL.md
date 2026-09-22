@@ -9,11 +9,15 @@ description: Generate TestRail cases from Shortcut (batch of 5, ACC, addCase). U
 
 Run boot (`proj ensure` > `boot`) **after** first reply, or in parallel with MCP search only if search already started in the same turn.
 
-## TestRail MCP fallback
+## TestRail access (API first)
 
-If TestRail MCP returns 404, timeout, or auth error on read/write:
+**Auth:** TestRail REST uses **email + API Key** (My Settings), not account password. Credentials live in `testrail-mcp/config/env.local` (see `TestRailApi.ps1`).
 
-1. Tell user MCP failed (one line) and switch to `scripts/testrail-tools/` or org `TestRailApi.ps1`
+**Default on Windows:** use `scripts/testrail-tools/` (`Invoke-TestRailApi`, `tr-*.ps1`) when `env.local` exists. Sync MCP env: `node scripts/sync-testrail-mcp-env.js`.
+
+**MCP** (`user-testrail`) only when env in `~/.cursor/mcp.json` is filled. If MCP returns 404, timeout, or auth error:
+
+1. One-line note to user, switch to CLI tools
 2. Do not invent case IDs or plan payloads
 3. Plan merge: always `get_tests` on target run before `update_plan_entry`
 
@@ -23,8 +27,8 @@ Ref: `.cursor/references/testrail-tools.md`
 
 1. Boot `testcases` + `cor list`. Read story. Dedup. Resolve section
 2. Plan titles table > ACC plan
-3. Draft preview under `qa-memory/generated-tests/` > ACC all
-4. `addCase` + Shortcut checklist links. Delete preview when done
+3. Draft preview to `temp/sc-{storyId}-preview.md` for user review > ACC all
+4. `addCase` > merge onto progression/test run > Shortcut checklist `tests/view/<testId>`. Delete preview when done
 5. Prefer one merged case when checks overlap (`testcases.merge_prefer_one`)
 
 Never invent AC. Fields English if pref. Execution/plans: `@qa-test-execution`.

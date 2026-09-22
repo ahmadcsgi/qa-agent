@@ -20,7 +20,7 @@ QA Agent = co-pilot QA di Cursor. Kamu ketik `/qa` atau `@qa`, lalu jelaskan tug
 
 | Layer | Fungsi |
 |-------|--------|
-| MCP | Shortcut, TestRail, Glean, Cypress, … |
+| MCP | Shortcut, TestRail (API atau MCP), Atlassian/Confluence, Cypress, … |
 | Memory | Prefs, corrections, knowledge (`~/.qa-agent`) |
 | Skills | Satu skill per tugas (`@qa-test-cases`, `@qa-ui-automation`, …) |
 
@@ -192,7 +192,9 @@ Decision ladder sebelum generate test (YAGNI > Reuse > … > Minimum):
 - Skill: `@qa-token-saver`
 - Mode: `@qa token lite|full|ultra`
 
-MCP **path-aware:** di luar folder test = profile **lite** (Shortcut + TestRail + Glean saja). Buka repo Cypress/API/perf = profile otomatis switch.
+MCP **path-aware:** di luar folder test = profile **lite** (Shortcut + Atlassian; TestRail MCP opsional jika `tools.testrail_via` bukan `api`). Buka repo Cypress/API/perf = profile otomatis switch.
+
+**TestRail:** default API (`scripts/testrail-tools/` + `env.local`). **Commit automation:** Bugbot lokal + `bugbot-stamp.js` (hook: `install-automation-git-hooks.js`).
 
 Detail: [MCP.md](MCP.md) · [TOKEN_TIPS.md](TOKEN_TIPS.md)
 

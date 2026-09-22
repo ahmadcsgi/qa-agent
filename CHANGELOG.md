@@ -4,6 +4,21 @@ All notable changes to QA Agent are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project uses [SemVer](https://semver.org/).
 
+## [1.5.19] - 2026-09-22
+
+### Added
+- Atlassian MCP (Confluence) replaces Glean in default lite/full profiles
+- Automation Bugbot commit gate: `automation-bugbot-commit-gate.mdc`, `bugbot-stamp.js`, `git-pre-commit-bugbot.js`, `install-automation-git-hooks.js`
+- `scripts/sync-testrail-mcp-env.js` + `docs/testrail-workflow.md`
+- Pref `tools.testrail_via=api` drops TestRail from active MCP profile
+- `scripts/bugbot-gate.test.js`
+
+### Changed
+- `setup-mcp.js` syncs TestRail env from `env.local` after write; `your-org.testrail.io` treated as placeholder
+- `doctor.js`: TestRail API mode, env.local, Bugbot hook checks, Atlassian in recommended set
+- Docs: README, SETUP, USER_GUIDE, MCP_TOOLS, skills/rules for Confluence + API-first TestRail
+- `sync-rules-to-paths.js --with-hooks`
+
 ## [1.5.18] - 2026-09-21
 
 ### Added

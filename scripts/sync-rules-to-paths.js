@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Copy QA Agent .cursor/rules/*.mdc to paths.ui_tests / api / perf repos.
- * Usage: node scripts/sync-rules-to-paths.js [--dry-run]
+ * Usage: node scripts/sync-rules-to-paths.js [--dry-run] [--with-hooks]
  */
 'use strict';
 
@@ -15,6 +15,7 @@ const RULES_SRC = path.join(REPO, '.cursor', 'rules');
 const { readPref, parsePathList } = require('./mcp-lib');
 
 const dryRun = process.argv.includes('--dry-run');
+const withHooks = process.argv.includes('--with-hooks');
 
 function copyRulesTo(targetRoot) {
   if (!targetRoot || !fs.existsSync(targetRoot)) {
@@ -59,6 +60,12 @@ function main() {
     total += copyRulesTo(root);
   }
   console.log(`Done. ${total} rule file(s) per repo. Reload Cursor when opening a test repo.`);
+  if (withHooks && !dryRun) {
+    console.log('\nInstalling Bugbot pre-commit hooks…');
+    require('child_process').spawnSync(process.execPath, [path.join(REPO, 'scripts', 'install-automation-git-hooks.js')], {
+      stdio: 'inherit',
+    });
+  }
 }
 
 main();

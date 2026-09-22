@@ -265,7 +265,7 @@ if (mode === 'status' || mode === 'help' || mode === '-h' || mode === '--help') 
   if (mode !== 'status') {
     console.log(`Usage: node scripts/mcp-mode.js [lite|ui|api|perf|full|optional|all|auto|status] [--quiet] [--if-changed] [--skip-if-hooked]
 
-  lite       Shortcut, TestRail, Glean (default outside test repos)
+  lite       Shortcut, TestRail, Atlassian (default outside test repos)
   ui         lite + Context7 + Cypress + Playwright (paths.ui_tests)
   api        lite + Context7 (+ karate MCP if catalogued)
   perf       lite + Context7 (+ k6 MCP if catalogued)

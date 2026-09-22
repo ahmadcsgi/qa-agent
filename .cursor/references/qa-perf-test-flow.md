@@ -21,7 +21,7 @@ If resolve fails or `k6 version` lacks ansible-vault / exec / faker: load `wsl-x
 
 1. `project-context` + onboard Part A9c–A9e / `org-context` if present. Never paste vault secrets.
 2. Reuse `{paths.perf_tests}/k6/loader/api-scenario.js` `testOptions`. Env overrides only.
-3. Thresholds: squad doc > org baseline (Glean/org-context) > smoke default p95<2000ms, error<1% only if no doc.
+3. Thresholds: squad doc > org baseline (Confluence/org-context) > smoke default p95<2000ms, error<1% only if no doc.
 
 ## Flow steps
 

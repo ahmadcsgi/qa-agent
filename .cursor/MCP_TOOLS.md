@@ -31,12 +31,14 @@ Tool names below match the **actual MCP server APIs** (verified against live sch
 
 **Result statusId:** `1` Pass · `2` Blocked · `3` Untested · `4` Retest · `5` Fail
 
-## Glean (`glean`)
+## Atlassian (`atlassian`) — primary internal search (Confluence)
 | Tool | Use Case | Called by |
 |------|----------|----------------|
-| `search` | Search documents, Confluence, knowledge base | `@qa-defect-triage`, `@qa-ui-automation`, `@qa-api-test`, `@qa-search-tickets` |
-| `read_document` | Read specific document by URL | `@qa-defect-triage` |
-| `chat` | Ask Glean AI | All skills |
+| `search` | Natural language across Confluence + Jira | `@qa-defect-triage`, `@qa-ui-automation`, `@qa-api-test`, `@qa-search-tickets`, `@qa-test-cases` |
+| `searchConfluence` | CQL wiki-only search | Same (when user asks for Confluence/docs) |
+| `getConfluenceContent` | Full Confluence page | `@qa-defect-triage`, research steps |
+
+Ref: `.cursor/references/confluence-search.md`. Glean only when user explicitly requests it.
 
 ## Context7 (`context7`)
 | Tool | Use Case | Called by |

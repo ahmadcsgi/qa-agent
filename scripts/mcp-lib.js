@@ -15,18 +15,18 @@ const MCP_PATH = path.join(HOME, '.cursor', 'mcp.json');
 const QA_MCP_DIR = path.join(HOME, '.qa-agent', 'mcp');
 const CATALOG_PATH = path.join(QA_MCP_DIR, 'catalog.json');
 
-const LITE = ['shortcut', 'testrail', 'glean'];
-const FULL = ['shortcut', 'testrail', 'glean', 'context7', 'cypress', 'playwright'];
+const LITE = ['shortcut', 'testrail', 'atlassian'];
+const FULL = ['shortcut', 'testrail', 'atlassian', 'context7', 'cypress', 'playwright'];
 const OPTIONAL = ['k6', 'karate'];
 /** Path-scoped profiles (catalog keeps full; active mcp.json switches). */
-const UI = ['shortcut', 'testrail', 'glean', 'context7', 'cypress', 'playwright'];
-const API = ['shortcut', 'testrail', 'glean', 'context7'];
-const PERF = ['shortcut', 'testrail', 'glean', 'context7'];
+const UI = ['shortcut', 'testrail', 'atlassian', 'context7', 'cypress', 'playwright'];
+const API = ['shortcut', 'testrail', 'atlassian', 'context7'];
+const PERF = ['shortcut', 'testrail', 'atlassian', 'context7'];
 
 function isPlaceholder(v) {
   if (v == null || v === '') return true;
   const s = String(v);
-  return /YOUR_|your\.email|PLACEHOLDER|changeme|xxx|PATH_TO_/i.test(s);
+  return /YOUR_|your\.email|your-org\.testrail\.io|PLACEHOLDER|changeme|xxx|PATH_TO_/i.test(s);
 }
 
 function deepClone(o) {
@@ -185,25 +185,32 @@ function redactForLog(s) {
   return t;
 }
 
+function testrailViaApiPref() {
+  const v = readPref('tools.testrail_via');
+  return v === 'api' || v === true || v === 'true' || v === '1';
+}
+
 function resolveProfileKeys(profile, catalog) {
   const all = Object.keys(catalog.mcpServers || {});
+  const dropTestrail = (keys) =>
+    testrailViaApiPref() ? keys.filter((k) => k !== 'testrail') : keys;
   if (profile === 'all') return all;
-  if (profile === 'lite') return LITE.filter((k) => all.includes(k));
-  if (profile === 'full') return FULL.filter((k) => all.includes(k));
-  if (profile === 'ui') return UI.filter((k) => all.includes(k));
+  if (profile === 'lite') return dropTestrail(LITE.filter((k) => all.includes(k)));
+  if (profile === 'full') return dropTestrail(FULL.filter((k) => all.includes(k)));
+  if (profile === 'ui') return dropTestrail(UI.filter((k) => all.includes(k)));
   if (profile === 'api') {
     const keys = [...API];
     if (all.includes('karate')) keys.push('karate');
-    return keys.filter((k) => all.includes(k));
+    return dropTestrail(keys.filter((k) => all.includes(k)));
   }
   if (profile === 'perf') {
     const keys = [...PERF];
     if (all.includes('k6')) keys.push('k6');
-    return keys.filter((k) => all.includes(k));
+    return dropTestrail(keys.filter((k) => all.includes(k)));
   }
   if (profile === 'optional') {
     const keys = [...FULL, ...OPTIONAL];
-    return keys.filter((k) => all.includes(k));
+    return dropTestrail(keys.filter((k) => all.includes(k)));
   }
   return [];
 }
@@ -301,7 +308,7 @@ function learnActivationRows(paths, learnedRows) {
   const rows = [
     ['Shortcut', `${storeCat} + ${storeAct}`, 'Active always (every profile)'],
     ['TestRail', `${storeCat} + ${storeAct}`, 'Active always'],
-    ['Glean', `${storeCat} + ${storeAct}`, 'Active always'],
+    ['Atlassian (Confluence)', `${storeCat} + ${storeAct}`, 'Active always. Primary internal search'],
     ['Context7', storeCat, `Active on ui/api/perf/full (not lite). Paths: UI/API/perf`],
     ['Cypress', storeCat, `Active only ui/full. When cwd under: ${ui}`],
     ['Playwright', storeCat, `Active only ui/full. When cwd under: ${ui}`],
@@ -370,7 +377,12 @@ function syncProjectEnvPaths({ ui, api, perf, targets } = {}) {
 function isSharedPrefKey(key) {
   if (!key) return false;
   if (key === 'squad.name' || key === 'mcp.path_aware') return true;
-  return key.startsWith('paths.') || key.startsWith('links.') || key.startsWith('tooling.');
+  return (
+    key.startsWith('paths.') ||
+    key.startsWith('links.') ||
+    key.startsWith('tooling.') ||
+    key.startsWith('tools.')
+  );
 }
 
 function parsePrefStdout(out) {
@@ -478,6 +490,7 @@ module.exports = {
   seedCatalogFromExamples,
   ensureProfileServersInCatalog,
   resolveProfileKeys,
+  testrailViaApiPref,
   resolveAutoProfile,
   pathIsUnder,
   anyPathUnder,

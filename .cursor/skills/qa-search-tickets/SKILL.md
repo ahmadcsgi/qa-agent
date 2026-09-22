@@ -20,7 +20,7 @@ description: Search Shortcut with NL expansion and ranking. Use for search ticke
 
 Run boot (`proj ensure` > `boot`) **in parallel** with MCP search, or skip boot if search already started.
 
-**Do not** wait on: cache get, reading `reference/*`, query expansion, Glean, full story fetch.
+**Do not** wait on: cache get, reading `reference/*`, query expansion, Confluence, full story fetch.
 
 ### 2. Reply immediately when hit
 
@@ -34,7 +34,7 @@ If Shortcut returns a match:
 | Step | When |
 |------|------|
 | `stories-get-by-id` full | User asks detail, or top hit ambiguous |
-| Glean fallback | Shortcut empty |
+| Confluence fallback | Shortcut empty (docs only, not tickets) |
 | Extra queries (2–4) | NL query, no exact ID, first pass empty |
 | `reference/search-strategy.md` | NL expansion only, not for exact IDs |
 | `reference/output-format.md` | Long multi-result reports only |
@@ -42,6 +42,6 @@ If Shortcut returns a match:
 
 ### 4. Empty result
 
-Shortcut empty > Glean `search` (1 query) > report honestly. Never invent tickets.
+Shortcut empty > Atlassian `search` or `searchConfluence` (1 query) for docs context only > report honestly. Never invent tickets.
 
 Mirror user language. Cite story IDs/URLs.

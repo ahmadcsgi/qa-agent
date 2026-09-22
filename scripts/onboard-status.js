@@ -86,7 +86,7 @@ if (exists(mcpPath)) {
   }
 }
 rows.push(['mcp.json present', ok(exists(mcpPath)), mcpServers.join(', ') || 'run setup-mcp.js']);
-const fullNeed = ['shortcut', 'testrail', 'glean', 'context7', 'cypress', 'playwright'];
+const fullNeed = ['shortcut', 'testrail', 'atlassian', 'context7', 'cypress', 'playwright'];
 const fullOk = fullNeed.every((k) => mcpServers.includes(k));
 rows.push(['MCP full (6)', soft(fullOk), fullOk ? 'full' : 'node scripts/mcp-mode.js full']);
 

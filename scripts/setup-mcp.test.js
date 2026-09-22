@@ -59,21 +59,28 @@ const optBuilt = buildServerDefs({ full: true, withOptional: true });
 assert(!!optBuilt.k6 && !!optBuilt.karate, 'optional adds k6+karate');
 assert(optBuilt.karate.args.join(' ').includes('mcp'), 'karate mcp args');
 
+const { testrailViaApiPref } = require('./mcp-lib');
+const apiMode = testrailViaApiPref();
+
 const miss = missingRequired({
   mcpServers: {
     shortcut: {},
-    glean: {},
+    atlassian: {},
     testrail: { env: { TESTRAIL_USERNAME: '', TESTRAIL_API_KEY: 'YOUR_X' } },
   },
 });
-assert(miss.includes('TESTRAIL_USERNAME'), 'missing username detected');
-assert(miss.includes('TESTRAIL_API_KEY'), 'placeholder key detected');
+if (apiMode) {
+  assert(!miss.includes('TESTRAIL_USERNAME'), 'api mode skips testrail credential checks');
+} else {
+  assert(miss.includes('TESTRAIL_USERNAME'), 'missing username detected');
+  assert(miss.includes('TESTRAIL_API_KEY'), 'placeholder key detected');
+}
 
 const catalog = {
   mcpServers: {
     shortcut: {},
     testrail: {},
-    glean: {},
+    atlassian: {},
     context7: {},
     cypress: {},
     playwright: {},
@@ -82,9 +89,12 @@ const catalog = {
     github: {},
   },
 };
-assert(resolveProfileKeys('lite', catalog).length === 3, 'profile lite = 3');
-assert(resolveProfileKeys('full', catalog).length === 6, 'profile full = 6');
-assert(resolveProfileKeys('optional', catalog).length === 8, 'profile optional = 8');
+const liteN = apiMode ? 2 : 3;
+const fullN = apiMode ? 5 : 6;
+const optN = apiMode ? 7 : 8;
+assert(resolveProfileKeys('lite', catalog).length === liteN, `profile lite = ${liteN}`);
+assert(resolveProfileKeys('full', catalog).length === fullN, `profile full = ${fullN}`);
+assert(resolveProfileKeys('optional', catalog).length === optN, `profile optional = ${optN}`);
 assert(resolveProfileKeys('all', catalog).includes('github'), 'profile all keeps github');
 assert(resolveProfileKeys('ui', catalog).includes('cypress'), 'ui profile has cypress');
 assert(!resolveProfileKeys('lite', catalog).includes('cypress'), 'lite has no cypress');
@@ -185,6 +195,10 @@ assert(typeof isInsideWsl() === 'boolean', 'isInsideWsl returns boolean');
 if (rk.runner !== 'missing') {
   assert(rk.invoke === 'native' || rk.invoke === 'wsl-bridge', 'resolveK6 invoke when found');
 }
+
+const { syncTestrailEnvFromLocal } = require('./sync-testrail-mcp-env');
+assert(typeof syncTestrailEnvFromLocal === 'function', 'syncTestrailEnvFromLocal exported');
+assert(typeof testrailViaApiPref === 'function', 'testrailViaApiPref exported');
 
 fs.rmSync(tmp, { recursive: true, force: true });
 

@@ -30,7 +30,7 @@ Wizard fills catalog with all 6 servers (tokens once). Day-to-day activation is 
 
 | Profile | When | Active servers |
 |---------|------|----------------|
-| **lite** | cwd outside UI/API/perf paths | Shortcut, TestRail, Glean |
+| **lite** | cwd outside UI/API/perf paths | Shortcut, TestRail, Atlassian (Confluence) |
 | **ui** | cwd under `paths.ui_tests` | lite + Context7 + Cypress + Playwright |
 | **api** | cwd under `paths.api_tests` | lite + Context7 (+ karate MCP if catalogued) |
 | **perf** | cwd under `paths.perf_tests` | lite + Context7 (+ k6 MCP if catalogued) |
@@ -74,7 +74,7 @@ Path prefs sync env (first path if multi):
 - `paths.perf_tests` → k6 `K6_PROJECT_PATH` (if catalogued)
 - `paths.api_tests` → karate `KARATE_PROJECT_PATH` (if catalogued)
 
-## Optional k6 / Karate MCP
+## Optional k6 / Karate / Bruno MCP
 
 See [mcp.json.optional.md](../mcp.json.optional.md).
 

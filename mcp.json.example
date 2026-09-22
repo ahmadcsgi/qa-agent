@@ -12,8 +12,8 @@
         "TESTRAIL_API_KEY": "YOUR_TESTRAIL_API_KEY"
       }
     },
-    "glean": {
-      "url": "https://your-company.glean.com/mcp/default"
+    "atlassian": {
+      "url": "https://mcp.atlassian.com/v2/mcp"
     },
     "context7": {
       "url": "https://mcp.context7.com/mcp",

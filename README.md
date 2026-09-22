@@ -48,8 +48,9 @@ Then configure MCP:
 
 ```bash
 node scripts/setup-mcp.js
-# full (default) = Shortcut + TestRail + Glean + Context7 + Cypress + Playwright
-# --lite = Shortcut + TestRail + Glean only
+# full (default) = Shortcut + Atlassian + TestRail + Context7 + Cypress + Playwright
+# --lite = Shortcut + TestRail + Atlassian
+# TestRail API-first: pref set tools.testrail_via api · node scripts/sync-testrail-mcp-env.js
 # --with-optional = also k6 + karate MCP (see mcp.json.optional.example + mcp.json.optional.md)
 node scripts/setup-git.js
 # installs Git if missing (winget/brew) + asks user.name / user.email
@@ -94,7 +95,7 @@ Examples of what you can do:
 - **"From now on, always ask for severity level before triaging"** - adds a new step to the workflow
 - **"Skip the cache check for search tickets"** - removes a step
 - **"Change the preview format to show diff only"** - edits an existing rule
-- **"Don't use Glean at all, just use Shortcut"** - restricts tool usage
+- **"Use Confluence only for internal docs"** - restricts search tools
 - **"Add a new skill that does X"** - extends capabilities
 
 The agent saves every correction, preference, and pattern to its decision memory (`~/.qa-agent/`). The more you use it, the more it adapts to how you work.

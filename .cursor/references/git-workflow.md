@@ -34,11 +34,20 @@ perf(quote): add k6 load test for quote generation endpoint
 git checkout -b auto/12345-quote-generation
 ```
 
-### Committing
+### Committing (automation repos under `paths.*`)
+
+1. Stage changes
+2. Local **Bugbot** review (`/review-bugbot` in Cursor)
+3. Stamp: `node <qa-agent>/scripts/bugbot-stamp.js --repo <test-repo-root>`
+4. Commit (pre-commit hook enforces stamp when hooks installed)
+
 ```bash
 git add cypress/features/quote-generation.feature cypress/support/aliases/quote.js
+node path/to/qa-agent/scripts/bugbot-stamp.js --repo .
 git commit -m "test(quote): add Cypress test for quote generation"
 ```
+
+Install hook once per automation repo: `node path/to/qa-agent/scripts/install-automation-git-hooks.js`
 
 ### Pushing & PR
 ```bash

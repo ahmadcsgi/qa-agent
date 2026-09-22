@@ -172,7 +172,7 @@ Every case draft must include:
 - After plan ACC: show full fields for **at most 5** cases (`Part k/N`).
 - User: **ACC** · **EDIT** · **REJECT** · **DELETE** (or **ACC all** for current batch only).
 
-### File - `.cursor/qa-memory/generated-tests/manual/sc-XXXXX-preview.md`
+### File - `temp/sc-XXXXX-preview.md`
 
 Always **complete**: feature summary, assumptions, business rules, risks, category coverage, **every case with all fields**, coverage estimate, gaps/questions.
 
@@ -185,7 +185,7 @@ No `addCase` before all surviving cases are ACC'd.
 1. **All batches ACC'd first** - `testrail-case-generate.mdc`
 2. **One scenario per case** - one variable per variant
 3. **Title:** `When <trigger>, then <outcome>` · `testrail-case-titles.mdc`
-4. **Fields:** Objective · Precondition · Steps · Expectation · Test data (if any) · `templateId: 1`
+4. **Fields:** Objective · Precondition · Steps · Expectation · Test data (if any) · `templateId: 1` · **`refs` = full Shortcut story URL** (e.g. `https://app.shortcut.com/dgit/story/283367`, not `sc-283367` alone)
 5. **After each `addCase`:** Shortcut checklist · `testrail-shortcut-checklist.mdc`
 
 ---
