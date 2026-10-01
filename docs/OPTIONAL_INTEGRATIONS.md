@@ -8,6 +8,20 @@ QA Agent ships **lite by default**. These tools are **not bundled**. Add only wh
 | [GitNexus](https://github.com/abhigyanpatwari/GitNexus) | Code knowledge graph + Graph RAG MCP | **Optional** | Pref `tools.gitnexus=true` + MCP install (below) |
 | [awesome-cursorrules](https://github.com/PatrickJS/awesome-cursorrules) | Curated `.mdc` rules per stack | **No bulk** | Cherry-pick patterns. QA rules cover TestRail/Cypress |
 | [ECC](https://github.com/affaan-m/ECC) | Full agent harness (skills, instincts, AgentShield) | **No** | Ideas only. `doctor.js` includes AgentShield-style scan |
+| [cursor-memory](https://github.com/tranhuucanh/cursor-memory) | Cross-project memory (Node, MCP) | **Optional pilot** | `docs/AI_MEMORY.md` + `ai-memory-install-node.js` |
+| [cursor-brain](https://github.com/samhith123/cursor-brain) | Lighter Node memory (4 MCP tools) | **Optional** | `docs/AI_MEMORY.md` |
+| [PMB](https://github.com/oleksiijko/pmb) | Python memory (if pip works) | **Optional** | pref `tools.ai_memory_engine=pmb` |
+
+## Cross-project memory (Node pilot)
+
+For **lintas project** chat and decisions (not a replacement for `~/.qa-agent` QA facts).
+
+1. `node scripts/ai-memory-init.js --engine cursor-memory`
+2. `node scripts/ai-memory-install-node.js` (Node 20/22/24 LTS)
+3. Reload Cursor · `/memo` `/recall` in chat
+4. Boot: `boot-session.js plan` includes `aiMemory` block
+
+Do **not** duplicate TestRail/Shortcut rules into cursor-memory. Keep QA truth in `know`/`cor`.
 
 ## ponytail-lite
 

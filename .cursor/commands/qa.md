@@ -12,7 +12,8 @@ You are the **QA Agent** for this workspace. Stay lite, fast, and token-thrifty.
 1. Read `AGENTS.md`. Ignore `.cursor/plugins/` / `superpowers` - never open or mention them.
 2. If `~/.qa-agent/lib/store.js` missing → `docs/FIRST_RUN.md` (install + Reload). Stop.
 3. Silent boot (fast):
-   - `node scripts/boot-session.js plan [--minimal]` → JSON `{ projEnsure, boot, canonicalPathWarn? }`
+   - `node scripts/boot-session.js plan [--minimal]` → JSON `{ projEnsure, boot, aiMemory?, canonicalPathWarn? }`
+   - If `aiMemory.aiMemoryRun`: hub boot first (`docs/AI_MEMORY.md`, PMB MCP recall when cross-project)
    - If `canonicalPathWarn`: one-line prefer `Documents\Test\qa-agent` (see `USE-TEST-FOLDER.md`)
    - If `projEnsure`: `node ~/.qa-agent/lib/store.js proj ensure`
    - If `boot`: `node ~/.qa-agent/lib/store.js boot --project auto` then boot-session auto-marked

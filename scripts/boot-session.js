@@ -17,6 +17,7 @@ const SESSION_FILE = path.join(STORE_DIR, 'boot-session.json');
 const PREF_FILE = path.join(STORE_DIR, 'prefs.json');
 const SESSION_TTL_MS = 5 * 60 * 1000;
 const { canonicalWorkspaceCheck } = require('./lib/canonical-workspace');
+const { planPayload: aiMemoryPlan } = require('./ai-memory-boot');
 
 const BOOT_HEAVY_DOMAINS = new Set([
   'testcases',
@@ -89,6 +90,12 @@ function plan(opts) {
   if (heavy && minimal) boot = true;
 
   const canonical = canonicalWorkspaceCheck(opts.cwd);
+  let aiMemory = null;
+  try {
+    aiMemory = aiMemoryPlan();
+  } catch {
+    aiMemory = { aiMemoryRun: false, message: 'ai-memory-boot unavailable' };
+  }
   return {
     projEnsure,
     boot,
@@ -100,6 +107,7 @@ function plan(opts) {
     canonicalPathWarn: canonical.warn,
     canonicalPathMessage: canonical.warn ? canonical.message : null,
     canonicalPathPreferred: canonical.preferred,
+    aiMemory,
   };
 }
 

@@ -4,6 +4,15 @@ All notable changes to QA Agent are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project uses [SemVer](https://semver.org/).
 
+## [1.5.21] - 2026-10-01
+
+### Added
+- Cross-project local memory pilot (cursor-memory default): `docs/AI_MEMORY.md`, `scripts/ai-memory-init.js`, `scripts/ai-memory-boot.js`, `scripts/ai-memory-install-node.js`, `scripts/lib/ai-memory-paths.js`
+- `boot-session.js` plan JSON includes `aiMemory` block when `agent.boot_ai_memory=true`
+
+### Changed
+- `OPTIONAL_INTEGRATIONS.md`, `@qa-entry`, `/qa` command: hub boot before QA store boot
+
 ## [1.5.20] - 2026-10-01
 
 ### Added

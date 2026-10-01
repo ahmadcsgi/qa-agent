@@ -9,7 +9,7 @@ Receptionist: detect intent, route to **one** skill. Stay short.
 
 ## Boot (first multi-step turn)
 
-1. `node scripts/boot-session.js plan` → run `proj ensure` / `boot` only if plan says true (see `/qa` command). If plan JSON has `canonicalPathWarn`, mention prefer `Documents\Test\qa-agent` once.
+1. `node scripts/boot-session.js plan` → if `aiMemory.aiMemoryRun`, one-line hub status (`docs/AI_MEMORY.md`). Then `proj ensure` / `boot` only if plan says true. If `canonicalPathWarn`, mention prefer `Documents\Test\qa-agent` once.
 2. **Skip** `mcp-mode auto` on normal turns. Repair: `mcp-mode auto --if-changed --skip-if-hooked`
 3. Automation + `paths.*` > memory gate / map if stale
 4. Private: `qa-memory/org-context.md` + `user-prefs.md`. **Do not** load full `onboard.md` unless onboard/Part C
