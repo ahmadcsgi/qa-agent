@@ -275,7 +275,7 @@ function reportPathValidation(label, raw) {
   if (v.list.length > 1) console.log(`  OK ${label}: ${v.list.length} paths (multi)`);
 }
 
-function updateProjectContext({ squad, ui, api, perf }) {
+function updateProjectContext({ squad, ui, api, perf, testrailMcp }) {
   const ctx = path.join(process.cwd(), '.cursor', 'qa-memory', 'project-context', 'current.md');
   const tpl = path.join(REPO, '.cursor', 'templates', 'project-context.current.md');
   if (!fs.existsSync(ctx) && fs.existsSync(tpl)) {
@@ -293,6 +293,7 @@ function updateProjectContext({ squad, ui, api, perf }) {
     ui ? `- paths.ui_tests: ${ui}` : '',
     api ? `- paths.api_tests: ${api}` : '',
     perf ? `- paths.perf_tests: ${perf}` : '',
+    testrailMcp ? `- paths.testrail_mcp: ${testrailMcp}` : '',
     '- mcp.path_aware: true (lite outside paths; ui/api/perf inside)',
     '- sessionStart hook: ~/.cursor/hooks/qa-mcp-auto.js',
     '',
@@ -308,13 +309,14 @@ function updateProjectContext({ squad, ui, api, perf }) {
   store('proj', 'sync');
 }
 
-function printChatSummary({ squad, ui, api, perf, tools, profileHint, prevProfile, changed }) {
+function printChatSummary({ squad, ui, api, perf, testrailMcp, tools, profileHint, prevProfile, changed }) {
   console.log('');
   console.log('=== Copy for chat (summary) ===');
   console.log(`squad: ${squad || '(none)'}`);
   console.log(`paths.ui_tests: ${ui || '(none)'}`);
   console.log(`paths.api_tests: ${api || '(none)'}`);
   console.log(`paths.perf_tests: ${perf || '(none)'}`);
+  console.log(`paths.testrail_mcp: ${testrailMcp || '(none)'}`);
   console.log(`tools choice: ${tools || '(skipped)'}`);
   console.log(`mcp.path_aware: true`);
   console.log(`catalog: ~/.qa-agent/mcp/catalog.json (full install kept)`);
@@ -345,6 +347,8 @@ function formText(lang) {
    A. UI testing (Cypress / Playwright)
    B. API testing (Karate / Maven)
    C. Performance testing (k6)
+   D. TestRail MCP / CLI root (optional)
+      folder with testrail-mcp/config/env.local
 
 3. Install tooling that is missing?
    1 = Git (host)
@@ -368,6 +372,8 @@ function formText(lang) {
    A. UI testing (Cypress / Playwright)
    B. API testing (Karate / Maven)
    C. Performance testing (k6)
+   D. TestRail MCP / CLI root (opsional)
+      folder berisi testrail-mcp/config/env.local
 
 3. Install tooling yang belum terpasang?
    1 = Git (host)
@@ -402,6 +408,7 @@ function parseCli(argv) {
     ui: get('--ui'),
     api: get('--api'),
     perf: get('--perf'),
+    testrailMcp: get('--testrail-mcp'),
     tools: get('--tools'),
   };
 }
@@ -423,7 +430,7 @@ function showLearnTable(paths) {
   console.log('Auto switch: sessionStart hook + /qa boot runs mcp-mode auto.');
 }
 
-async function applyAnswers({ squad, ui, api, perf, tools, skipMcp, interactive, dryRun }) {
+async function applyAnswers({ squad, ui, api, perf, testrailMcp, tools, skipMcp, interactive, dryRun }) {
   const norm = (v) => {
     const t = (v || '').trim();
     if (!t || /^skip$/i.test(t)) return '';
@@ -433,10 +440,19 @@ async function applyAnswers({ squad, ui, api, perf, tools, skipMcp, interactive,
   ui = norm(ui);
   api = norm(api);
   perf = norm(perf);
+  testrailMcp = norm(testrailMcp);
 
   if (dryRun) {
     console.log('--- DRY RUN (no writes) ---');
-    console.log({ squad, ui, api, perf, tools: tools || '(none)', skipMcp: !!skipMcp });
+    console.log({
+      squad,
+      ui,
+      api,
+      perf,
+      testrailMcp,
+      tools: tools || '(none)',
+      skipMcp: !!skipMcp,
+    });
     reportPathValidation('UI', ui);
     reportPathValidation('API', api);
     reportPathValidation('perf', perf);
@@ -500,13 +516,17 @@ async function applyAnswers({ squad, ui, api, perf, tools, skipMcp, interactive,
   if (ui) prefSet('paths.ui_tests', formatPathList(ui) || ui);
   if (api) prefSet('paths.api_tests', formatPathList(api) || api);
   if (perf) prefSet('paths.perf_tests', formatPathList(perf) || perf);
+  if (testrailMcp) prefSet('paths.testrail_mcp', testrailMcp);
   prefSet('mcp.path_aware', 'true');
 
   reportPathValidation('UI', ui);
   reportPathValidation('API', api);
   reportPathValidation('perf', perf);
+  if (testrailMcp && !fs.existsSync(testrailMcp)) {
+    console.log(`  WARN testrail_mcp: path not found: ${testrailMcp}`);
+  }
 
-  updateProjectContext({ squad, ui, api, perf });
+  updateProjectContext({ squad, ui, api, perf, testrailMcp });
   const synced = syncProjectEnvPaths({ ui, api, perf });
   if (synced.length) {
     console.log(
@@ -548,7 +568,7 @@ async function applyAnswers({ squad, ui, api, perf, tools, skipMcp, interactive,
   const profileHint =
     (autoOut.match(/MCP profile:\s*(\w+)/) || autoOut.match(/pick:\s*(\w+)/) || [])[1] || '';
   const changed = /switched|MCP profile:/i.test(autoOut) && !/unchanged/i.test(autoOut);
-  printChatSummary({ squad, ui, api, perf, tools, profileHint, prevProfile, changed });
+  printChatSummary({ squad, ui, api, perf, testrailMcp, tools, profileHint, prevProfile, changed });
 
   console.log('Next:');
   console.log('  1. Reload Cursor window once if profile changed or MCP list stale');
@@ -567,7 +587,7 @@ async function main() {
   node scripts/onboard-wizard.js --print-tools
   node scripts/onboard-wizard.js --resume
   node scripts/onboard-wizard.js --dry-run --squad NAME --ui PATH ...
-  node scripts/onboard-wizard.js --apply --squad NAME --ui PATH [--api PATH] [--perf PATH] [--tools 1,2] [--skip-mcp]
+  node scripts/onboard-wizard.js --apply --squad NAME --ui PATH [--api PATH] [--perf PATH] [--testrail-mcp PATH] [--tools 1,2] [--skip-mcp]
 
 Multi-path: pathA|pathB
 Chat: --resume > --print-learn > --print-tools > --print-form > --apply`);
@@ -613,6 +633,7 @@ Chat: --resume > --print-learn > --print-tools > --print-form > --apply`);
       ui: opts.ui || curPaths.ui,
       api: opts.api || curPaths.api,
       perf: opts.perf || curPaths.perf,
+      testrailMcp: opts.testrailMcp || prefGet('paths.testrail_mcp') || readPref('paths.testrail_mcp'),
       tools: opts.tools,
       skipMcp: opts.skipMcp,
       interactive: false,
@@ -648,6 +669,13 @@ Chat: --resume > --print-learn > --print-tools > --print-form > --apply`);
   let ui = await ask(rl, '   A. UI testing (Cypress/Playwright)', curPaths.ui);
   let api = await ask(rl, '   B. API testing (Karate/Maven)', curPaths.api);
   let perf = await ask(rl, '   C. Performance testing (k6)', curPaths.perf);
+  const testrailMcpCur =
+    prefGet('paths.testrail_mcp') || readPref('paths.testrail_mcp') || '';
+  let testrailMcp = await ask(
+    rl,
+    '   D. TestRail MCP / CLI root (optional)',
+    testrailMcpCur
+  );
 
   // Re-ask once if path missing
   for (let i = 0; i < 1; i++) {
@@ -683,6 +711,7 @@ Chat: --resume > --print-learn > --print-tools > --print-form > --apply`);
     ui,
     api,
     perf,
+    testrailMcp,
     tools: 'skip',
     skipMcp: true,
     interactive: false,

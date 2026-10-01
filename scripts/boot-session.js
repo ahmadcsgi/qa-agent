@@ -16,6 +16,8 @@ const STORE_DIR = path.join(HOME, '.qa-agent');
 const SESSION_FILE = path.join(STORE_DIR, 'boot-session.json');
 const PREF_FILE = path.join(STORE_DIR, 'prefs.json');
 const SESSION_TTL_MS = 5 * 60 * 1000;
+const { canonicalWorkspaceCheck } = require('./lib/canonical-workspace');
+
 const BOOT_HEAVY_DOMAINS = new Set([
   'testcases',
   'testrail',
@@ -86,6 +88,7 @@ function plan(opts) {
   }
   if (heavy && minimal) boot = true;
 
+  const canonical = canonicalWorkspaceCheck(opts.cwd);
   return {
     projEnsure,
     boot,
@@ -94,6 +97,9 @@ function plan(opts) {
     domain: opts.domain || null,
     ttlSec: Math.round(SESSION_TTL_MS / 1000),
     cwd: norm(opts.cwd),
+    canonicalPathWarn: canonical.warn,
+    canonicalPathMessage: canonical.warn ? canonical.message : null,
+    canonicalPathPreferred: canonical.preferred,
   };
 }
 
@@ -130,4 +136,11 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { plan, mark, isFresh, SESSION_TTL_MS, BOOT_HEAVY_DOMAINS };
+module.exports = {
+  plan,
+  mark,
+  isFresh,
+  SESSION_TTL_MS,
+  BOOT_HEAVY_DOMAINS,
+  canonicalWorkspaceCheck,
+};

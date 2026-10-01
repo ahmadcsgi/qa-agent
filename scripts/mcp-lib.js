@@ -317,6 +317,11 @@ function learnActivationRows(paths, learnedRows) {
     ['k6 / Java / Maven CLI', 'PATH (setup-tooling)', 'Skills use CLI + paths.* (MCP optional)'],
     ['squad.name', '~/.qa-agent/projects/<id>/prefs', 'Agent boot (always)'],
     ['paths.* (multi: a|b)', 'prefs + project-context', 'Drives mcp-mode auto + sessionStart hook'],
+    [
+      'paths.testrail_mcp',
+      'prefs (global)',
+      'TestRail CLI root (env.local). Optional; else update-agent default',
+    ],
   ];
   if (Array.isArray(learnedRows) && learnedRows.length) {
     return rows.concat(learnedRows);

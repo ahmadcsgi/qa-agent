@@ -32,10 +32,9 @@ function readJson(p, fb) {
   }
 }
 
-const repoNorm = REPO.toLowerCase();
-if (repoNorm.includes('documents\\ai\\qa-agent') || repoNorm.includes('documents/ai/qa-agent')) {
-  add('warn', 'canonical-path', 'Cwd is Documents\\AI\\qa-agent. Prefer Documents\\Test\\qa-agent only.');
-}
+const { canonicalWorkspaceCheck, canonicalQaAgentPath } = require('./lib/canonical-workspace');
+const canon = canonicalWorkspaceCheck(REPO);
+if (canon.warn) add('warn', canon.id, canon.message);
 if (repoNorm.includes('onedrive')) {
   add('info', 'onedrive', 'Repo is under OneDrive. Sync/I/O may add sporadic latency.');
 }
@@ -109,7 +108,8 @@ if (exists(store)) {
 }
 
 const aiClone = path.join(HOME, 'OneDrive - CSG Systems Inc', 'Documents', 'AI', 'qa-agent');
-if (exists(aiClone) && normPath(aiClone) !== normPath(REPO)) {
+const canonPath = canonicalQaAgentPath();
+if (exists(aiClone) && normPath(aiClone) !== normPath(REPO) && normPath(REPO) === normPath(canonPath)) {
   add('warn', 'ai-clone', 'Documents\\AI\\qa-agent still exists. Do not open both workspaces in Cursor.');
 }
 

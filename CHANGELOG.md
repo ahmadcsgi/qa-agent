@@ -4,6 +4,22 @@ All notable changes to QA Agent are documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project uses [SemVer](https://semver.org/).
 
+## [1.5.20] - 2026-10-01
+
+### Added
+- `scripts/backup-external-edit.js`: paired `temp/backup-*.json` + `.md` for Shortcut/TestRail backup gate
+- `scripts/lib/canonical-workspace.js`: shared Test vs AI clone detection
+- `.cursor/references/qa-test-cases-flow.md`: full testcase flow (skill slimmed)
+- Onboard form field D and `--testrail-mcp` for pref `paths.testrail_mcp`
+- Tests: `canonical-workspace.test.js`, `backup-external-edit.test.js`
+
+### Changed
+- `boot-session.js` plan JSON: `canonicalPathWarn`, `canonicalPathMessage`, `canonicalPathPreferred`
+- `@qa-test-cases`, `@qa-test-execution`, `@qa-entry`: gates, testrail-tools, Done-story router
+- `external-edit-backup-gate.mdc`: points to backup script
+- `qa-health.js`: uses canonical-workspace helper
+- `docs/IMPROVEMENTS.md`: v1.5.20 done items
+
 ## [1.5.19] - 2026-09-22
 
 ### Added

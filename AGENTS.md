@@ -66,30 +66,27 @@ Concise. Tables. Match user language. Paths/MCP English. Punctuation in core rul
 - Never put agent rules, admonitions, scope notes, or secrets warnings into TestRail case fields
 - Prefer self-setup brand/template preconditions over hardcoded environment-specific names or IDs in TestRail cases
 - TestRail preconditions and expected: rewrite each in full (no "Same as Case X"); use plain page wording without URL paths; confirmation dialogs use exact UI title, message, and button labels
-- Process Designer Open and Download test cases must cover both locked and unlocked BPMN/DMN routes
+- Process Designer Open/Download: when enabled, cover locked and unlocked BPMN/DMN with Open folder and Download enabled and functional; when product disables Open/Download, regression uses disable-story TCs; superseded parity/listing TCs use Retired not Invalid, remove from progression run via plan entry with explicit keep list and `-NoMerge`, republish when feature returns and retire disable TCs
 - Write TestRail API cases as text steps (steps + expected), not Gherkin/BDD; API drafts put endpoint URLs in notes and Test data, JSON bodies as Payload N, steps name payload and HTTP expectation; no dev names or preview line refs; Bruno Free uses native `.bru` + `bruno.json` via Open Collection, not Postman Import
-- Match user language in chat; TestRail case fields in English; draft in `temp/sc-{storyId}-preview.md`, not chat only
-- No TC for UI changes not in story AC; Lifecycle Designer drafts stay on LC edit/create and AC surfaces (do not add Process Designer BPMN/DMN or unrelated fullscreen checks); clarifying questions are not corrections until explicit ACC or EDIT
+- Match user language in chat; TestRail case fields in English; draft in `temp/sc-{storyId}-preview.md`, not chat only; delete obsolete previews per `testrail-temp-preview-lifecycle.mdc` after TestRail write or abandon; Shortcut-sourced cases: read full story and entire comments thread before plan/draft
+- No TC for UI outside story AC; LC drafts stay on LC edit/create and AC surfaces (no Process Designer BPMN/DMN or unrelated fullscreen); clarifying questions are not corrections until explicit ACC or EDIT; omit deferred or TBD scope notes from final cases when user drops them from an approved draft
 - When bulk-updating TestRail squad or feature fields, send only the requested custom fields and never modify steps, expected, preconditions, title, or refs; squad-only updates change custom_case_squadname only
-- When user removes deferred or TBD scope notes from a TestRail draft and approves, omit those notes from final cases
-- TestRail links use `cases/view/<caseId>`; Shortcut qa-test checklist uses `tests/view/<testId>`; merge onto run first; `refs` must be full Shortcut story URL
+- TestRail links use `cases/view/<caseId>`; Shortcut qa-test checklist uses `tests/view/<testId>` (not suite case links); merge onto run first; `refs` must be full Shortcut story URL; `[DT]` stories add `triage` only if missing (never replace or remove labels); add `TC-ready` only when checklist has `qa test` link or after adding matching TestRail TC to checklist; superseded Shortcut stories: Won't Do, `blocked by` successor, external link, QA comment for TestRail traceability, keep original description body
+- Done-story TestRail: merge checklist cases onto the correct Q3 plan run, fix checklist to `tests/view/<testId>`, then bulk Pass via `add_result` when user confirms tests were already executed
 - Internal company knowledge and docs: Confluence/Atlassian MCP first; do not use Glean unless the user explicitly asks
 - For ticket search, show Shortcut hits in the first reply (cache/boot after); on 409 checklist add check duplicate case link; push qa-agent to `mine` / `ahmadcsgi/qa-agent` only; prefers `@qa` and `/qa` on Composer 2.5 Fast (`composer-2.5-fast`); no visual regression (`@qa-visual-test` removed)
 
 ## Learned Workspace Facts
 
-- TestRail REST API cases use text template with empty BDD; addCase needs custom_preconds, custom_steps, custom_expected and required customs
-- Plan-owned runs return 403 on updateRun; merge via update_plan_entry and get_tests case IDs; update_cases bulk 403 → per-case update_case for squad/feature only
+- TestRail REST API cases use text template with empty BDD (addCase needs custom_preconds, custom_steps, custom_expected); plan-owned runs return 403 on updateRun, merge via update_plan_entry and get_tests case IDs; remove cases from a plan run with full keep list and `-NoMerge`; `custom_case_tc_status` Published=3, Retired=4; update_cases bulk 403 → per-case update_case for squad/feature only
 - Dragon Feature Component: Process, Lifecycle, Docflow, Planner, Decompose; suite 282 map by domain; Channel Portal vs Rest API by test method; Type Manual=13, Automated=3
 - Process Designer section 47436; Portal routes unlocked and locked bpmn/dmn paths; Operate BPMN by process name, DMN via Decisions
 - Lifecycle Designer create flow lands on the same edit canvas as browse edit; LC edit TC preconditions cover create-after-canvas and existing edit; default section 33518 (Progression Lifecycle run 852)
 - Manage-order JW SET inventory Type+Name same service task or JW0005; Portal Status `{Type} / {Name}`
 - Suite 282 automation audits: GitHub origin/master in dgitsystems UI/API repos for cases/view and @test_id
 - TestRail: pref `tools.testrail_via=api` uses REST `scripts/testrail-tools/` + `env.local`; optional MCP via `sync-testrail-mcp-env.js`; run suite must match case suite; MCP errors use same CLI fallback (`@qa-test-cases`)
-- Canonical workspace `Documents\Test\qa-agent` only; MCP user sessionStart hook only; empty repo `.cursor/hooks.json` sessionStart
-- Default Q3 plan runs, manage-x section 32148, plan merge safety: seeded in store `know` (run `node scripts/seed-workspace-know.js` once after update)
-- Health: `node scripts/qa-health.js` · full check: `node scripts/doctor.js`
-- Daily user docs: `docs/USER_GUIDE.md` and `docs/TOKEN_TIPS.md`
-- Reusable TestRail CLI in `scripts/testrail-tools/`; avoid ad-hoc `tmp-*.ps1`
-- `Update-TestRailCaseFields` in `TestRailApi.ps1` serializes with `JavaScriptSerializer` and raised `MaxJsonLength` so long steps and custom test data JSON survive `update_case`
-- Run `scripts/mcp-mode.js` from qa-agent repo root, full path to the script, or `scripts/mcp-mode.cmd`. Running from user home alone resolves the wrong `scripts/` path
+- Q3 TestRail: Plan 849 runs 852 Lifecycle, 853 Docflow, 905 Process; Plan 857 run 858 (26.2.2/manage-x); section 32148 Service Task Manage-x; plan merge safety seeded in store `know` (`node scripts/seed-workspace-know.js` once after update)
+- Shortcut `stories-update` replaces the full `custom_fields` list; read-merge-send all existing custom fields with changes so Dev Effort, QA Effort, and other fields are not cleared
+- Health: `node scripts/qa-health.js` · full check: `node scripts/doctor.js` · user docs: `docs/USER_GUIDE.md` and `docs/TOKEN_TIPS.md`
+- Reusable TestRail CLI in `scripts/testrail-tools/` (avoid ad-hoc `tmp-*.ps1`); `Update-TestRailCaseFields` in `TestRailApi.ps1` uses `JavaScriptSerializer` with raised `MaxJsonLength` for long steps and test data on `update_case`
+- Canonical workspace `Documents\Test\qa-agent` only; MCP via user sessionStart hook; run `scripts/mcp-mode.js` from repo root, full script path, or `scripts/mcp-mode.cmd` (not from user home alone)

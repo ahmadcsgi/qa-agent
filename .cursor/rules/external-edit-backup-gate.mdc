@@ -1,0 +1,41 @@
+---
+description: Before any external write (Shortcut, TestRail, bulk metadata), snapshot complete state, preview diff, wait for user check. Load for Shortcut/TestRail updates and @qa-test-cases writes.
+alwaysApply: false
+---
+
+# External edit backup gate (MANDATORY)
+
+Applies before **any write** to external systems: Shortcut (`stories-update`, create, comments, tasks), TestRail (`addCase`, `updateCase`, bulk field updates), or similar MCP/API mutations. Read-only fetch is allowed without this gate.
+
+## Hard rule
+
+1. **Snapshot first.** Fetch current state in full (`stories-get-by-id` with `full: true`, or TestRail `getCase` / equivalent). Never send a partial payload that can replace entire field sets (Shortcut `custom_fields` replaces the full list).
+2. **Save a complete copy locally** before the first write:
+   - Prefer: `node scripts/backup-external-edit.js shortcut <storyId> --file <snapshot.json>` or `testrail --scope <label> --file <cases.json>` (writes paired `.json` + `.md` under `temp/`)
+   - Or manual path: `temp/backup-<system>-<id-or-scope>-<YYYYMMDD>.md` (or `.json` when large)
+   - Include: all fields you might touch **plus** adjacent fields often wiped together (estimate, Dev Effort, QA Effort, labels, custom_fields with `field_id` + `value_id`, refs)
+   - For batch jobs: one backup file listing every entity ID and per-row snapshot tables
+3. **Preview only in chat.** Show a short table: what will change (before > after). No MCP write yet.
+4. **Wait for explicit user ACC** on the preview (same spirit as TestRail ACC: user must approve the mutation plan).
+5. **Apply writes** using **merged** payloads (old snapshot + intended changes). Re-fetch after write to verify.
+6. **Rollback path.** If user reports a mistake, restore from the backup file (re-apply full `custom_fields` + `estimate` + labels), do not guess missing values.
+
+## Shortcut-specific
+
+| Pitfall | Requirement |
+|---------|-------------|
+| `custom_fields` on `stories-update` | Send **entire** array from snapshot, then merge edits |
+| `labels` on update | Include full label set if API replaces labels |
+| Batch metadata (many stories) | One backup file for all IDs before first update |
+
+## TestRail-specific
+
+Follow `testrail-case-generate.mdc` ACC gates for new cases. For bulk field-only updates, snapshot affected cases first (same backup file pattern). Never bulk-update fields the user did not request.
+
+## When user says "just fix it"
+
+Still snapshot and show preview unless they explicitly waive with **"skip backup"** (then note waiver in chat, no write without that phrase).
+
+## After session
+
+Keep backup files until user confirms OK or task abandoned. Do not delete backups in the same turn as the write unless user asks (see `testrail-temp-preview-lifecycle.mdc` for preview drafts only).

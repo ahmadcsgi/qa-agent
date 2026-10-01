@@ -178,6 +178,8 @@ Always **complete**: feature summary, assumptions, business rules, risks, catego
 
 No `addCase` before all surviving cases are ACC'd.
 
+**Cleanup:** Delete the preview file after TestRail write + Shortcut checklists complete, or when the draft is abandoned or superseded. Rule: `testrail-temp-preview-lifecycle.mdc`.
+
 ---
 
 ## TestRail write rules

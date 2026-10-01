@@ -1,8 +1,19 @@
 # Improvement backlog
 
-Prioritas untuk QA Agent tetap **kecil, hebat, hemat token**. Status: Aug 2026.
+Prioritas untuk QA Agent tetap **kecil, hebat, hemat token**. Status: Oct 2026.
 
-## Sudah done (v1.5.13)
+## Sudah done (v1.5.20)
+
+| Item | Manfaat |
+|------|---------|
+| `scripts/backup-external-edit.js` | Backup gate Shortcut/TestRail (paired json+md) |
+| `scripts/lib/canonical-workspace.js` + boot `canonicalPathWarn` | Satu warning path Test vs AI |
+| Slim `@qa-test-cases` + `qa-test-cases-flow.md` | Hemat token, gate tetap ketat |
+| `@qa-test-execution` testrail-tools checklist | Stop `tmp-*.ps1` ad-hoc |
+| Onboard `--testrail-mcp` + form field D | Pref `paths.testrail_mcp` |
+| `@qa-entry` Done story > execution router | Kurang salah skill |
+
+## Sudah done (v1.5.13–1.5.19)
 
 | Item | Manfaat |
 |------|---------|
@@ -11,33 +22,30 @@ Prioritas untuk QA Agent tetap **kecil, hebat, hemat token**. Status: Aug 2026.
 | Hapus `@qa-visual-test` | Repo lebih ringan, less noise |
 | `USER_GUIDE.md` | Satu pintu docs user |
 | Composer 2.5 Fast di `@qa` | Lebih cepat + cenderung lebih hemat |
+| `boot-session.js` + `agent.boot_minimal` | Lite `/qa` boot |
+| `qa-health.js` | Runtime checks |
 
 ## P0 — high impact, small diff
 
 | Item | Token / size | Effort |
 |------|--------------|--------|
-| Agent wajib cek `testrail-tools/` sebelum PS1 | Hemat besar | Rule sudah di AGENTS, enforce di skill test-execution |
-| `pref paths.testrail_mcp` di onboard wizard | Less guess path | Kecil |
-| Slim `qa-test-cases` skill (detail ke references) | Hemat per turn | Sedang |
-| `boot --minimal` flag (prefs only, no context.md dump) | Hemat boot | Kecil |
+| `tr-audit-channel.ps1` | Parametrize channel audit (suite 282 pattern) | Sedang |
+| CI: test `testrail-tools` dry-run | Mock env | Sedang |
 
 ## P1 — enhance
 
 | Item | Notes |
 |------|-------|
-| `tr-audit-channel.ps1` | Parametrize channel audit (suite 282 pattern) |
 | Shortcut bulk label helper | Hanya jika MCP bulk lambat |
 | Confluence draft template | Pref-driven, MCP push |
-| `onboard-wizard` lang ID default | Sudah `--print-form --lang id` |
-| CI: test `testrail-tools` dry-run | Mock env |
+| Merge Test/qa-agent private overlay sync | Script pull org-context template |
+| Perf cleanup pointer in project-context | `delete-perf-docflow-templates.js` |
 
 ## P2 — nice to have
 
 | Item | Notes |
 |------|-------|
 | `@qa` model per skill (cases=thinking, search=fast) | Butuh Cursor support |
-| Merge Test/qa-agent private overlay sync | Script pull org-context template |
-| Perf cleanup pointer in project-context | `delete-perf-docflow-templates.js` |
 | Slack notify on doctor fail | Optional integration |
 
 ## Yang sengaja tidak dilakukan

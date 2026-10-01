@@ -31,7 +31,7 @@ User replies per case or per batch: **ACC** · **EDIT** · **REJECT** · **DELET
 
 ## Step 1 — Learn (Shortcut / ticket)
 
-1. `stories-get-by-id` (full). Read description, AC, comments, epic, labels, custom fields.
+1. `stories-get-by-id` (full). Read description, AC, epic, labels, custom fields, and **the entire comments thread in chronological order**. Comments often override or extend AC (scope added/removed, enum values, dev test payloads, accounts, screenshots). Reconcile description vs comments before Plan. Cite comment author or date when scope comes from comments only.
 2. Resolve version + section (`testrail-section-version.mdc`). Ask if ambiguous.
 3. Dedup (`getCases` section + refs). Methodology Phase 2b.
 4. **If anything is unclear** (AC, copy, UX, domain meaning, missing screenshot):
@@ -117,6 +117,7 @@ When **every** surviving case across **all** batches is ACC'd:
 4. Merge new IDs onto the progression or named test run (`get_tests` merge, never replace).
 5. Per case: Shortcut checklist with `tests/view/<testId>` from that run (`testrail-shortcut-checklist.mdc`).
 6. Optional: TC label groom (separate ACC).
+7. **Delete** `temp/sc-<id>-preview.md` when write path is complete (or user abandoned draft). See `testrail-temp-preview-lifecycle.mdc`.
 
 **Never** create TestRail cases for REJECT/DELETE or for batches not yet reviewed.
 

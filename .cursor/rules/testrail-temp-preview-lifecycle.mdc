@@ -1,0 +1,27 @@
+---
+description: Lifecycle for temp/sc-*-preview.md TestRail drafts. Delete when done or obsolete. Load with @qa-test-cases.
+alwaysApply: false
+---
+
+# Temp preview file lifecycle
+
+Applies to `temp/sc-<storyId>-preview.md` (and `temp/sc-<storyId>-preview-*.md` variants) in the qa-agent repo.
+
+## Agent must
+
+1. **Create** the preview file when drafting TestRail cases (do not leave full drafts only in chat). See `testrail-case-generate.mdc`.
+2. **Delete** the preview file when it is no longer needed:
+   - After **all** ACC'd cases are written to TestRail, merged onto the run, and Shortcut checklists are added (write path complete).
+   - When the user **abandons** the draft (all cases REJECT/DELETE, or explicit cancel for that story).
+   - When a **new** preview for the same story replaces an old one (delete the superseded file after the new draft is saved).
+   - When user asks to remove temp previews or clean up completed story drafts.
+3. **Do not delete** while ACC is still pending, EDIT is in progress, or addCase has not finished for surviving ACC'd cases.
+4. **Do not commit** preview files. They are local review artifacts (`temp/` is gitignored where configured).
+
+## User hint
+
+If an old `temp/sc-*-preview.md` remains after TestRail work is done, ask the agent to delete it or run cleanup in a `/qa` session.
+
+## Related
+
+`testrail-case-generate.mdc` · `qa-test-cases` SKILL (step 4 delete preview when done) · `qa-testcase-methodology.md` (File section)

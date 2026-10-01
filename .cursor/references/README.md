@@ -9,6 +9,7 @@
 | `testrail-tools.md` | TestRail CLI tools (bulk fields, plan entry, audit) | `@qa-test-cases`, `@qa-test-execution` |
 | `docs/testrail-workflow.md` | TestRail API-first cheat sheet | `@qa-test-cases`, `@qa-test-execution` |
 | `qa-testcase-methodology.md` | Analysis, dedup, risk, preview, Phase 7 plan/results, maintenance, label groom | `@qa-test-cases`, `@qa-test-execution` |
+| `qa-test-cases-flow.md` | ACC gates, backup script, CLI merge checklist (skill detail) | `@qa-test-cases` |
 | `incident-email.md` | Incident email templates - duplicate, defect, user error, need help | `@qa-defect-triage` |
 | `playwright-browser.md` | Playwright browser actions - navigate, click, type, POM builder | `@qa-ui-automation` |
 | `cypress-testing.md` | Cypress selectors, intercept, cy.session, flake (cherry-pick) | `@qa-ui-automation` |

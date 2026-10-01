@@ -37,7 +37,8 @@ Until the user explicitly replies **ACC**, **APPROVE**, **ACC all** (per batch),
 4. Draft fields. Write the full preview to `temp/sc-<id>-preview.md` for user review. Do not leave the draft only in chat.
 5. Chat: **max 5 cases** per turn. Wait ACC / EDIT / REJECT / DELETE before next batch.
 6. Only after **all** surviving cases ACC'd → `addCase` + checklist.
-7. Case **update** / plan / results: same ACC gate (methodology Phase 7 + case maintenance).
+7. After TestRail write + checklists (or abandoned draft), **delete** `temp/sc-<id>-preview.md`. See `testrail-temp-preview-lifecycle.mdc`.
+8. Case **update** / plan / results: same ACC gate (methodology Phase 7 + case maintenance).
 
 ## Titles / checklist after ACC
 
