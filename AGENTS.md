@@ -86,7 +86,7 @@ Concise. Tables. Match user language. Paths/MCP English. Punctuation in core rul
 - Suite 282 automation audits: GitHub origin/master in dgitsystems UI/API repos for cases/view and @test_id
 - TestRail: pref `tools.testrail_via=api` uses REST `scripts/testrail-tools/` + `env.local`; optional MCP via `sync-testrail-mcp-env.js`; run suite must match case suite; MCP errors use same CLI fallback (`@qa-test-cases`)
 - Q3 TestRail: Plan 849 runs 852 Lifecycle, 853 Docflow, 905 Process; Plan 857 run 858 (26.2.2/manage-x); section 32148 Service Task Manage-x; plan merge safety seeded in store `know` (`node scripts/seed-workspace-know.js` once after update)
-- Shortcut `stories-update` replaces the full `custom_fields` list; read-merge-send all existing custom fields with changes so Dev Effort, QA Effort, and other fields are not cleared
+- Shortcut `stories-update` replaces the full `custom_fields` list; snapshot via `scripts/backup-external-edit.js`, preview + ACC, then read-merge-send all existing custom fields so Dev Effort, QA Effort, and other fields are not cleared (`external-edit-backup-gate.mdc`)
 - Health: `node scripts/qa-health.js` · full check: `node scripts/doctor.js` · user docs: `docs/USER_GUIDE.md` and `docs/TOKEN_TIPS.md`
 - Reusable TestRail CLI in `scripts/testrail-tools/` (avoid ad-hoc `tmp-*.ps1`); `Update-TestRailCaseFields` in `TestRailApi.ps1` uses `JavaScriptSerializer` with raised `MaxJsonLength` for long steps and test data on `update_case`
-- Canonical workspace `Documents\Test\qa-agent` only; MCP via user sessionStart hook; run `scripts/mcp-mode.js` from repo root, full script path, or `scripts/mcp-mode.cmd` (not from user home alone)
+- Canonical workspace `Documents\Test\qa-agent` only; open one qa-agent clone per session (AI and Test share `proj ensure` id); MCP via user sessionStart hook; run `scripts/mcp-mode.js` from repo root, full script path, or `scripts/mcp-mode.cmd` (not from user home alone)
